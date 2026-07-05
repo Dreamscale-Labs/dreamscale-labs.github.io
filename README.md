@@ -1,3 +1,3 @@
-# Dreamtime Labs
+# Dreamscale Labs
 
-Advancing Physical AI. Stay tuned.
+Physical AI research on the scale of dreams. Stay tuned.
