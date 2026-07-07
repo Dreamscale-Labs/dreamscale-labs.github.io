@@ -1,0 +1,175 @@
+@font-face {
+  font-family: "Nabla";
+  src: url("/assets/fonts/Nabla-Regular-VariableFont_EDPT,EHLT.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Mluvka";
+  src: url("/assets/fonts/Mluvka-Regular-web.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-palette-values --dream-purple {
+  font-family: "Nabla";
+  base-palette: 0;
+  override-colors:
+    0 #5d43c8,
+    1 #7358de,
+    2 #8f7ff0,
+    3 #b8aefd,
+    4 #d8d1ff,
+    5 #6b4bd7,
+    6 #8b6ff0,
+    7 #c6befd,
+    8 #4f39b0,
+    9 #7e64e6,
+    10 #efeaff,
+    11 #6244cf,
+    12 #a394f6,
+    13 #cfc8ff,
+    14 #8067e8,
+    15 #f4f1ff,
+    16 #5a3fc1,
+    17 #927cf2,
+    18 #bcb2fb,
+    19 #dcd7ff,
+    20 #6a50d8,
+    21 #856de9,
+    22 #a99bf6,
+    23 #eeeaff,
+    24 #4d36a8,
+    25 #765ce1,
+    26 #9c8cf4,
+    27 #c8c0ff,
+    28 #dfdbff,
+    29 #6f56d9,
+    30 #8c7cf0,
+    31 #f7f5ff;
+}
+
+:root {
+  color: #352b5f;
+  background: #f8f9ff;
+  font-family: "Mluvka", ui-sans-serif, system-ui, sans-serif;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+}
+
+body {
+  min-height: 100svh;
+  margin: 0;
+  background:
+    linear-gradient(180deg, #9b8df4 0%, #b9aff8 19%, #d9ddf6 34%, #f8f9ff 59%, #fbfcff 100%);
+}
+
+a {
+  color: inherit;
+}
+
+.site-header {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  padding: clamp(1.25rem, 2.8vw, 2.5rem);
+  pointer-events: none;
+}
+
+.site-header nav {
+  pointer-events: auto;
+}
+
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  color: rgba(42, 33, 81, 0.72);
+  font-family: "Mluvka", ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(0.875rem, 0.7rem + 0.35vw, 1rem);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-decoration: none;
+}
+
+.nav-link:hover,
+.nav-link:focus-visible {
+  color: #4e3bb2;
+  text-decoration: underline;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.28em;
+}
+
+.landing {
+  position: relative;
+  min-height: 100svh;
+  padding: clamp(4rem, 9vw, 7rem) clamp(1.25rem, 4vw, 4rem) clamp(2rem, 4.5vw, 3.5rem);
+}
+
+.wordmark {
+  position: absolute;
+  top: 43%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(92vw, 80rem);
+  padding: 0.22em 0.5em 0.42em;
+  margin: 0;
+  color: #6950d2;
+  font-family: "Nabla", ui-display, fantasy;
+  font-palette: --dream-purple;
+  font-size: clamp(4.5rem, 10.2vw, 10.5rem);
+  font-variation-settings: "EDPT" 72, "EHLT" 10;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 0.94;
+  text-align: center;
+}
+
+.tagline {
+  position: absolute;
+  right: clamp(1.25rem, 4vw, 4rem);
+  bottom: clamp(2rem, 4.5vw, 3.5rem);
+  left: clamp(1.25rem, 4vw, 4rem);
+  width: min(100%, 64rem);
+  margin: 0 auto;
+  color: rgba(39, 31, 74, 0.76);
+  font-family: "Mluvka", ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(1rem, 0.83rem + 0.52vw, 1.35rem);
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.45;
+  text-align: center;
+  text-wrap: balance;
+}
+
+@media (max-width: 640px) {
+  .landing {
+    padding-top: 4.5rem;
+  }
+
+  .wordmark {
+    top: 44%;
+    font-size: clamp(3rem, 15.5vw, 5.25rem);
+  }
+
+  .tagline {
+    max-width: 22rem;
+    line-height: 1.5;
+    overflow-wrap: balance;
+  }
+}
