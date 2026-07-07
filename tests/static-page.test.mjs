@@ -24,8 +24,10 @@ test("landing page contains the required Dreamscale copy and blog link", () => {
 
 test("landing page uses static SVG logo assets and the required local body font", () => {
   assert.match(dreamscaleSvg, /<svg\b/);
+  assert.match(dreamscaleSvg, /viewBox="0 52 939 224"/);
   assert.match(dreamscaleSvg, /data:image\/png;base64/);
   assert.match(labsSvg, /<svg\b/);
+  assert.match(labsSvg, /viewBox="0 52 366 224"/);
   assert.match(labsSvg, /data:image\/png;base64/);
   assert.match(css, /@font-face\s*{[^}]*font-family:\s*"Mluvka"/s);
   assert.match(css, /Mluvka-Regular-web\.woff2/);
@@ -40,7 +42,9 @@ test("landing page includes the approved purple gradient and responsive safeguar
   assert.match(css, /min-height:\s*100svh/);
   assert.match(css, /clamp\(/);
   assert.match(css, /overflow-wrap:\s*balance|text-wrap:\s*balance/);
-  assert.match(css, /\.wordmark\s*{[^}]*gap:\s*clamp\(0\.55rem,\s*1\.2vw,\s*1\.05rem\)/s);
+  assert.match(css, /\.wordmark\s*{[^}]*gap:\s*clamp\(0\.2rem,\s*0\.45vw,\s*0\.45rem\)/s);
+  assert.match(css, /@media \(max-width:\s*640px\)[\s\S]*\.wordmark\s*{[\s\S]*width:\s*min\(78vw,\s*21rem\)/);
+  assert.match(css, /@media \(max-width:\s*640px\)[\s\S]*\.wordmark\s*{[\s\S]*gap:\s*clamp\(0\.1rem,\s*0\.6vw,\s*0\.25rem\)/);
   assert.match(css, /@media \(max-width:\s*640px\)[\s\S]*\.tagline\s*{[\s\S]*left:\s*50%/);
   assert.match(css, /@media \(max-width:\s*640px\)[\s\S]*\.tagline\s*{[\s\S]*transform:\s*translateX\(-50%\)/);
 });

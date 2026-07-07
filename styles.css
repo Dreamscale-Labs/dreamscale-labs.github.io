@@ -85,7 +85,7 @@ a {
   align-items: center;
   width: min(72vw, 58rem);
   margin: 0;
-  gap: clamp(0.55rem, 1.2vw, 1.05rem);
+  gap: clamp(0.2rem, 0.45vw, 0.45rem);
   text-align: center;
 }
 
@@ -128,8 +128,8 @@ a {
 
   .wordmark {
     top: 44%;
-    width: min(88vw, 25rem);
-    gap: clamp(0.45rem, 2.3vw, 0.8rem);
+    width: min(78vw, 21rem);
+    gap: clamp(0.1rem, 0.6vw, 0.25rem);
   }
 
   .tagline {
