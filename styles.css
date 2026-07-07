@@ -123,20 +123,20 @@ a {
 
 .wordmark {
   position: absolute;
-  top: 42%;
+  top: 43%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: min(92vw, 80rem);
-  padding: 0.25em 0.6em 0.48em;
+  padding: 0.22em 0.5em 0.42em;
   margin: 0;
   color: #6950d2;
   font-family: "Nabla", ui-display, fantasy;
   font-palette: --dream-purple;
-  font-size: clamp(4.5rem, 10.8vw, 11rem);
+  font-size: clamp(4.5rem, 10.2vw, 10.5rem);
   font-variation-settings: "EDPT" 72, "EHLT" 10;
   font-weight: 400;
   letter-spacing: 0;
-  line-height: 0.78;
+  line-height: 0.94;
   text-align: center;
 }
 
@@ -163,8 +163,8 @@ a {
   }
 
   .wordmark {
-    top: 43%;
-    font-size: clamp(3.25rem, 17vw, 5.5rem);
+    top: 44%;
+    font-size: clamp(3rem, 15.5vw, 5.25rem);
   }
 
   .tagline {

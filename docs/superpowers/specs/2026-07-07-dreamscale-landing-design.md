@@ -14,7 +14,7 @@ Create a minimal Dreamscale Labs landing page for GitHub Pages, using the suppli
 
 - Single static `index.html` page.
 - Top-right navigation contains one `blog` link.
-- Center of the viewport contains the exact text `dreamtime labs`, split across two lines as `dreamtime` and `labs`.
+- Center of the viewport contains the exact text `dreamscale labs`, split across two lines as `dreamscale` and `labs`.
 - Bottom sentence is exactly: `DSL is an applied research company working towards a future of truly general robotics.`
 
 ## Typography

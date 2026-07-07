@@ -10,7 +10,7 @@
 
 ## Global Constraints
 
-- The hero text must be exactly `dreamtime labs`, split across two visible lines.
+- The hero text must be exactly `dreamscale labs`, split across two visible lines.
 - The hero font must be Nabla.
 - The bottom sentence must be exactly `DSL is an applied research company working towards a future of truly general robotics.`
 - The bottom sentence must use Mluvka at font weight 400.
@@ -41,7 +41,7 @@ const html = existsSync("index.html") ? readFileSync("index.html", "utf8") : "";
 const css = existsSync("styles.css") ? readFileSync("styles.css", "utf8") : "";
 
 test("landing page contains the required Dreamscale copy and blog link", () => {
-  assert.match(html, /dreamtime\s*<br\s*\/?>\s*labs/);
+  assert.match(html, /dreamscale\s*<br\s*\/?>\s*labs/);
   assert.match(
     html,
     /DSL is an applied research company working towards a future of truly general robotics\./
