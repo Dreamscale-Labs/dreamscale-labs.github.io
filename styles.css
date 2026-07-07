@@ -1,55 +1,9 @@
 @font-face {
-  font-family: "Nabla";
-  src: url("/assets/fonts/Nabla-Regular-VariableFont_EDPT,EHLT.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
   font-family: "Mluvka";
   src: url("/assets/fonts/Mluvka-Regular-web.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
-}
-
-@font-palette-values --dream-purple {
-  font-family: "Nabla";
-  base-palette: 0;
-  override-colors:
-    0 #5d43c8,
-    1 #7358de,
-    2 #8f7ff0,
-    3 #b8aefd,
-    4 #d8d1ff,
-    5 #6b4bd7,
-    6 #8b6ff0,
-    7 #c6befd,
-    8 #4f39b0,
-    9 #7e64e6,
-    10 #efeaff,
-    11 #6244cf,
-    12 #a394f6,
-    13 #cfc8ff,
-    14 #8067e8,
-    15 #f4f1ff,
-    16 #5a3fc1,
-    17 #927cf2,
-    18 #bcb2fb,
-    19 #dcd7ff,
-    20 #6a50d8,
-    21 #856de9,
-    22 #a99bf6,
-    23 #eeeaff,
-    24 #4d36a8,
-    25 #765ce1,
-    26 #9c8cf4,
-    27 #c8c0ff,
-    28 #dfdbff,
-    29 #6f56d9,
-    30 #8c7cf0,
-    31 #f7f5ff;
 }
 
 :root {
@@ -123,21 +77,31 @@ a {
 
 .wordmark {
   position: absolute;
-  top: 43%;
+  top: 45.5%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: min(92vw, 80rem);
-  padding: 0.22em 0.5em 0.42em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(72vw, 58rem);
   margin: 0;
-  color: #6950d2;
-  font-family: "Nabla", ui-display, fantasy;
-  font-palette: --dream-purple;
-  font-size: clamp(4.5rem, 10.2vw, 10.5rem);
-  font-variation-settings: "EDPT" 72, "EHLT" 10;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: 0.94;
+  gap: clamp(0.55rem, 1.2vw, 1.05rem);
   text-align: center;
+}
+
+.wordmark-line {
+  display: block;
+  height: auto;
+  max-width: 100%;
+  user-select: none;
+}
+
+.wordmark-line-primary {
+  width: 100%;
+}
+
+.wordmark-line-secondary {
+  width: 38%;
 }
 
 .tagline {
@@ -164,11 +128,16 @@ a {
 
   .wordmark {
     top: 44%;
-    font-size: clamp(3rem, 15.5vw, 5.25rem);
+    width: min(88vw, 25rem);
+    gap: clamp(0.45rem, 2.3vw, 0.8rem);
   }
 
   .tagline {
-    max-width: 22rem;
+    right: auto;
+    left: 50%;
+    width: min(calc(100vw - 2rem), 22rem);
+    max-width: none;
+    transform: translateX(-50%);
     line-height: 1.5;
     overflow-wrap: balance;
   }
