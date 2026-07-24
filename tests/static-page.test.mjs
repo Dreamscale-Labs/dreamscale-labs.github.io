@@ -6,12 +6,6 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const html = existsSync("index.html") ? readFileSync("index.html", "utf8") : "";
 const css = existsSync("styles.css") ? readFileSync("styles.css", "utf8") : "";
-const dreamscaleSvg = existsSync("assets/logo/dreamscale.svg")
-  ? readFileSync("assets/logo/dreamscale.svg", "utf8")
-  : "";
-const labsSvg = existsSync("assets/logo/labs.svg")
-  ? readFileSync("assets/logo/labs.svg", "utf8")
-  : "";
 const blogIndex = existsSync("blog/index.html")
   ? readFileSync("blog/index.html", "utf8")
   : "";
@@ -20,39 +14,50 @@ const blogCss = existsSync("blog/blog.css")
   : "";
 
 test("landing page contains the required Dreamscale copy and links directly to the blog", () => {
-  assert.match(html, /aria-label="Dreamscale Labs"/);
-  assert.match(html, /src="\/assets\/logo\/dreamscale\.svg"/);
-  assert.match(html, /src="\/assets\/logo\/labs\.svg"/);
+  assert.ok(existsSync("assets/logo/dsl-mark.png"));
+  assert.match(html, /<a class="site-logo" href="\/" aria-label="Dreamscale Labs home">/);
+  assert.match(html, /src="\/assets\/logo\/dsl-mark\.png"/);
+  assert.match(html, /width="1302"/);
+  assert.match(html, /height="960"/);
+  assert.match(html, /<span class="wordmark-line wordmark-line-primary">Dreamscale<\/span>/);
+  assert.match(html, /<span class="wordmark-line wordmark-line-secondary">Labs<\/span>/);
   assert.match(
     html,
     /DSL is an applied research company working towards a future of truly general robots\./
   );
-  assert.match(html, /href="\/blog\/"/);
+  assert.match(html, /<a class="nav-link" href="\/blog\/">Blog<\/a>/);
 });
 
-test("landing page uses static SVG logo assets and the required local body font", () => {
-  assert.match(dreamscaleSvg, /<svg\b/);
-  assert.match(dreamscaleSvg, /viewBox="0 52 939 224"/);
-  assert.match(dreamscaleSvg, /data:image\/png;base64/);
-  assert.match(labsSvg, /<svg\b/);
-  assert.match(labsSvg, /viewBox="0 52 366 224"/);
-  assert.match(labsSvg, /data:image\/png;base64/);
+test("landing page uses the local Nabla wordmark and Mluvka body font", () => {
+  assert.match(css, /@font-face\s*{[^}]*font-family:\s*"Nabla"/s);
+  assert.match(css, /Nabla-Regular-VariableFont_EDPT,EHLT\.ttf/);
   assert.match(css, /@font-face\s*{[^}]*font-family:\s*"Mluvka"/s);
   assert.match(css, /Mluvka-Regular-web\.woff2/);
-  assert.doesNotMatch(css, /\.wordmark\s*{[^}]*font-family:\s*"Nabla"/s);
+  assert.match(css, /\.wordmark\s*{[^}]*font-family:\s*"Nabla"/s);
+  assert.match(css, /\.wordmark\s*{[^}]*font-variation-settings:\s*"EDPT"\s+100,\s*"EHLT"\s+12/s);
   assert.match(css, /\.tagline\s*{[^}]*font-family:\s*"Mluvka"/s);
   assert.match(css, /\.tagline\s*{[^}]*font-weight:\s*400/s);
 });
 
-test("landing page includes the approved purple gradient and responsive safeguards", () => {
-  assert.match(css, /linear-gradient\(/);
-  assert.match(css, /#9b8df4|#a79af6|#b9aff8|#d9ddf6/i);
+test("landing page uses the D45 ink-on-white palette and responsive safeguards", () => {
+  assert.match(css, /@font-palette-values\s+--d45-ink-on-white/);
+  assert.match(
+    css,
+    /override-colors:\s*0 #212121,\s*1 #000000,\s*2 #111111,\s*3 #292929,\s*4 #575757,\s*5 #989898,\s*6 #202020,\s*7 #686868,\s*8 #e9e9e9,\s*9 #ffffff;/s
+  );
+  assert.match(css, /\.wordmark-line\s*{[^}]*font-palette:\s*--d45-ink-on-white/s);
+  assert.match(css, /--paper:\s*#ffffff/);
+  assert.match(css, /body\s*{[^}]*background:\s*var\(--paper\)/s);
+  assert.match(css, /\.site-header\s*{[^}]*justify-content:\s*space-between/s);
+  assert.match(css, /\.site-logo\s*{[^}]*width:\s*clamp\(4\.25rem,\s*5\.25vw,\s*5\.5rem\)/s);
+  assert.match(css, /\.site-logo img\s*{[^}]*height:\s*auto/s);
+  assert.match(css, /\.site-logo img\s*{[^}]*transform:\s*scaleY\(0\.8\)/s);
+  assert.match(css, /\.site-logo img\s*{[^}]*transform-origin:\s*top left/s);
   assert.match(css, /min-height:\s*100svh/);
   assert.match(css, /clamp\(/);
   assert.match(css, /overflow-wrap:\s*balance|text-wrap:\s*balance/);
-  assert.match(css, /\.wordmark\s*{[^}]*gap:\s*clamp\(0\.2rem,\s*0\.45vw,\s*0\.45rem\)/s);
-  assert.match(css, /@media \(max-width:\s*640px\)[\s\S]*\.wordmark\s*{[\s\S]*width:\s*min\(78vw,\s*21rem\)/);
-  assert.match(css, /@media \(max-width:\s*640px\)[\s\S]*\.wordmark\s*{[\s\S]*gap:\s*clamp\(0\.1rem,\s*0\.6vw,\s*0\.25rem\)/);
+  assert.match(css, /\.wordmark\s*{[^}]*gap:\s*clamp\(0\.1rem,\s*0\.3vw,\s*0\.3rem\)/s);
+  assert.match(css, /@media \(max-width:\s*640px\)[\s\S]*\.wordmark\s*{[\s\S]*width:\s*min\(88vw,\s*24rem\)/);
   assert.match(css, /@media \(max-width:\s*640px\)[\s\S]*\.tagline\s*{[\s\S]*left:\s*50%/);
   assert.match(css, /@media \(max-width:\s*640px\)[\s\S]*\.tagline\s*{[\s\S]*transform:\s*translateX\(-50%\)/);
 });

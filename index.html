@@ -8,22 +8,36 @@
       content="DSL is an applied research company working towards a future of truly general robots."
     >
     <title>Dreamscale Labs</title>
-    <link rel="preload" href="/assets/logo/dreamscale.svg" as="image">
-    <link rel="preload" href="/assets/logo/labs.svg" as="image">
+    <link
+      rel="preload"
+      href="/assets/fonts/Nabla-Regular-VariableFont_EDPT,EHLT.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    >
     <link rel="preload" href="/assets/fonts/Mluvka-Regular-web.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body>
     <header class="site-header" aria-label="Primary navigation">
+      <a class="site-logo" href="/" aria-label="Dreamscale Labs home">
+        <img
+          src="/assets/logo/dsl-mark.png"
+          alt=""
+          width="1302"
+          height="960"
+          fetchpriority="high"
+        >
+      </a>
       <nav>
-        <a class="nav-link" href="/blog/">blog</a>
+        <a class="nav-link" href="/blog/">Blog</a>
       </nav>
     </header>
 
     <main class="landing" aria-labelledby="wordmark">
-      <h1 class="wordmark" id="wordmark" aria-label="Dreamscale Labs">
-        <img class="wordmark-line wordmark-line-primary" src="/assets/logo/dreamscale.svg" alt="" aria-hidden="true">
-        <img class="wordmark-line wordmark-line-secondary" src="/assets/logo/labs.svg" alt="" aria-hidden="true">
+      <h1 class="wordmark" id="wordmark">
+        <span class="wordmark-line wordmark-line-primary">Dreamscale</span>
+        <span class="wordmark-line wordmark-line-secondary">Labs</span>
       </h1>
       <p class="tagline">DSL is an applied research company working towards a future of truly general robots.</p>
     </main>
