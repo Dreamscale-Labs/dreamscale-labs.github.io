@@ -3,226 +3,59 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="The case for off-board robotics inference from Dreamscale Labs.">
-    <title>Why Robot Brains Will Live in the Cloud — Dreamscale Labs</title>
-    <link rel="preload" href="../assets/fonts/Mluvka-Regular-web.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="preload" href="../assets/blog/scaling-model-size.png" as="image">
-    <link rel="stylesheet" href="./blog.css">
+    <meta
+      name="description"
+      content="Research and essays from Dreamscale Labs."
+    >
+    <title>Research — Dreamscale Labs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link
+      rel="preload"
+      href="/assets/fonts/Mluvka-Regular-web.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    >
+    <link rel="stylesheet" href="/blog/blog.css">
   </head>
   <body>
-    <header class="blog-header">
-      <a class="blog-brand" href="../index.html">Dreamscale Labs <span>Research</span></a>
-      <nav class="blog-nav" aria-label="Blog navigation">
-        <a href="./index.html" aria-current="page">Essay</a>
-        <a class="optional-link" href="../index.html">About</a>
+    <header class="site-header" aria-label="Primary navigation">
+      <a class="site-logo" href="/" aria-label="Dreamscale Labs home">
+        <img
+          src="/assets/logo/dsl-mark.png"
+          alt=""
+          width="1302"
+          height="960"
+          fetchpriority="high"
+        >
+      </a>
+      <nav>
+        <a class="nav-link" href="/blog/" aria-current="page">Blog</a>
       </nav>
     </header>
 
-    <main class="article-shell" id="top">
-      <header class="article-hero">
-        <div class="article-meta">
-          <span>Essay 001</span>
-          <time datetime="2026-07-24">July 24, 2026</time>
-          <span>18 min read</span>
-        </div>
-        <div class="article-title-block">
-          <h1>Why Robot Brains Will Live in the Cloud</h1>
-          <p class="article-dek">The case for off-board robotics inference</p>
-        </div>
+    <main class="blog-index">
+      <header class="index-header">
+        <h1 class="index-title">Research</h1>
       </header>
 
-      <article class="article">
-        <p>The promise of generalist robotics is automating physical work such that no human has to perform dirty, dangerous, or demeaning labor.</p>
-
-        <p>To achieve this, robots must be able to perform a wide range of tasks, adapt to a broad variety of environments, and handle an indefinite number of unexpected scenarios. This requires much more intelligent physical AI models than we have now, especially ones that are trained on extremely large training corpora and are equipped with deep reasoning capabilities. We think this necessarily results in a substantially larger model that just won’t be able to fit on GPUs on-board the robot, and that these ‘brains’ will live in the cloud where they can be served on powerful servers.</p>
-
-        <p>Conventional wisdom states that running robotic AI models in the cloud is a terrible idea. For robots, a fast reaction speed is critical for both performance and safety, and running the model over the internet is slow and unreliable. Robot builders want to run the most intelligent models which tend to be large, but due to this seemingly inevitable challenge of remote inference, they are forced to work with the constraints of running smaller models on board the robot itself. Furthermore, how can contending with network latency <em>possibly</em> allow robots to react quickly and safely to spontaneous changes in the world?</p>
-
-        <p>It appears that off-board inference introduces an insurmountable number of engineering problems relating to speed, reliability, control and safety, such that it seems much more straightforward to focus on optimising on-device infrastructure. After all, running models locally guarantees the tight control loops that enable smooth and responsive actuator reactions to dynamic environments — which is the reason why a lot of recent research efforts have gone into making inference efficient on edge compute.</p>
-
-        <p>However, we believe that we can increase the tractability of this ‘fast intelligence’ problem by flipping the direction of thinking on its head — taking it from the realm of pursuing difficult <em>research</em> that compresses intelligence into a small number of parameters, to the realm of solving the <em>engineering</em> challenges to enable large, capable models to run quickly and reliably over a remote connection.</p>
-
-        <p>In this post, we’ll walk through the limitations of on-board inference, how cloud inference addresses these problems, then ultimately show how, with the right tradeoffs, a future for off-board inference can and should exist.</p>
-
-        <h2>Scaling Laws are Here to Stay</h2>
-
-        <p>We, <a href="https://youtu.be/3Y8aq_ofEVs?t=753">like others</a>, also believe that much of the next waves of progress for generalist robotics R&amp;D will adhere to scaling laws.</p>
-
-        <p>We first saw sparks of general world knowledge in embodied AI models with DeepMind’s RT-2. Its demo of moving a coke can to an image of Taylor Swift was only possible by leveraging a VLM’s web-scale pre-training to understand information about the world. Robot specific data has scaled with π0, and continues strongly with models up to π0.7 (and beyond), yielding transfer to unseen environments and objects.</p>
-
-        <p>Generalist AI uses half a million hours of robot data to achieve exceptionally robust dextrous manipulation. They’ve provided generous evidence for the existence of scaling laws, analogous to LLMs, for embodied AI.</p>
-
-        <figure class="wide-figure">
-          <div class="figure-grid">
-            <div class="figure-frame">
-              <img src="../assets/blog/scaling-model-size.png" alt="Chart showing action prediction error improving as robot model size increases">
-            </div>
-            <div class="figure-frame">
-              <img src="../assets/blog/scaling-data.png" alt="Chart showing robot validation loss improving as the pretraining dataset grows">
-            </div>
-          </div>
-        </figure>
-
-        <p>Beyond just data, they've also reported that robot performance increases with model size. Models smaller than 7 billion parameters <em>ossify</em> and are unable to learn beyond a certain point, while models in the tens of billions have shown more promise of generalizing. This need for larger model size is accelerated by the recent paradigm shift towards <em>world models</em>, leveraging future state prediction and spatiotemporal priors from video foundation models.</p>
-
-        <p>Physical Intelligence has also <a href="https://www.youtube.com/watch?v=pzolgvyWEFY">hinted</a> at moving up one order of magnitude for parameter count too, scaling even to high double-digit billions. While they haven’t quite gotten there yet, we see early evidence with their latest π0.7 VLA’s use of a 14B world model for subgoal image prediction.</p>
-
-        <p>For companies like NVIDIA and 1X who use World Action Models (WAMs), these models are even more compute-intensive. NVIDIA’s DreamZero 14B model takes 5.7 seconds to generate a single action chunk even on a H100 GPU. It requires two of the powerful, server-grade GB200 instances with a series of complex system-level and implementation-level optimisations to run a Flash variant at the advertised 7 hz closed-loop control. And while 1X doesn’t disclose information on their models extensively, we know it takes 11 seconds for their 14B world model to generate a 5 second future video prediction.</p>
-
-        <p>It’s clear that scaling laws are here to stay.</p>
-
-        <h2>The State of On-board Compute</h2>
-
-        <p>Right now, there are only a handful of hardware options for onboard inference. Many frontier robotics labs today, including 1X and Boston Dynamics, rely on NVIDIA’s Jetson AGX series for running AI models. Let’s take a closer look at two of the most popular offerings in this series:</p>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th scope="col"></th>
-                <th scope="col">Performance</th>
-                <th scope="col">RAM</th>
-                <th scope="col">Memory bandwidth</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Jetson AGX Orin</strong></td>
-                <td>275 TOPS</td>
-                <td>64 GB</td>
-                <td>200 GB/s</td>
-              </tr>
-              <tr>
-                <td><strong>Jetson AGX Thor</strong></td>
-                <td>2070 TFLOPS</td>
-                <td>128 GB</td>
-                <td>273 GB/s</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <p>Both the Orin and the Thor have a healthy amount of RAM, enough to fit any SOTA physical AI model and comfortably run it in theory. But in practice, this isn’t the case — even if you could fit the model, the inference latency is punishing.</p>
-
-        <p>To understand this, let’s explore exactly <em>how</em> physical AI models push the boundaries of GPU utilization at the architectural level.</p>
-
-        <p>In a transformer, processing tokens (“prefill”) is compute bound, and autoregressive generation is memory bandwidth bound due to the KV cache operations constantly moving cache between VRAM and GPU compute cores. On the other hand, the diffusion is bounded by FLOPS, as it involves many repetitive calculations. Usually, VLAs and WAMs rely on both autoregressive and diffusion operations.</p>
-
-        <p>VLAs are based on multimodal VLMs and attach a smaller diffusion action expert onto them. Typically, the VLM is used for encoding intermediate representations in its KV cache, which the action expert uses to generate actions. As this is a prefill operation and not generative, we are compute bound.</p>
-
-        <p>However, similar to LLMs, VLAs (e.g. π0.5) are able to reason through difficult tasks with test time compute. When you input a broad prompt like “<em>clean the bedroom</em>”, the VLM employs subtask prediction to break this long-horizon task into smaller, more manageable and well-specified sequential steps that allow the model to execute a task with greater success. While the sequences generated are small, you can extrapolate that as models acquire more complex reasoning capabilities, KV cache utilisation and memory bandwidth will become strained.</p>
-
-        <p>There is nuance in the action expert however. Although a typical diffusion model is compute-bound, <a href="https://arxiv.org/pdf/2602.18397">inside VLAs, it is actually memory-bound</a>. This is due to the relatively small number and size of action tokens compared to the KV cache it borrows from the VLM.</p>
-
-        <p>On the other hand, WAMs autoregressively generate frames; as they are generating future predictions frame by frame, they re-use their KV cache often. But even worse, each generation of each individual frame undergoes diffusion. Both of these processes are extremely intensive — videos are heavy to work with.</p>
-
-        <p>Therefore, it’s clear that we face a two-pronged problem with both memory and compute constraints if we are running a Thor or Orin on the robot. We know chips will continue to get better year after year. However, we think the demand for stronger intelligence (and hence necessarily model size) is going to far outpace Huang’s Law in the near future. The converse cannot be true because of Jevon’s paradox; the advances in energy efficiency will only lead to an increased consumption of compute.</p>
-
-        <p>Hence, it is inevitable that model size will reach a certain ‘escape velocity’ at which it will be out of reach for on-board inference and only cloud inference will be feasible. Indeed, <a href="https://modal.com/blog/physical-intelligence-runs-real-time-remote-inference-for-robotic-control-on-modal">PI’s recent partnership with Modal</a> offers an interesting case study of how real-time robot execution can be achieved using a model served from a remote data center. In the absence of technical details, one aspect worth noting is that the latency measurements were performed in optimal conditions, over a tightly controlled network, within a specific region close to their servers, solely for research purposes. Regardless, it offers a glimpse into the possibilities into a cloud future.</p>
-
-        <p>Irrespective of how you look at it, there’s a bitter lesson for robotics to be found here. Models consistently get better when you make them bigger and give them more data. We believe that off-board inference is the necessary infrastructure to support this future.</p>
-
-        <h2>Impacts on Robot Cost, Hardware, Access, and Beyond</h2>
-
-        <h3>Cost</h3>
-
-        <p>From a logistical perspective, one of the biggest problems of putting a GPU inside the robot is that it is extremely expensive and has become difficult to acquire at scale.</p>
-
-        <p>It is clear that cloud inference replaces this upfront cost in the form of usage-based pricing. But how does this ongoing cost of cloud inference pan out against the one-time cost of purchasing a GPU over a long time horizon?</p>
-
-        <p>Let’s do some napkin math. Suppose we have a robot equipped with an NVIDIA AGX Thor, costing $3500. NVIDIA’s Thor has a <a href="https://developer.download.nvidia.com/assets/embedded/secure/jetson/thor/docs/Jetson_Thor_Series_Modules_Datasheet_DS-11945-001v1.5.pdf?t=eyJscyI6ImdzZW8iLCJsc2QiOiJodHRwczovL3d3dy5nb29nbGUuY29tLyJ9&amp;__token__=exp=1783870838~hmac=0adcc9cc342664b0325cdd22d46a1932d40db5061e242c4fad0d108a7156a78d">rated lifespan of 5 years</a>, which includes testing with heat-cooling cycles and vibrations. This equates to a lifetime amortised cost of $0.08/hour. Meanwhile, an H100 instance on AWS currently costs $6.88/hour, which is 86x more expensive.</p>
-
-        <p>While this appears to be a large gap, the more relevant measure is the cost per hour of productive work. In practice, most robots won’t operate 24/7/365: they require maintenance, run out of battery, wait between tasks and sit idle when demand is low. These periods reduce the number of useful hours over which the upfront hardware cost can be amortised. By paying for compute only when the robot is actually generating economic value and leaving someone else to absorb the cost of idle capacity and hardware depreciation, and multiplexing the execution of multiple robots on a single data center GPU, off-board compute may ultimately be cheaper in the long run.</p>
-
-        <p>Furthermore, by analogy, renting a house will always cost more in the long run than buying it outright. The landlord bears the upfront cost and, in return, gives tenants access to a valuable resource without the prohibitive barrier to entry. That access alone has value: it unlocks new capabilities for tenants in the housing example, and for researchers and tinkerers in ours.</p>
-
-        <p>In fact, we would contend that the jaw-dropping claim that a data center GPU “<em>costs 86x more</em>” over the long run presents a strawmanned and incomplete picture for one underappreciated reason: H100s are not merely more expensive, they are appreciably more powerful.</p>
-
-        <p>Imagine, as a thought experiment, that the wizards at NVIDIA produced an H100 with the power draw and form factor of a Thor. Something we could simply slap onboard. At current market rates, this magical H100 would go for around $35,000, which under the same amortisation math comes to roughly $0.80 per hour. If you only had to pay 10× more but gained a 100× uplift in intelligence, would you call that “more expensive”... or simply a better deal?</p>
-
-        <h3>Power &amp; Hardware</h3>
-
-        <p>One important physical consideration is the impact of GPU’s power draw on the robot’s battery.</p>
-
-        <p>Consider a Unitree H1 humanoid robot, with a reported battery size of 864Wh and a battery life of approximately 2 hours, which gives an implied power draw of the robot alone being 432W. A Jetson Thor can draw 120W, meaning the power draw with the GPU added is 552W, giving a battery life of 1.56 hours. This means that running a powerful GPU on the robot can cause it to lose ~20% of battery life (on top of increased battery wear).</p>
-
-        <p>This means you either need a more performant battery, which in turn makes the robot heavier and the actuators draw more power, diminishing the returns of added charge, or accept reduced operating hours and hot-swap the batteries more often.</p>
-
-        <p>Furthermore, having a heat-generating GPU on board means the robot now has to be equipped with a cooling system, the chassis must be designed to accommodate them, and places restrictions on material choice (e.g. can’t use thermoplastics).</p>
-
-        <p>Running GPU inference on a cloud data center with optimized cooling and abundant electricity supply means lighter robots and less hardware components and restrictions to worry about.</p>
-
-        <h3>Access</h3>
-
-        <p>A big problem for tinkerers in Physical AI is that access to running performant models on their robots is gated by owning a powerful GPU. Small labs and development teams lack the capital to purchase compute upfront, let alone have the time to wait for it to arrive. GPU access is load-bearing to the R&amp;D cycle. Waiting for one of your 5 GPUs to free up to test a policy kills development velocity. But this isn’t exclusive to small, scrappy teams - Physical Intelligence themselves say "<em>running compute on cloud simplified operations and enabled rapid experimentation with larger models, while only adding 10-15ms of network overhead</em>". As we can see, off-board inference offers a significant operational advantage on the ease and velocity of development.</p>
-
-        <h2>Safety</h2>
-
-        <p>Larger, more capable models are safer robots. In some sense, safety is intrinsically tied to capability. It’s extremely likely that larger and more diversely trained robot models will generalise better to unseen, complex domains, as well as attain stronger perception and semantic understanding. For instance, more complex emergencies (e.g. rescuing people during house fires) will require more complex reasoning patterns to resolve, so it’s reasonable to infer that the most capable models should be deployed in these high-stakes situations. Large models will be generally better at recognising hazards, reasoning through unfamiliar situations and instruction-following for safety policies. Bigger models will reduce embodied mistakes arising from weak perception and reasoning.</p>
-
-        <p>It’s also generally dangerous for robots to have slow reflexes. Every millisecond counts. We don’t want embodiments to wait 300 ms <em>after</em> they’ve crashed into a child to turn in a different direction, nor pull heavy machinery back <em>after</em> it has collided with a pillar. The combination of heavy equipment and strong forces causes serious harm.</p>
-
-        <p>But accidents can be mitigated if your robot has good reflexes in the same way humans do, so the current paradigm has been to strap on a GPU on-device. It’s therefore simply counter-intuitive to add additional overhead from the network, preventing robots from reacting in time.</p>
-
-        <p>The latest generations of π models run at 50 Hz. But note that the model isn’t actually doing 50 forward passes per second. This level of responsiveness is achieved via action chunking, a technique which involves generating a set of 50 future actions each forward pass, then executing them over 1 second. It actually runs inference 3 times per second — at 3 Hz, which is terrible for safety; it’s a woefully inadequate response rate.</p>
-
-        <p><em>Thinking, Fast and Slow</em> will help us here. We can emulate Kahneman’s distinct modes of thought by decoupling a dedicated, on-device System 1 from our large System 2 robot model that lives in the cloud.</p>
-
-        <p>To illustrate this with an example, Figure AI’s Helix 02’s System 1 (actually called System 0, since they run 3 distinct systems), is a tiny 10M model running locally whose sole task is to keep the robot coordinated and balanced. This foundation model operates at 1 kHz, and takes in joint states and base motion as input, so it can reliably output actuator commands in time for safety. The systems above it can relax a little.</p>
-
-        <figure class="wide-figure">
-          <div class="figure-frame figure-frame--diagram" tabindex="0" aria-label="Helix architecture diagram. Scroll horizontally to view details on smaller screens.">
-            <img src="../assets/blog/cloud-inference-architecture.png" alt="Helix 02 architecture with a small local safety model, a sensor and motor model, and a large high-level reasoning model">
-          </div>
-        </figure>
-
-        <p>Helix 02 is just an example, but we think that this could serve as inspiration for a very real and optimal shape for robot control going forward: a hybrid system where body control and safety is handled by a lightweight fallback model/policy that feasibly sits on-device. The rest is put off-board to leverage the highest performance possible for dexterity, reasoning and conversation.</p>
-
-        <h2>Critiques on Off-board Inference</h2>
-
-        <p>Here, we address potential concerns against off-board inference.</p>
-
-        <h3>1. How do you deal with the slow and unpredictable latency of the network?</h3>
-
-        <p>While this is a known limitation of all cloud-based systems, we firmly believe that the stochasticity of network latency is a tractable engineering problem.</p>
-
-        <p>Consider that in 2024, doctors performed telesurgery over 8000 kilometers from Rome to Beijing with a controlled delay of only 135 ms. They used hedging across both a high-speed 5G network and fiber-optic connection.</p>
-
-        <p>By leveraging network transport optimizations like QUIC (Quick UDP Internet Connections) and zero-copy data transfer, we can bring down the raw round-trip-time and jitter between a cloud inference endpoint and an optimised networking stack running on a lightweight embedded system inside the robot. We are also excited about the latest WiFi 7 and the upcoming WiFi 8 protocols, which enable theoretical speeds up to 46 Gbps and are designed specifically for ultra-high reliability.</p>
-
-        <p>Furthermore, unlike traditional LLM inference providers which allocate large amounts of compute in concentrated regions to serve broad regions, we believe that latency-sensitive robots will be served by compact clusters of hyper-local compute targeting specific subregions. Combined with the transport-level network optimizations, we believe that we can bring the network overhead problem into the scope of a manageable issue.</p>
-
-        <h3>2. What if the robot’s operating in an environment that doesn’t have network connectivity?</h3>
-
-        <p>We recognise that not all corners of the Earth are reachable over the network, such as deep underwater, inside a mine, or on an off-grid farmland. However, we are encouraged by the growing coverage of the Starlink satellite network, offering 25-60 ms of latency on land and continuing to become faster. For latency-critical scenarios, we potentially envision a future of inference via on-premises private cloud, in the form of server racks physically delivered to inference locations. In fact, Anduril has already started deploying <a href="https://www.anduril.com/news/menace-i-brings-petabyte-scale-processing-to-the-warfighter-at-the-tactical-edge%20">container-sized data centers</a> to areas where military operations are being conducted, delivering reliable and high-speed processing power to remote locations.</p>
-
-        <h3>3. Won’t models become compact and efficient enough to fit on an onboard GPU?</h3>
-
-        <p>There is an argument that we will develop models with a high intelligence to parameter count ratio such that sufficiently capable models will be able to fit on onboard GPUs.</p>
-
-        <p>However, model optimizations are essentially a tradeoff of compactness and accuracy. Methods like quantisation and distillation degrade performance after a certain threshold, and once the base models themselves grow very large, their compressed variants will too.</p>
-
-        <p>We do recognize that there are, and will continue to be, genuine improvements in model efficiency. One example is Fast-WAM, a world action model which achieves 190 ms latency by removing video prediction at test-time and instead showing that they can attain comparable performance by leveraging the spatiotemporal priors from the pretraining step only.</p>
-
-        <p>However, we don’t believe there will be a “<em>sufficiently capable</em>” model for physical intelligence that fits comfortably on an onboard GPU for a long time. Just like how despite the existence of many efficient open-source models, the world still yearns for even higher levels of capability for AI (e.g. GPT 5.6 Sol, Claude Mythos) to perform even more meaningfully impactful and economically productive tasks. We are far from, if ever, a future in which truly generalist models are able to be contained in a single GPU.</p>
-
-        <p><em>If you have critiques or disagree with this, please reach out at contact@dreamscalelabs.com.</em></p>
-
-        <h2>Future</h2>
-
-        <p>Ultimately, we think the future of generalist robotics is dependent on off-board compute. With the ability to run large-scale models at highly optimised latency and reliability, we will see an exponential uplift in the capability and safety of general-purpose robots.</p>
-
-        <p>The landscape of robotics is already changing. It’s not just factories that get to use robots. It’s the farmers off the grid in rural Australia, it’s the laundry shop down the street, it’s the apartments that need cleaning across NYC.</p>
-
-        <p>Turning towards a longer time horizon, we could plausibly see hyper-local mini-datacenters being deployed across the world wherever fleets of robots are at work - from neighborhoods to mines to hospitals. There could even be mobile GPU compute boxes and dedicated network access points that serve clusters of nearby robots in every corner of the world. Eventually, we envision a future of intelligent and safe robots, each conquering physical problems in versatile environments, enabled by the nexus of powerful cloud compute and optimised network transport.</p>
-
-        <p>This is the future we want to engineer into existence.</p>
-      </article>
+      <ol class="post-list" aria-label="Research essays">
+        <li class="post-item">
+          <time datetime="2026-07-24">July 24, 2026</time>
+          <a
+            class="post-link"
+            href="/blog/why-robot-brains-will-live-in-the-cloud/"
+          >
+            <h2 class="post-title">Why Robot Brains Will Live in the Cloud</h2>
+            <p class="post-description">The case for off-board robotics inference</p>
+          </a>
+        </li>
+      </ol>
     </main>
-
-    <footer class="blog-footer">
-      <span>Dreamscale Labs © 2026</span>
-      <a href="#top">Back to top ↑</a>
-    </footer>
   </body>
 </html>

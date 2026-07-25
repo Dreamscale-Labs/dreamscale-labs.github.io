@@ -1,8 +1,6 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import test from "node:test";
-import { fileURLToPath, pathToFileURL } from "node:url";
 
 const html = existsSync("index.html") ? readFileSync("index.html", "utf8") : "";
 const css = existsSync("styles.css") ? readFileSync("styles.css", "utf8") : "";
@@ -11,6 +9,15 @@ const blogIndex = existsSync("blog/index.html")
   : "";
 const blogCss = existsSync("blog/blog.css")
   ? readFileSync("blog/blog.css", "utf8")
+  : "";
+const articlePath = "blog/why-robot-brains-will-live-in-the-cloud/index.html";
+const articleCssPath =
+  "blog/why-robot-brains-will-live-in-the-cloud/article.css";
+const articleHtml = existsSync(articlePath)
+  ? readFileSync(articlePath, "utf8")
+  : "";
+const articleCss = existsSync(articleCssPath)
+  ? readFileSync(articleCssPath, "utf8")
   : "";
 
 test("landing page contains the required Dreamscale copy and links directly to the blog", () => {
@@ -62,62 +69,127 @@ test("landing page uses the D45 ink-on-white palette and responsive safeguards",
   assert.match(css, /@media \(max-width:\s*640px\)[\s\S]*\.tagline\s*{[\s\S]*transform:\s*translateX\(-50%\)/);
 });
 
-test("blog uses a shared responsive visual system", () => {
+test("blog index matches the Dreamscale identity and lists the canonical essay", () => {
   assert.ok(existsSync("blog/blog.css"));
+  assert.match(blogIndex, /<h1 class="index-title">Research<\/h1>/);
+  assert.doesNotMatch(blogIndex, /<article class="article">/);
+  assert.match(
+    blogIndex,
+    /href="\/blog\/why-robot-brains-will-live-in-the-cloud\/"/
+  );
+  assert.match(blogIndex, /<time datetime="2026-07-24">July 24, 2026<\/time>/);
+  assert.match(blogIndex, /Why Robot Brains Will Live in the Cloud/);
+  assert.match(blogIndex, /The case for off-board robotics inference/);
+  assert.match(blogIndex, /src="\/assets\/logo\/dsl-mark\.png"/);
+  assert.match(blogIndex, /href="\/blog\/blog\.css"/);
+});
+
+test("blog index uses Mluvka titles and Crimson Text descriptions", () => {
   assert.match(blogCss, /@font-face\s*{[^}]*font-family:\s*"Mluvka"/s);
   assert.match(blogCss, /Mluvka-Regular-web\.woff2/);
-  assert.match(blogCss, /--lavender:/);
+  assert.match(
+    blogIndex,
+    /fonts\.googleapis\.com\/css2\?family=Crimson\+Text:wght@400;600&amp;display=swap/
+  );
+  assert.match(blogCss, /--title-font:\s*"Mluvka"/);
+  assert.match(blogCss, /--text-font:\s*"Crimson Text"/);
+  assert.match(
+    blogCss,
+    /\.index-title\s*{[^}]*font-family:\s*var\(--title-font\)/s
+  );
+  assert.match(
+    blogCss,
+    /\.post-title\s*{[^}]*font-family:\s*var\(--title-font\)/s
+  );
+  assert.match(
+    blogCss,
+    /\.post-description\s*{[^}]*font-family:\s*var\(--text-font\)/s
+  );
   assert.match(blogCss, /:focus-visible/);
-  assert.match(blogCss, /@media \(max-width:\s*720px\)/);
-  assert.match(blogCss, /prefers-reduced-motion/);
+  assert.match(blogCss, /@media \(max-width:\s*680px\)/);
 });
 
-test("blog goes directly to the only article and drops both archive experiments", () => {
-  assert.match(blogIndex, /<article\b/);
-  assert.match(blogIndex, /<h1>Why Robot Brains Will Live in the Cloud<\/h1>/);
-  assert.match(blogIndex, /href="\.\/blog\.css"/);
-  assert.ok(!existsSync("blog/gallery/index.html"));
-  assert.ok(!existsSync("blog/why-robot-brains-will-live-in-the-cloud/index.html"));
-  assert.doesNotMatch(blogCss, /\.research-card\b/);
-  assert.doesNotMatch(blogCss, /\.field-shell\b/);
-});
-
-test("canonical article is semantic and includes the draft's core research sections", () => {
+test("canonical article route preserves the complete research essay", () => {
+  assert.ok(existsSync(articlePath));
+  assert.ok(existsSync(articleCssPath));
   assert.ok(existsSync("assets/blog/cloud-inference-architecture.png"));
-  assert.match(blogIndex, /<article\b/);
-  assert.match(blogIndex, /<h1>Why Robot Brains Will Live in the Cloud<\/h1>/);
-  assert.match(blogIndex, /The case for off-board robotics inference/);
-  assert.match(blogIndex, /Scaling Laws are Here to Stay/);
-  assert.match(blogIndex, /The State of On-board Compute/);
-  assert.match(blogIndex, /Impacts on Robot Cost, Hardware, Access, and Beyond/);
-  assert.match(blogIndex, /Critiques on Off-board Inference/);
-  assert.match(blogIndex, /cloud-inference-architecture\.png/);
-  assert.match(blogIndex, /<table>/);
-  assert.match(blogIndex, /contact@dreamscalelabs\.com/);
-  assert.match(blogIndex, /href="\.\/blog\.css"/);
+  assert.match(articleHtml, /<article class="article">/);
+  assert.match(articleHtml, /<h1>Why Robot Brains Will Live in the Cloud<\/h1>/);
+  assert.match(articleHtml, /The case for off-board robotics inference/);
+  assert.match(articleHtml, /Essay 001/);
+  assert.match(articleHtml, /18 min read/);
+  assert.match(articleHtml, /Scaling Laws are Here to Stay/);
+  assert.match(articleHtml, /The State of On-board Compute/);
+  assert.match(
+    articleHtml,
+    /Impacts on Robot Cost, Hardware, Access, and Beyond/
+  );
+  assert.match(articleHtml, /Critiques on Off-board Inference/);
+  assert.match(articleHtml, /cloud-inference-architecture\.png/);
+  assert.match(articleHtml, /<table>/);
+  assert.match(articleHtml, /contact@dreamscalelabs\.com/);
+  assert.match(articleHtml, /src="\/assets\/logo\/dsl-mark\.png"/);
+  assert.match(
+    articleHtml,
+    /href="\/blog\/why-robot-brains-will-live-in-the-cloud\/article\.css"/
+  );
+  assert.equal([...articleHtml.matchAll(/<p(?:\s|>)/g)].length, 60);
+  assert.equal([...articleHtml.matchAll(/<h2>/g)].length, 6);
+  assert.equal([...articleHtml.matchAll(/<h3>/g)].length, 6);
 });
 
-test("every prototype asset and navigation path resolves when HTML is opened with file://", () => {
+test("article titles use Mluvka and reading text uses Crimson Text", () => {
+  assert.match(
+    articleHtml,
+    /fonts\.googleapis\.com\/css2\?family=Crimson\+Text:wght@400;600&amp;display=swap/
+  );
+  assert.match(articleCss, /@font-face\s*{[^}]*font-family:\s*"Mluvka"/s);
+  assert.match(articleCss, /--title-font:\s*"Mluvka"/);
+  assert.match(articleCss, /--text-font:\s*"Crimson Text"/);
+  assert.match(
+    articleCss,
+    /\.article-title-block h1\s*{[^}]*font-family:\s*var\(--title-font\)/s
+  );
+  assert.match(
+    articleCss,
+    /\.article\s*{[^}]*font-family:\s*var\(--text-font\)/s
+  );
+  assert.match(articleCss, /\.table-wrap\s*{[^}]*overflow-x:\s*auto/s);
+  assert.match(articleCss, /:focus-visible/);
+  assert.match(articleCss, /@media \(max-width:\s*680px\)/);
+});
+
+test("blog routes use root-relative local references that exist", () => {
   const pages = new Map([
     ["blog/index.html", blogIndex],
+    [articlePath, articleHtml],
   ]);
 
   for (const [pagePath, pageHtml] of pages) {
-    const pageUrl = pathToFileURL(resolve(pagePath));
     const refs = [...pageHtml.matchAll(/(?:href|src)="([^"]+)"/g)]
       .map((match) => match[1])
       .filter((ref) => !/^(?:https?:|mailto:|#)/.test(ref));
 
     for (const ref of refs) {
-      assert.doesNotMatch(ref, /^\//, `${pagePath} uses root-relative reference ${ref}`);
-      const target = fileURLToPath(new URL(ref, pageUrl));
-      assert.ok(existsSync(target), `${pagePath} resolves ${ref} to missing ${target}`);
+      assert.match(ref, /^\//, `${pagePath} must use a root-relative reference`);
+      const targetPath = ref.endsWith("/")
+        ? `${ref.slice(1)}index.html`
+        : ref.slice(1);
+      assert.ok(
+        existsSync(targetPath),
+        `${pagePath} resolves ${ref} to missing ${targetPath}`
+      );
     }
   }
 
-  const cssUrl = pathToFileURL(resolve("blog/blog.css"));
-  const fontRef = blogCss.match(/url\("([^"]+Mluvka-Regular-web\.woff2)"\)/)?.[1];
-  assert.ok(fontRef, "blog CSS declares the local Mluvka font");
-  assert.doesNotMatch(fontRef, /^\//, "blog CSS font reference is root-relative");
-  assert.ok(existsSync(fileURLToPath(new URL(fontRef, cssUrl))));
+  for (const [cssPath, cssSource] of [
+    ["blog/blog.css", blogCss],
+    [articleCssPath, articleCss],
+  ]) {
+    const fontRef = cssSource.match(
+      /url\("([^"]+Mluvka-Regular-web\.woff2)"\)/
+    )?.[1];
+    assert.equal(fontRef, "/assets/fonts/Mluvka-Regular-web.woff2");
+    assert.ok(existsSync(fontRef.slice(1)), `${cssPath} resolves ${fontRef}`);
+  }
 });
