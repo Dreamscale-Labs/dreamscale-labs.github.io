@@ -70,7 +70,7 @@ test("landing page uses monochrome branding and responsive safeguards", () => {
   assert.match(css, /--paper:\s*#ffffff/);
   assert.match(css, /body\s*{[^}]*background:\s*var\(--paper\)/s);
   assert.match(css, /\.site-header\s*{[^}]*justify-content:\s*space-between/s);
-  assert.match(css, /\.site-logo\s*{[^}]*width:\s*clamp\(4\.25rem,\s*5\.25vw,\s*5\.5rem\)/s);
+  assert.match(css, /\.site-logo\s*{[^}]*width:\s*clamp\(4\.25rem,\s*7vw,\s*5\.5rem\)/s);
   assert.match(css, /\.site-logo img\s*{[^}]*height:\s*auto/s);
   assert.match(css, /\.site-logo img\s*{[^}]*transform:\s*scaleY\(0\.8\)/s);
   assert.match(css, /\.site-logo img\s*{[^}]*transform-origin:\s*top left/s);
@@ -79,9 +79,24 @@ test("landing page uses monochrome branding and responsive safeguards", () => {
   assert.match(css, /min-height:\s*100svh/);
   assert.match(css, /clamp\(/);
   assert.match(css, /overflow-wrap:\s*balance|text-wrap:\s*balance/);
-  assert.match(css, /@media \(max-width:\s*640px\)[\s\S]*\.wordmark\s*{[\s\S]*width:\s*min\(88vw,\s*24rem\)/);
-  assert.match(css, /@media \(max-width:\s*640px\)[\s\S]*\.tagline\s*{[\s\S]*left:\s*50%/);
-  assert.match(css, /@media \(max-width:\s*640px\)[\s\S]*\.tagline\s*{[\s\S]*transform:\s*translateX\(-50%\)/);
+  assert.match(css, /@media \(max-width:\s*480px\)[\s\S]*\.wordmark\s*{[\s\S]*width:\s*min\(117\.333333vw,\s*24rem\)/);
+  assert.match(css, /@media \(max-width:\s*480px\)[\s\S]*\.tagline\s*{[\s\S]*left:\s*50%/);
+  assert.match(css, /@media \(max-width:\s*480px\)[\s\S]*\.tagline\s*{[\s\S]*transform:\s*translateX\(-50%\)/);
+});
+
+test("landing page reproduces 75 percent browser zoom", () => {
+  assert.match(css, /body\s*{[^}]*zoom:\s*0\.75/s);
+  assert.match(css, /\.landing\s*{[^}]*min-height:\s*133\.333333svh/s);
+  assert.match(css, /\.wordmark\s*{[^}]*width:\s*min\(104vw,\s*64rem\)/s);
+  assert.match(css, /@media \(max-width:\s*480px\)/);
+  assert.doesNotMatch(css, /@media \(max-width:\s*640px\)/);
+});
+
+test("blog reproduces 75 percent browser zoom", () => {
+  assert.match(blogCss, /body\s*{[^}]*zoom:\s*0\.75/s);
+  assert.match(blogCss, /@media \(max-width:\s*720px\)/);
+  assert.match(blogCss, /@media \(max-width:\s*540px\)/);
+  assert.doesNotMatch(blogCss, /@media \(max-width:\s*960px\)/);
 });
 
 test("blog uses a shared responsive visual system", () => {

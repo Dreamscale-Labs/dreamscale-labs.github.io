@@ -31,6 +31,7 @@ body {
   min-height: 100svh;
   margin: 0;
   background: var(--paper);
+  zoom: 0.75;
 }
 
 a {
@@ -58,7 +59,7 @@ a {
   align-items: flex-start;
   justify-content: space-between;
   width: 100%;
-  padding: clamp(1.25rem, 2.8vw, 2.5rem);
+  padding: clamp(1.25rem, 3.733333vw, 2.5rem);
   pointer-events: none;
 }
 
@@ -69,7 +70,7 @@ a {
 
 .site-logo {
   display: block;
-  width: clamp(4.25rem, 5.25vw, 5.5rem);
+  width: clamp(4.25rem, 7vw, 5.5rem);
   color: inherit;
 }
 
@@ -87,7 +88,7 @@ a {
   min-height: 2rem;
   color: var(--soft-ink);
   font-family: "Mluvka", ui-sans-serif, system-ui, sans-serif;
-  font-size: clamp(0.875rem, 0.7rem + 0.35vw, 1rem);
+  font-size: clamp(0.875rem, 0.7rem + 0.466667vw, 1rem);
   font-weight: 400;
   letter-spacing: 0;
   text-decoration: none;
@@ -103,8 +104,11 @@ a {
 
 .landing {
   position: relative;
-  min-height: 100svh;
-  padding: clamp(4rem, 9vw, 7rem) clamp(1.25rem, 4vw, 4rem) clamp(2rem, 4.5vw, 3.5rem);
+  min-height: 133.333333svh;
+  padding:
+    clamp(4rem, 12vw, 7rem)
+    clamp(1.25rem, 5.333333vw, 4rem)
+    clamp(2rem, 6vw, 3.5rem);
 }
 
 .wordmark {
@@ -115,7 +119,7 @@ a {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: min(78vw, 64rem);
+  width: min(104vw, 64rem);
   margin: 0;
   color: var(--ink);
   text-align: center;
@@ -130,14 +134,14 @@ a {
 
 .tagline {
   position: absolute;
-  right: clamp(1.25rem, 4vw, 4rem);
-  bottom: clamp(2rem, 4.5vw, 3.5rem);
-  left: clamp(1.25rem, 4vw, 4rem);
+  right: clamp(1.25rem, 5.333333vw, 4rem);
+  bottom: clamp(2rem, 6vw, 3.5rem);
+  left: clamp(1.25rem, 5.333333vw, 4rem);
   width: min(100%, 64rem);
   margin: 0 auto;
   color: var(--muted);
   font-family: "Mluvka", ui-sans-serif, system-ui, sans-serif;
-  font-size: clamp(1rem, 0.83rem + 0.52vw, 1.35rem);
+  font-size: clamp(1rem, 0.83rem + 0.693333vw, 1.35rem);
   font-weight: 400;
   letter-spacing: 0;
   line-height: 1.45;
@@ -145,20 +149,20 @@ a {
   text-wrap: balance;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 480px) {
   .landing {
     padding-top: 4.5rem;
   }
 
   .wordmark {
     top: 44%;
-    width: min(88vw, 24rem);
+    width: min(117.333333vw, 24rem);
   }
 
   .tagline {
     right: auto;
     left: 50%;
-    width: min(calc(100vw - 2rem), 22rem);
+    width: min(calc(133.333333vw - 2rem), 22rem);
     max-width: none;
     transform: translateX(-50%);
     line-height: 1.5;
