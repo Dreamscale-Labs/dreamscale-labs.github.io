@@ -28,6 +28,31 @@ const articleCss = existsSync(articleCssPath)
   ? readFileSync(articleCssPath, "utf8")
   : "";
 
+function readPngMetadata(path) {
+  const png = readFileSync(path);
+  const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+  assert.deepEqual(png.subarray(0, 8), signature, `${path} must be a PNG`);
+  return {
+    width: png.readUInt32BE(16),
+    height: png.readUInt32BE(20),
+    colorType: png[25],
+  };
+}
+
+function readIcoSizes(path) {
+  const ico = readFileSync(path);
+  assert.equal(ico.readUInt16LE(0), 0, `${path} has an invalid reserved field`);
+  assert.equal(ico.readUInt16LE(2), 1, `${path} must contain icons`);
+  const count = ico.readUInt16LE(4);
+  return Array.from({ length: count }, (_, index) => {
+    const offset = 6 + index * 16;
+    return {
+      width: ico[offset] || 256,
+      height: ico[offset + 1] || 256,
+    };
+  });
+}
+
 test("landing page contains the required Dreamscale copy and links directly to the blog", () => {
   assert.ok(existsSync("assets/logo/dsl-mark.png"));
   assert.match(html, /<a class="site-logo" href="\/" aria-label="Dreamscale Labs home">/);
@@ -40,6 +65,33 @@ test("landing page contains the required Dreamscale copy and links directly to t
     /DSL is an applied research company working towards a future of truly general robots\./
   );
   assert.match(html, /<a class="nav-link" href="\/blog\/">Blog<\/a>/);
+});
+
+test("favicon raster assets cover modern platform sizes", () => {
+  const pngSizes = new Map([
+    ["favicon-16x16.png", 16],
+    ["favicon-32x32.png", 32],
+    ["apple-touch-icon.png", 180],
+    ["android-chrome-192x192.png", 192],
+    ["android-chrome-512x512.png", 512],
+    ["android-chrome-maskable-512x512.png", 512],
+  ]);
+
+  for (const [path, size] of pngSizes) {
+    assert.ok(existsSync(path), `${path} must exist`);
+    assert.deepEqual(readPngMetadata(path), {
+      width: size,
+      height: size,
+      colorType: 2,
+    });
+  }
+
+  assert.ok(existsSync("favicon.ico"), "favicon.ico must exist");
+  assert.deepEqual(readIcoSizes("favicon.ico"), [
+    { width: 16, height: 16 },
+    { width: 32, height: 32 },
+    { width: 48, height: 48 },
+  ]);
 });
 
 test("landing page uses one optimized self-contained SVG wordmark", () => {
