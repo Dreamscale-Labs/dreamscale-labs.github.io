@@ -228,21 +228,6 @@ img {
   border: 1px solid var(--line);
 }
 
-figcaption {
-  display: grid;
-  grid-template-columns: 4rem minmax(0, 1fr);
-  gap: 1rem;
-  margin-top: 0.9rem;
-  color: var(--muted);
-  font-family: var(--sans);
-  font-size: 0.76rem;
-  line-height: 1.45;
-}
-
-.figure-fullsize {
-  white-space: nowrap;
-}
-
 .table-wrap {
   overflow-x: auto;
   margin: 2.25rem 0 2.75rem;
@@ -275,21 +260,6 @@ figcaption {
 
 .article tbody tr:last-child td {
   border-bottom: 0;
-}
-
-.end-note {
-  margin-top: 5rem;
-  padding: 2rem;
-  background: linear-gradient(135deg, rgba(155, 141, 244, 0.16), rgba(248, 249, 255, 0.7));
-  border: 1px solid var(--line);
-  font-family: var(--sans);
-  font-size: 0.9rem;
-  line-height: 1.55;
-}
-
-.end-note address {
-  display: inline;
-  font-style: normal;
 }
 
 .blog-footer {
@@ -364,10 +334,6 @@ figcaption {
   .figure-frame--diagram img {
     width: 52rem;
     max-width: none;
-  }
-
-  figcaption {
-    grid-template-columns: 3rem minmax(0, 1fr);
   }
 
   .blog-footer {
