@@ -18,7 +18,7 @@ Each page will use a 4/3-size logical canvas rendered at 75%. This reproduces th
 
 - The scaled canvas fills the physical viewport.
 - Fixed edge spacing and typography shrink with the rest of the interface.
-- The landing breakpoint moves from 640 CSS pixels to 480 physical pixels, and the blog breakpoint moves from 720 CSS pixels to 540 physical pixels, preserving their activation points under the 75% scale.
+- The landing breakpoint moves from 640 CSS pixels to 480 physical pixels. The blog breakpoints move from 960 and 720 CSS pixels to 720 and 540 physical pixels. This preserves their activation points under the 75% scale.
 - Scrolling continues to use the full content height without clipped or unreachable content.
 
 ## Wordmark
