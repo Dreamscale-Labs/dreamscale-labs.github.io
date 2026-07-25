@@ -152,7 +152,7 @@ a {
   margin: 0.55rem 0 0;
   color: var(--muted);
   font-family: var(--text-font);
-  font-size: clamp(1.12rem, 2.666667vw, 1.35rem);
+  font-size: clamp(1.2rem, 2.8vw, 1.45rem);
   line-height: 1.35;
 }
 

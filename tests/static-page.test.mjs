@@ -123,7 +123,9 @@ test("landing page reproduces 75 percent browser zoom", () => {
 });
 
 test("blog index matches the Dreamscale identity and lists the canonical essay", () => {
-  assert.match(blogIndex, /<h1 class="index-title">Research<\/h1>/);
+  assert.match(blogIndex, /<h1 class="index-title">Blog<\/h1>/);
+  assert.match(blogIndex, /<title>Blog — Dreamscale Labs<\/title>/);
+  assert.match(blogIndex, /aria-label="Blog posts"/);
   assert.doesNotMatch(blogIndex, /<article class="article">/);
   assert.match(
     blogIndex,
@@ -155,6 +157,10 @@ test("blog index uses Mluvka titles and Crimson Text descriptions at the shared 
   assert.match(
     blogCss,
     /\.post-description\s*{[^}]*font-family:\s*var\(--text-font\)/s
+  );
+  assert.match(
+    blogCss,
+    /\.post-description\s*{[^}]*font-size:\s*clamp\(1\.2rem,\s*2\.8vw,\s*1\.45rem\)/s
   );
   assert.match(blogCss, /body\s*{[^}]*zoom:\s*0\.75/s);
   assert.match(blogCss, /@media \(max-width:\s*510px\)/);
@@ -208,6 +214,10 @@ test("article titles use Mluvka and reading text uses Crimson Text at the shared
   assert.match(
     articleCss,
     /\.article\s*{[^}]*font-family:\s*var\(--text-font\)/s
+  );
+  assert.match(
+    articleCss,
+    /\.article\s*{[^}]*font-size:\s*clamp\(1\.25rem,\s*2\.266667vw,\s*1\.4rem\)/s
   );
   assert.match(articleCss, /\.table-wrap\s*{[^}]*overflow-x:\s*auto/s);
   assert.match(articleCss, /body\s*{[^}]*zoom:\s*0\.75/s);
