@@ -5,7 +5,11 @@ import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const html = existsSync("index.html") ? readFileSync("index.html", "utf8") : "";
-const css = existsSync("styles.css") ? readFileSync("styles.css", "utf8") : "";
+const versionedLandingCssPath = "styles-75.css";
+const versionedBlogCssPath = "blog/blog-75.css";
+const css = existsSync(versionedLandingCssPath)
+  ? readFileSync(versionedLandingCssPath, "utf8")
+  : "";
 const wordmarkPath = "assets/logo/dreamscale-labs.svg";
 const wordmarkSvg = existsSync(wordmarkPath)
   ? readFileSync(wordmarkPath, "utf8")
@@ -13,8 +17,8 @@ const wordmarkSvg = existsSync(wordmarkPath)
 const blogIndex = existsSync("blog/index.html")
   ? readFileSync("blog/index.html", "utf8")
   : "";
-const blogCss = existsSync("blog/blog.css")
-  ? readFileSync("blog/blog.css", "utf8")
+const blogCss = existsSync(versionedBlogCssPath)
+  ? readFileSync(versionedBlogCssPath, "utf8")
   : "";
 
 test("landing page contains the required Dreamscale copy and links directly to the blog", () => {
@@ -23,7 +27,7 @@ test("landing page contains the required Dreamscale copy and links directly to t
   assert.match(html, /src="\/assets\/logo\/dsl-mark\.png"/);
   assert.match(html, /width="1302"/);
   assert.match(html, /height="960"/);
-  assert.match(html, /<span class="visually-hidden">Dreamscale Labs<\/span>/);
+  assert.match(html, /aria-label="Dreamscale Labs"/);
   assert.match(
     html,
     /DSL is an applied research company working towards a future of truly general robots\./
@@ -41,7 +45,7 @@ test("landing page uses one optimized self-contained SVG wordmark", () => {
     [...html.matchAll(/src="\/assets\/logo\/dreamscale-labs\.svg"/g)].length,
     1
   );
-  assert.match(html, /<span class="visually-hidden">Dreamscale Labs<\/span>/);
+  assert.match(html, /aria-label="Dreamscale Labs"/);
   assert.match(html, /class="wordmark-image"/);
   assert.match(html, /aria-hidden="true"/);
   assert.match(wordmarkSvg, /<svg\b/);
@@ -57,6 +61,18 @@ test("landing page uses one optimized self-contained SVG wordmark", () => {
   );
   assert.doesNotMatch(html, /Nabla-Regular-VariableFont/);
   assert.doesNotMatch(css, /font-family:\s*"Nabla"|@font-palette-values/);
+});
+
+test("pages force fresh scaled CSS and expose no visible fallback wordmark", () => {
+  assert.ok(existsSync(versionedLandingCssPath));
+  assert.ok(existsSync(versionedBlogCssPath));
+  assert.match(html, /<link rel="stylesheet" href="\/styles-75\.css">/);
+  assert.match(blogIndex, /<link rel="stylesheet" href="\.\/blog-75\.css">/);
+  assert.match(
+    html,
+    /<h1 class="wordmark" id="wordmark" aria-label="Dreamscale Labs">\s*<img/
+  );
+  assert.doesNotMatch(html, /visually-hidden|>Dreamscale Labs<\/span>/);
 });
 
 test("landing page uses the local Mluvka body font", () => {
@@ -100,7 +116,7 @@ test("blog reproduces 75 percent browser zoom", () => {
 });
 
 test("blog uses a shared responsive visual system", () => {
-  assert.ok(existsSync("blog/blog.css"));
+  assert.ok(existsSync(versionedBlogCssPath));
   assert.match(blogCss, /@font-face\s*{[^}]*font-family:\s*"Mluvka"/s);
   assert.match(blogCss, /Mluvka-Regular-web\.woff2/);
   assert.match(blogCss, /--lavender:/);
@@ -112,7 +128,7 @@ test("blog uses a shared responsive visual system", () => {
 test("blog goes directly to the only article and drops both archive experiments", () => {
   assert.match(blogIndex, /<article\b/);
   assert.match(blogIndex, /<h1>Why Robot Brains Will Live in the Cloud<\/h1>/);
-  assert.match(blogIndex, /href="\.\/blog\.css"/);
+  assert.match(blogIndex, /href="\.\/blog-75\.css"/);
   assert.ok(!existsSync("blog/gallery/index.html"));
   assert.ok(!existsSync("blog/why-robot-brains-will-live-in-the-cloud/index.html"));
   assert.doesNotMatch(blogCss, /\.research-card\b/);
@@ -131,7 +147,7 @@ test("canonical article is semantic and includes the draft's core research secti
   assert.match(blogIndex, /cloud-inference-architecture\.png/);
   assert.match(blogIndex, /<table>/);
   assert.match(blogIndex, /contact@dreamscalelabs\.com/);
-  assert.match(blogIndex, /href="\.\/blog\.css"/);
+  assert.match(blogIndex, /href="\.\/blog-75\.css"/);
 });
 
 test("every prototype asset and navigation path resolves when HTML is opened with file://", () => {
@@ -152,7 +168,7 @@ test("every prototype asset and navigation path resolves when HTML is opened wit
     }
   }
 
-  const cssUrl = pathToFileURL(resolve("blog/blog.css"));
+  const cssUrl = pathToFileURL(resolve(versionedBlogCssPath));
   const fontRef = blogCss.match(/url\("([^"]+Mluvka-Regular-web\.woff2)"\)/)?.[1];
   assert.ok(fontRef, "blog CSS declares the local Mluvka font");
   assert.doesNotMatch(fontRef, /^\//, "blog CSS font reference is root-relative");
