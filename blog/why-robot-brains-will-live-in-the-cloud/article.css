@@ -116,20 +116,6 @@ img {
   text-align: center;
 }
 
-.article-meta {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem 1.5rem;
-  margin-bottom: 2rem;
-  color: var(--muted);
-  font-family: var(--title-font);
-  font-size: 0.78rem;
-  letter-spacing: 0.06em;
-  line-height: 1.45;
-  text-transform: uppercase;
-}
-
 .article-title-block h1 {
   max-width: 14ch;
   margin: 0 auto;

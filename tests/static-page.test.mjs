@@ -168,8 +168,8 @@ test("canonical article route preserves the complete research essay and latest a
   assert.match(articleHtml, /<article class="article">/);
   assert.match(articleHtml, /<h1>Why Robot Brains Will Live in the Cloud<\/h1>/);
   assert.match(articleHtml, /The case for off-board robotics inference/);
-  assert.match(articleHtml, /Essay 001/);
-  assert.match(articleHtml, /18 min read/);
+  assert.doesNotMatch(articleHtml, /Essay 001|18 min read/);
+  assert.doesNotMatch(articleHtml, /<div class="article-meta">/);
   assert.match(articleHtml, /Scaling Laws are Here to Stay/);
   assert.match(articleHtml, /The State of On-board Compute/);
   assert.match(
