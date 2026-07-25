@@ -97,15 +97,19 @@ a {
     clamp(2rem, 6vw, 3.5rem);
 }
 
-.wordmark {
+.hero-lockup {
   position: absolute;
   top: 45.5%;
   left: 50%;
   transform: translate(-50%, -50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: grid;
+  justify-items: center;
+  gap: clamp(0.875rem, 2vw, 1.25rem);
   width: min(104vw, 64rem);
+}
+
+.wordmark {
+  width: 100%;
   margin: 0;
   color: var(--ink);
   text-align: center;
@@ -116,6 +120,49 @@ a {
   width: 100%;
   height: auto;
   user-select: none;
+}
+
+.dropbear-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  min-height: 3rem;
+  max-width: calc(100vw - 2rem);
+  padding: 0.55rem 1.05rem 0.55rem 0.65rem;
+  border: 1px solid #d6d5d5;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #27292f;
+  font-family: "Mluvka", ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(1rem, 0.92rem + 0.266667vw, 1.125rem);
+  font-weight: 400;
+  line-height: 1.2;
+  text-align: left;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dropbear-cta:hover {
+  transform: translateY(-0.125rem);
+  border-color: #989898;
+  background: #fdfad9;
+}
+
+.dropbear-cta:focus-visible {
+  outline: 2px solid #212121;
+  outline-offset: 4px;
+}
+
+.dropbear-cta-logo {
+  display: block;
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
 }
 
 .tagline {
@@ -140,9 +187,26 @@ a {
     padding-top: 4.5rem;
   }
 
-  .wordmark {
+  .hero-lockup {
     top: 44%;
+    width: min(calc(133.333333vw - 2rem), 30rem);
+  }
+
+  .wordmark {
     width: min(117.333333vw, 24rem);
+  }
+
+  .dropbear-cta {
+    gap: 0.6rem;
+    max-width: 100%;
+    padding-right: 0.9rem;
+    font-size: 0.95rem;
+    white-space: normal;
+  }
+
+  .dropbear-cta span {
+    min-width: 0;
+    text-wrap: balance;
   }
 
   .tagline {
@@ -153,5 +217,11 @@ a {
     transform: translateX(-50%);
     line-height: 1.5;
     overflow-wrap: balance;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dropbear-cta {
+    transition: none;
   }
 }
