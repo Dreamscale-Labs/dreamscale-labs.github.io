@@ -228,6 +228,21 @@ img {
   border: 1px solid var(--line);
 }
 
+figcaption {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr);
+  gap: 1rem;
+  margin-top: 0.9rem;
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.figure-fullsize {
+  white-space: nowrap;
+}
+
 .table-wrap {
   overflow-x: auto;
   margin: 2.25rem 0 2.75rem;
@@ -260,6 +275,25 @@ img {
 
 .article tbody tr:last-child td {
   border-bottom: 0;
+}
+
+.end-note {
+  margin: 4rem 0 5rem;
+  padding: clamp(1.5rem, 4vw, 2rem);
+  background: linear-gradient(135deg, rgba(155, 141, 244, 0.16), rgba(248, 249, 255, 0.72));
+  border: 1px solid var(--line);
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.end-note p {
+  margin: 0;
+}
+
+.end-note a {
+  color: var(--ink-strong);
+  font-weight: 600;
 }
 
 .blog-footer {
@@ -334,6 +368,10 @@ img {
   .figure-frame--diagram img {
     width: 52rem;
     max-width: none;
+  }
+
+  figcaption {
+    grid-template-columns: 3rem minmax(0, 1fr);
   }
 
   .blog-footer {
