@@ -54,11 +54,11 @@ function readIcoSizes(path) {
 }
 
 test("landing page contains the required Dreamscale copy and links directly to the blog", () => {
-  assert.ok(existsSync("assets/logo/dsl-mark.png"));
+  assert.ok(existsSync("android-chrome-512x512.png"));
   assert.match(html, /<a class="site-logo" href="\/" aria-label="Dreamscale Labs home">/);
-  assert.match(html, /src="\/assets\/logo\/dsl-mark\.png"/);
-  assert.match(html, /width="1302"/);
-  assert.match(html, /height="960"/);
+  assert.match(html, /src="\/android-chrome-512x512\.png"/);
+  assert.match(html, /width="512"/);
+  assert.match(html, /height="512"/);
   assert.match(html, /aria-label="Dreamscale Labs"/);
   assert.match(
     html,
@@ -152,6 +152,32 @@ test("every public page declares the complete favicon metadata set", () => {
   }
 });
 
+test("site headers use the undistorted standard favicon", () => {
+  const pages = new Map([
+    ["index.html", html],
+    ["blog/index.html", blogIndex],
+    [articlePath, articleHtml],
+  ]);
+
+  for (const [path, source] of pages) {
+    assert.match(source, /src="\/android-chrome-512x512\.png"/);
+    assert.match(source, /width="512"\s+height="512"/);
+    assert.doesNotMatch(source, /src="\/assets\/logo\/dsl-mark\.png"/);
+  }
+
+  for (const [path, source] of [
+    [landingCssPath, css],
+    [blogCssPath, blogCss],
+    [articleCssPath, articleCss],
+  ]) {
+    assert.doesNotMatch(
+      source,
+      /\.site-logo img\s*{[^}]*\btransform(?:-origin)?:/s,
+      `${path} must not distort the header favicon`
+    );
+  }
+});
+
 test("landing page uses one optimized self-contained SVG wordmark", () => {
   assert.ok(existsSync(wordmarkPath));
   assert.match(
@@ -211,8 +237,6 @@ test("landing page uses monochrome branding and responsive safeguards", () => {
     /\.site-logo\s*{[^}]*width:\s*clamp\(4\.25rem,\s*7vw,\s*5\.5rem\)/s
   );
   assert.match(css, /\.site-logo img\s*{[^}]*height:\s*auto/s);
-  assert.match(css, /\.site-logo img\s*{[^}]*transform:\s*scaleY\(0\.8\)/s);
-  assert.match(css, /\.site-logo img\s*{[^}]*transform-origin:\s*top left/s);
   assert.match(css, /\.wordmark-image\s*{[^}]*width:\s*100%/s);
   assert.match(css, /\.wordmark-image\s*{[^}]*height:\s*auto/s);
   assert.match(css, /min-height:\s*100svh/);
@@ -244,7 +268,7 @@ test("blog index matches the Dreamscale identity and lists the canonical essay",
   assert.match(blogIndex, /<time datetime="2026-07-24">July 24, 2026<\/time>/);
   assert.match(blogIndex, /Why Robot Brains Will Live in the Cloud/);
   assert.match(blogIndex, /The case for off-board robotics inference/);
-  assert.match(blogIndex, /src="\/assets\/logo\/dsl-mark\.png"/);
+  assert.match(blogIndex, /src="\/android-chrome-512x512\.png"/);
 });
 
 test("blog index uses Mluvka titles and Crimson Text descriptions at the shared scale", () => {
@@ -299,7 +323,7 @@ test("canonical article route preserves the complete research essay and latest a
   assert.equal([...articleHtml.matchAll(/<figcaption>/g)].length, 2);
   assert.match(articleHtml, /class="end-note"/);
   assert.match(articleHtml, /mailto:contact@dreamscalelabs\.com/);
-  assert.match(articleHtml, /src="\/assets\/logo\/dsl-mark\.png"/);
+  assert.match(articleHtml, /src="\/android-chrome-512x512\.png"/);
   assert.match(
     articleHtml,
     /href="\/blog\/why-robot-brains-will-live-in-the-cloud\/article\.css"/

@@ -83,8 +83,6 @@ img {
   display: block;
   width: 100%;
   height: auto;
-  transform: scaleY(0.8);
-  transform-origin: top left;
 }
 
 .nav-link {
