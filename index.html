@@ -10,10 +10,10 @@
     <title>Dreamscale Labs</title>
     <link
       rel="preload"
-      href="/assets/fonts/Nabla-Regular-VariableFont_EDPT,EHLT.ttf"
-      as="font"
-      type="font/ttf"
-      crossorigin
+      href="/assets/logo/dreamscale-labs.svg"
+      as="image"
+      type="image/svg+xml"
+      fetchpriority="high"
     >
     <link rel="preload" href="/assets/fonts/Mluvka-Regular-web.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/styles.css">
@@ -36,8 +36,17 @@
 
     <main class="landing" aria-labelledby="wordmark">
       <h1 class="wordmark" id="wordmark">
-        <span class="wordmark-line wordmark-line-primary">Dreamscale</span>
-        <span class="wordmark-line wordmark-line-secondary">Labs</span>
+        <span class="visually-hidden">Dreamscale Labs</span>
+        <img
+          class="wordmark-image"
+          src="/assets/logo/dreamscale-labs.svg"
+          alt=""
+          width="1024"
+          height="520"
+          fetchpriority="high"
+          decoding="async"
+          aria-hidden="true"
+        >
       </h1>
       <p class="tagline">DSL is an applied research company working towards a future of truly general robots.</p>
     </main>
