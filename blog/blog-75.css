@@ -1,3 +1,4 @@
+/* Versioned to prevent stale pre-scaling CSS from pairing with new HTML. */
 @font-face {
   font-family: "Mluvka";
   src: url("../assets/fonts/Mluvka-Regular-web.woff2") format("woff2");
