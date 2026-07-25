@@ -7,7 +7,7 @@
     <title>Why Robot Brains Will Live in the Cloud — Dreamscale Labs</title>
     <link rel="preload" href="../assets/fonts/Mluvka-Regular-web.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="../assets/blog/scaling-model-size.png" as="image">
-    <link rel="stylesheet" href="./blog.css">
+    <link rel="stylesheet" href="./blog-75.css">
   </head>
   <body>
     <header class="blog-header">
@@ -61,6 +61,10 @@
               <img src="../assets/blog/scaling-data.png" alt="Chart showing robot validation loss improving as the pretraining dataset grows">
             </div>
           </div>
+          <figcaption>
+            <span class="figure-number">Fig. 01</span>
+            <span>Increasing model size and pretraining data both improve performance. The curves point toward the same conclusion: capability will continue to demand more compute.</span>
+          </figcaption>
         </figure>
 
         <p>Beyond just data, they've also reported that robot performance increases with model size. Models smaller than 7 billion parameters <em>ossify</em> and are unable to learn beyond a certain point, while models in the tens of billions have shown more promise of generalizing. This need for larger model size is accelerated by the recent paradigm shift towards <em>world models</em>, leveraging future state prediction and spatiotemporal priors from video foundation models.</p>
@@ -174,6 +178,10 @@
           <div class="figure-frame figure-frame--diagram" tabindex="0" aria-label="Helix architecture diagram. Scroll horizontally to view details on smaller screens.">
             <img src="../assets/blog/cloud-inference-architecture.png" alt="Helix 02 architecture with a small local safety model, a sensor and motor model, and a large high-level reasoning model">
           </div>
+          <figcaption>
+            <span class="figure-number">Fig. 02</span>
+            <span>Helix 02 offers one useful shape for layered control: a tiny local model handles balance and coordination at 1 kHz while larger systems operate at progressively lower frequencies. <a class="figure-fullsize" href="../assets/blog/cloud-inference-architecture.png" target="_blank" rel="noopener">Open full size ↗</a></span>
+          </figcaption>
         </figure>
 
         <p>Helix 02 is just an example, but we think that this could serve as inspiration for a very real and optimal shape for robot control going forward: a hybrid system where body control and safety is handled by a lightweight fallback model/policy that feasibly sits on-device. The rest is put off-board to leverage the highest performance possible for dexterity, reasoning and conversation.</p>
@@ -206,7 +214,9 @@
 
         <p>However, we don’t believe there will be a “<em>sufficiently capable</em>” model for physical intelligence that fits comfortably on an onboard GPU for a long time. Just like how despite the existence of many efficient open-source models, the world still yearns for even higher levels of capability for AI (e.g. GPT 5.6 Sol, Claude Mythos) to perform even more meaningfully impactful and economically productive tasks. We are far from, if ever, a future in which truly generalist models are able to be contained in a single GPU.</p>
 
-        <p><em>If you have critiques or disagree with this, please reach out at contact@dreamscalelabs.com.</em></p>
+        <aside class="end-note" aria-label="Open questions and discussion">
+          <p><em>If you have critiques or disagree with this, please reach out at <a href="mailto:contact@dreamscalelabs.com">contact@dreamscalelabs.com</a>.</em></p>
+        </aside>
 
         <h2>Future</h2>
 

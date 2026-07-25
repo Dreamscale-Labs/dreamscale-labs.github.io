@@ -1,3 +1,4 @@
+/* Versioned to prevent stale pre-scaling CSS from pairing with new HTML. */
 @font-face {
   font-family: "Mluvka";
   src: url("../assets/fonts/Mluvka-Regular-web.woff2") format("woff2");
@@ -38,6 +39,7 @@ body {
   font-family: var(--sans);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  zoom: 0.75;
 }
 
 a {
@@ -97,7 +99,7 @@ img {
 .blog-nav {
   display: flex;
   align-items: center;
-  gap: clamp(1rem, 2.5vw, 2rem);
+  gap: clamp(1rem, 3.333333vw, 2rem);
   color: var(--muted);
   font-size: 0.82rem;
 }
@@ -121,7 +123,7 @@ img {
 .article-shell {
   width: min(calc(100% - 3rem), 74rem);
   margin: 0 auto;
-  padding: clamp(4.5rem, 9vw, 8rem) 0 8rem;
+  padding: clamp(4.5rem, 12vw, 8rem) 0 8rem;
 }
 
 .article-hero {
@@ -129,7 +131,7 @@ img {
   grid-template-columns: minmax(0, 1fr) minmax(0, 45rem) minmax(0, 1fr);
   gap: 0;
   align-items: start;
-  margin-bottom: clamp(4rem, 8vw, 7rem);
+  margin-bottom: clamp(4rem, 10.666667vw, 7rem);
 }
 
 .article-meta {
@@ -153,7 +155,7 @@ img {
   margin: 0;
   color: var(--ink-strong);
   font-family: var(--serif);
-  font-size: clamp(3.7rem, 8.4vw, 8.4rem);
+  font-size: clamp(3.7rem, 11.2vw, 8.4rem);
   font-weight: 400;
   letter-spacing: -0.06em;
   line-height: 0.88;
@@ -164,7 +166,7 @@ img {
   margin: 2.25rem 0 0;
   color: var(--muted);
   font-family: var(--serif);
-  font-size: clamp(1.35rem, 2.4vw, 2rem);
+  font-size: clamp(1.35rem, 3.2vw, 2rem);
   font-style: italic;
   line-height: 1.3;
 }
@@ -174,14 +176,14 @@ img {
   margin: 0 auto;
   color: #302b3c;
   font-family: var(--serif);
-  font-size: clamp(1.08rem, 1.2vw, 1.2rem);
+  font-size: clamp(1.08rem, 1.6vw, 1.2rem);
   line-height: 1.72;
 }
 
 .article h2 {
   margin: 5.5rem 0 1.5rem;
   color: var(--ink-strong);
-  font-size: clamp(2.2rem, 4vw, 3.8rem);
+  font-size: clamp(2.2rem, 5.333333vw, 3.8rem);
   font-weight: 400;
   letter-spacing: -0.045em;
   line-height: 1;
@@ -223,9 +225,24 @@ img {
 }
 
 .figure-frame {
-  padding: clamp(0.5rem, 1.5vw, 1.25rem);
+  padding: clamp(0.5rem, 2vw, 1.25rem);
   background: #fff;
   border: 1px solid var(--line);
+}
+
+figcaption {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr);
+  gap: 1rem;
+  margin-top: 0.9rem;
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.figure-fullsize {
+  white-space: nowrap;
 }
 
 .table-wrap {
@@ -262,6 +279,25 @@ img {
   border-bottom: 0;
 }
 
+.end-note {
+  margin: 4rem 0 5rem;
+  padding: clamp(1.5rem, 4vw, 2rem);
+  background: linear-gradient(135deg, rgba(155, 141, 244, 0.16), rgba(248, 249, 255, 0.72));
+  border: 1px solid var(--line);
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.end-note p {
+  margin: 0;
+}
+
+.end-note a {
+  color: var(--ink-strong);
+  font-weight: 600;
+}
+
 .blog-footer {
   display: flex;
   justify-content: space-between;
@@ -273,7 +309,7 @@ img {
   font-size: 0.76rem;
 }
 
-@media (max-width: 960px) {
+@media (max-width: 720px) {
   .article-hero {
     grid-template-columns: minmax(0, 45rem);
     justify-content: center;
@@ -287,12 +323,12 @@ img {
 
   .article-meta {
     grid-template-columns: repeat(3, max-content);
-    gap: 0.6rem clamp(1rem, 3vw, 2rem);
+    gap: 0.6rem clamp(1rem, 4vw, 2rem);
     padding-right: 0;
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 540px) {
   .blog-header,
   .article-shell,
   .blog-footer {
@@ -323,7 +359,7 @@ img {
   }
 
   .article-title-block h1 {
-    font-size: clamp(3.4rem, 17vw, 5.5rem);
+    font-size: clamp(3.4rem, 22.666667vw, 5.5rem);
   }
 
   .figure-frame--diagram {
@@ -334,6 +370,10 @@ img {
   .figure-frame--diagram img {
     width: 52rem;
     max-width: none;
+  }
+
+  figcaption {
+    grid-template-columns: 3rem minmax(0, 1fr);
   }
 
   .blog-footer {
