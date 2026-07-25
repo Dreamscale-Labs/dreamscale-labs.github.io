@@ -55,6 +55,7 @@ function readIcoSizes(path) {
 
 test("landing page contains the required Dreamscale copy and links directly to the blog", () => {
   assert.ok(existsSync("assets/logo/dsl-mark.png"));
+  assert.ok(existsSync("assets/logo/dropbear-logo.svg"));
   assert.match(html, /<a class="site-logo" href="\/" aria-label="Dreamscale Labs home">/);
   assert.match(html, /src="\/assets\/logo\/dsl-mark\.png"/);
   assert.match(html, /width="1302"/);
@@ -65,6 +66,17 @@ test("landing page contains the required Dreamscale copy and links directly to t
     /DSL is an applied research company working towards a future of truly general robots\./
   );
   assert.match(html, /<a class="nav-link" href="\/blog\/">Blog<\/a>/);
+  assert.match(
+    html,
+    /<a class="dropbear-cta" href="https:\/\/dropbear\.dreamscalelabs\.com">/
+  );
+  assert.match(html, /src="\/assets\/logo\/dropbear-logo\.svg"/);
+  assert.match(html, /width="1254"/);
+  assert.match(html, /height="1254"/);
+  assert.match(
+    html,
+    /Introducing Dropbear: fast cloud inference for robotics/
+  );
 });
 
 test("favicon raster assets cover modern platform sizes", () => {
@@ -213,21 +225,41 @@ test("landing page uses monochrome branding and responsive safeguards", () => {
   assert.match(css, /\.site-logo img\s*{[^}]*height:\s*auto/s);
   assert.match(css, /\.site-logo img\s*{[^}]*transform:\s*scaleY\(0\.8\)/s);
   assert.match(css, /\.site-logo img\s*{[^}]*transform-origin:\s*top left/s);
+  assert.match(css, /\.hero-lockup\s*{[^}]*display:\s*grid/s);
+  assert.match(css, /\.hero-lockup\s*{[^}]*justify-items:\s*center/s);
   assert.match(css, /\.wordmark-image\s*{[^}]*width:\s*100%/s);
   assert.match(css, /\.wordmark-image\s*{[^}]*height:\s*auto/s);
+  assert.match(css, /\.dropbear-cta\s*{[^}]*display:\s*inline-flex/s);
+  assert.match(css, /\.dropbear-cta\s*{[^}]*align-items:\s*center/s);
+  assert.match(css, /\.dropbear-cta\s*{[^}]*border-radius:\s*999px/s);
+  assert.match(css, /\.dropbear-cta-logo\s*{[^}]*width:\s*2rem/s);
+  assert.match(css, /\.dropbear-cta-logo\s*{[^}]*height:\s*2rem/s);
+  assert.match(css, /\.dropbear-cta:focus-visible\s*{/);
   assert.match(css, /min-height:\s*100svh/);
   assert.match(css, /clamp\(/);
   assert.match(css, /overflow-wrap:\s*balance|text-wrap:\s*balance/);
   assert.match(
     css,
-    /@media \(max-width:\s*480px\)[\s\S]*\.wordmark\s*{[\s\S]*width:\s*min\(117\.333333vw,\s*24rem\)/
+    /@media \(max-width:\s*480px\)[\s\S]*\.hero-lockup\s*{[\s\S]*width:\s*min\(calc\(133\.333333vw\s*-\s*2rem\),\s*30rem\)/
+  );
+  assert.match(
+    css,
+    /@media \(max-width:\s*480px\)[\s\S]*\.wordmark\s*{[^}]*width:\s*min\(117\.333333vw,\s*24rem\)/s
+  );
+  assert.match(
+    css,
+    /@media \(max-width:\s*480px\)[\s\S]*\.dropbear-cta\s*{[^}]*max-width:\s*100%/s
+  );
+  assert.match(
+    css,
+    /@media \(max-width:\s*480px\)[\s\S]*\.dropbear-cta\s*{[^}]*white-space:\s*normal/s
   );
 });
 
 test("landing page reproduces 75 percent browser zoom", () => {
   assert.match(css, /body\s*{[^}]*zoom:\s*0\.75/s);
   assert.match(css, /\.landing\s*{[^}]*min-height:\s*133\.333333svh/s);
-  assert.match(css, /\.wordmark\s*{[^}]*width:\s*min\(104vw,\s*64rem\)/s);
+  assert.match(css, /\.hero-lockup\s*{[^}]*width:\s*min\(104vw,\s*64rem\)/s);
   assert.match(css, /@media \(max-width:\s*480px\)/);
   assert.doesNotMatch(css, /@media \(max-width:\s*640px\)/);
 });
