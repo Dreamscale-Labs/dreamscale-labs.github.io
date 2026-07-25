@@ -94,6 +94,64 @@ test("favicon raster assets cover modern platform sizes", () => {
   ]);
 });
 
+test("every public page declares the complete favicon metadata set", () => {
+  const pages = new Map([
+    ["index.html", html],
+    ["blog/index.html", blogIndex],
+    [articlePath, articleHtml],
+  ]);
+  const requiredTags = [
+    '<link rel="icon" href="/favicon.ico" sizes="any">',
+    '<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">',
+    '<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">',
+    '<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">',
+    '<link rel="manifest" href="/site.webmanifest">',
+    '<meta name="theme-color" content="#ffffff">',
+  ];
+
+  for (const [path, source] of pages) {
+    for (const tag of requiredTags) {
+      assert.ok(source.includes(tag), `${path} must contain ${tag}`);
+    }
+  }
+
+  assert.ok(existsSync("site.webmanifest"), "site.webmanifest must exist");
+  const manifest = JSON.parse(readFileSync("site.webmanifest", "utf8"));
+  assert.deepEqual(manifest, {
+    name: "Dreamscale Labs",
+    short_name: "DSL",
+    icons: [
+      {
+        src: "/android-chrome-192x192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/android-chrome-512x512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/android-chrome-maskable-512x512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
+      },
+    ],
+    theme_color: "#ffffff",
+    background_color: "#ffffff",
+    display: "browser",
+    start_url: "/",
+    scope: "/",
+  });
+
+  for (const icon of manifest.icons) {
+    assert.ok(existsSync(icon.src.slice(1)), `${icon.src} must resolve`);
+  }
+});
+
 test("landing page uses one optimized self-contained SVG wordmark", () => {
   assert.ok(existsSync(wordmarkPath));
   assert.match(
