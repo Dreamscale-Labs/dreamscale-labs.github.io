@@ -1,11 +1,15 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const html = existsSync("index.html") ? readFileSync("index.html", "utf8") : "";
 const css = existsSync("styles.css") ? readFileSync("styles.css", "utf8") : "";
+const wordmarkPath = "assets/logo/dreamscale-labs.svg";
+const wordmarkSvg = existsSync(wordmarkPath)
+  ? readFileSync(wordmarkPath, "utf8")
+  : "";
 const blogIndex = existsSync("blog/index.html")
   ? readFileSync("blog/index.html", "utf8")
   : "";
@@ -19,8 +23,7 @@ test("landing page contains the required Dreamscale copy and links directly to t
   assert.match(html, /src="\/assets\/logo\/dsl-mark\.png"/);
   assert.match(html, /width="1302"/);
   assert.match(html, /height="960"/);
-  assert.match(html, /<span class="wordmark-line wordmark-line-primary">Dreamscale<\/span>/);
-  assert.match(html, /<span class="wordmark-line wordmark-line-secondary">Labs<\/span>/);
+  assert.match(html, /<span class="visually-hidden">Dreamscale Labs<\/span>/);
   assert.match(
     html,
     /DSL is an applied research company working towards a future of truly general robots\./
@@ -28,38 +31,72 @@ test("landing page contains the required Dreamscale copy and links directly to t
   assert.match(html, /<a class="nav-link" href="\/blog\/">Blog<\/a>/);
 });
 
-test("landing page uses the local Nabla wordmark and Mluvka body font", () => {
-  assert.match(css, /@font-face\s*{[^}]*font-family:\s*"Nabla"/s);
-  assert.match(css, /Nabla-Regular-VariableFont_EDPT,EHLT\.ttf/);
+test("landing page uses one optimized self-contained SVG wordmark", () => {
+  assert.ok(existsSync(wordmarkPath));
+  assert.match(
+    html,
+    /rel="preload"\s+href="\/assets\/logo\/dreamscale-labs\.svg"\s+as="image"/
+  );
+  assert.equal(
+    [...html.matchAll(/src="\/assets\/logo\/dreamscale-labs\.svg"/g)].length,
+    1
+  );
+  assert.match(html, /<span class="visually-hidden">Dreamscale Labs<\/span>/);
+  assert.match(html, /class="wordmark-image"/);
+  assert.match(html, /aria-hidden="true"/);
+  assert.match(wordmarkSvg, /<svg\b/);
+  assert.match(wordmarkSvg, /viewBox="0 0 [0-9.]+ [0-9.]+"/);
+  assert.match(wordmarkSvg, /data:image\/webp;base64,/);
+  assert.doesNotMatch(
+    wordmarkSvg,
+    /(?:href|src)="https?:|@font-face|Nabla-Regular/
+  );
+  assert.ok(
+    statSync(wordmarkPath).size < 200_000,
+    `wordmark SVG is ${statSync(wordmarkPath).size} bytes`
+  );
+  assert.doesNotMatch(html, /Nabla-Regular-VariableFont/);
+  assert.doesNotMatch(css, /font-family:\s*"Nabla"|@font-palette-values/);
+});
+
+test("landing page uses the local Mluvka body font", () => {
   assert.match(css, /@font-face\s*{[^}]*font-family:\s*"Mluvka"/s);
   assert.match(css, /Mluvka-Regular-web\.woff2/);
-  assert.match(css, /\.wordmark\s*{[^}]*font-family:\s*"Nabla"/s);
-  assert.match(css, /\.wordmark\s*{[^}]*font-variation-settings:\s*"EDPT"\s+100,\s*"EHLT"\s+12/s);
   assert.match(css, /\.tagline\s*{[^}]*font-family:\s*"Mluvka"/s);
   assert.match(css, /\.tagline\s*{[^}]*font-weight:\s*400/s);
 });
 
-test("landing page uses the D45 ink-on-white palette and responsive safeguards", () => {
-  assert.match(css, /@font-palette-values\s+--d45-ink-on-white/);
-  assert.match(
-    css,
-    /override-colors:\s*0 #212121,\s*1 #000000,\s*2 #111111,\s*3 #292929,\s*4 #575757,\s*5 #989898,\s*6 #202020,\s*7 #686868,\s*8 #e9e9e9,\s*9 #ffffff;/s
-  );
-  assert.match(css, /\.wordmark-line\s*{[^}]*font-palette:\s*--d45-ink-on-white/s);
+test("landing page uses monochrome branding and responsive safeguards", () => {
   assert.match(css, /--paper:\s*#ffffff/);
   assert.match(css, /body\s*{[^}]*background:\s*var\(--paper\)/s);
   assert.match(css, /\.site-header\s*{[^}]*justify-content:\s*space-between/s);
-  assert.match(css, /\.site-logo\s*{[^}]*width:\s*clamp\(4\.25rem,\s*5\.25vw,\s*5\.5rem\)/s);
+  assert.match(css, /\.site-logo\s*{[^}]*width:\s*clamp\(4\.25rem,\s*7vw,\s*5\.5rem\)/s);
   assert.match(css, /\.site-logo img\s*{[^}]*height:\s*auto/s);
   assert.match(css, /\.site-logo img\s*{[^}]*transform:\s*scaleY\(0\.8\)/s);
   assert.match(css, /\.site-logo img\s*{[^}]*transform-origin:\s*top left/s);
+  assert.match(css, /\.wordmark-image\s*{[^}]*width:\s*100%/s);
+  assert.match(css, /\.wordmark-image\s*{[^}]*height:\s*auto/s);
   assert.match(css, /min-height:\s*100svh/);
   assert.match(css, /clamp\(/);
   assert.match(css, /overflow-wrap:\s*balance|text-wrap:\s*balance/);
-  assert.match(css, /\.wordmark\s*{[^}]*gap:\s*clamp\(0\.1rem,\s*0\.3vw,\s*0\.3rem\)/s);
-  assert.match(css, /@media \(max-width:\s*640px\)[\s\S]*\.wordmark\s*{[\s\S]*width:\s*min\(88vw,\s*24rem\)/);
-  assert.match(css, /@media \(max-width:\s*640px\)[\s\S]*\.tagline\s*{[\s\S]*left:\s*50%/);
-  assert.match(css, /@media \(max-width:\s*640px\)[\s\S]*\.tagline\s*{[\s\S]*transform:\s*translateX\(-50%\)/);
+  assert.match(css, /@media \(max-width:\s*480px\)[\s\S]*\.wordmark\s*{[\s\S]*width:\s*min\(117\.333333vw,\s*24rem\)/);
+  assert.match(css, /@media \(max-width:\s*480px\)[\s\S]*\.tagline\s*{[\s\S]*left:\s*50%/);
+  assert.match(css, /@media \(max-width:\s*480px\)[\s\S]*\.tagline\s*{[\s\S]*transform:\s*translateX\(-50%\)/);
+});
+
+test("landing page reproduces 75 percent browser zoom", () => {
+  assert.match(css, /body\s*{[^}]*zoom:\s*0\.75/s);
+  assert.match(css, /\.landing\s*{[^}]*min-height:\s*133\.333333svh/s);
+  assert.match(css, /\.wordmark\s*{[^}]*width:\s*min\(104vw,\s*64rem\)/s);
+  assert.match(css, /@media \(max-width:\s*480px\)/);
+  assert.doesNotMatch(css, /@media \(max-width:\s*640px\)/);
+});
+
+test("blog reproduces 75 percent browser zoom", () => {
+  assert.match(blogCss, /body\s*{[^}]*zoom:\s*0\.75/s);
+  assert.match(blogCss, /@media \(max-width:\s*720px\)/);
+  assert.match(blogCss, /@media \(max-width:\s*540px\)/);
+  assert.doesNotMatch(blogCss, /@media \(max-width:\s*960px\)/);
 });
 
 test("blog uses a shared responsive visual system", () => {
