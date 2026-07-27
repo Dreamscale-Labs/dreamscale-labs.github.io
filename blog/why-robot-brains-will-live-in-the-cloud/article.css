@@ -278,13 +278,17 @@ figcaption {
 }
 
 @media (max-width: 510px) {
+  .site-header {
+    display: none;
+  }
+
   .article-shell,
   .blog-footer {
     width: min(calc(100% - 2rem), 74rem);
   }
 
   .article-shell {
-    padding-top: 8rem;
+    padding-top: 3rem;
   }
 
   .article-title-block h1 {
