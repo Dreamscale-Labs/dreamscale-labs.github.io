@@ -5,9 +5,9 @@ import test from "node:test";
 const html = existsSync("index.html") ? readFileSync("index.html", "utf8") : "";
 const landingCssPath = "styles-75.css";
 const blogCssPath = "blog/blog-index.css";
-const articlePath = "blog/why-robot-brains-will-live-in-the-cloud/index.html";
+const articlePath = "blog/why/index.html";
 const articleCssPath =
-  "blog/why-robot-brains-will-live-in-the-cloud/article.css";
+  "blog/why/article.css";
 const css = existsSync(landingCssPath)
   ? readFileSync(landingCssPath, "utf8")
   : "";
@@ -295,7 +295,7 @@ test("blog index matches the Dreamscale identity and lists the canonical essay",
   assert.doesNotMatch(blogIndex, /<article class="article">/);
   assert.match(
     blogIndex,
-    /href="\/blog\/why-robot-brains-will-live-in-the-cloud\/"/
+    /href="\/blog\/why\/"/
   );
   assert.match(blogIndex, /<time datetime="2026-07-24">July 24, 2026<\/time>/);
   assert.match(blogIndex, /Why Robot Brains Will Live in the Cloud/);
@@ -358,7 +358,7 @@ test("canonical article route preserves the complete research essay and latest a
   assert.match(articleHtml, /src="\/android-chrome-512x512\.png"/);
   assert.match(
     articleHtml,
-    /href="\/blog\/why-robot-brains-will-live-in-the-cloud\/article\.css"/
+    /href="\/blog\/why\/article\.css"/
   );
   assert.equal([...articleHtml.matchAll(/<p(?:\s|>)/g)].length, 60);
   assert.equal([...articleHtml.matchAll(/<h2>/g)].length, 6);
