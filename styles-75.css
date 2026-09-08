@@ -182,6 +182,21 @@ a {
   text-wrap: balance;
 }
 
+.yc-logo {
+  position: absolute;
+  right: clamp(1.25rem, 3.733333vw, 2.5rem);
+  bottom: clamp(1.25rem, 3.733333vw, 2.5rem);
+  display: block;
+  width: 3.333333rem;
+  height: auto;
+}
+
+@media (max-width: 800px) {
+  .tagline {
+    bottom: 6.5rem;
+  }
+}
+
 @media (max-width: 480px) {
   .landing {
     padding-top: 4.5rem;
