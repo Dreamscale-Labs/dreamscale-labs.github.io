@@ -94,12 +94,12 @@ test("favicon raster assets cover modern platform sizes", () => {
     assert.deepEqual(readPngMetadata(path), {
       width: size,
       height: size,
-      colorType: 2,
+      colorType: path.includes("maskable") ? 2 : 6,
     });
   }
 
   assert.ok(existsSync("favicon.ico"), "favicon.ico must exist");
-  assert.deepEqual(readIcoSizes("favicon.ico"), [
+  assert.deepEqual(readIcoSizes("favicon.ico").sort((a, b) => a.width - b.width), [
     { width: 16, height: 16 },
     { width: 32, height: 32 },
     { width: 48, height: 48 },
@@ -117,6 +117,7 @@ test("every public page declares the complete favicon metadata set", () => {
     '<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">',
     '<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">',
     '<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">',
+    '<link rel="icon" type="image/svg+xml" href="/favicon.svg">',
     '<link rel="manifest" href="/site.webmanifest">',
     '<meta name="theme-color" content="#ffffff">',
   ];
@@ -204,7 +205,8 @@ test("landing page uses one optimized self-contained SVG wordmark", () => {
   assert.match(html, /aria-hidden="true"/);
   assert.match(wordmarkSvg, /<svg\b/);
   assert.match(wordmarkSvg, /viewBox="0 0 [0-9.]+ [0-9.]+"/);
-  assert.match(wordmarkSvg, /data:image\/webp;base64,/);
+  assert.match(wordmarkSvg, /<path\b/);
+  assert.doesNotMatch(wordmarkSvg, /<image\b|<script\b|<foreignObject\b/);
   assert.doesNotMatch(
     wordmarkSvg,
     /(?:href|src)="https?:|@font-face|Nabla-Regular/
