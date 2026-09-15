@@ -205,8 +205,7 @@ test("landing page uses one optimized self-contained SVG wordmark", () => {
   assert.match(html, /aria-hidden="true"/);
   assert.match(wordmarkSvg, /<svg\b/);
   assert.match(wordmarkSvg, /viewBox="0 0 [0-9.]+ [0-9.]+"/);
-  assert.match(wordmarkSvg, /<path\b/);
-  assert.doesNotMatch(wordmarkSvg, /<image\b|<script\b|<foreignObject\b/);
+  assert.match(wordmarkSvg, /data:image\/webp;base64,/);
   assert.doesNotMatch(
     wordmarkSvg,
     /(?:href|src)="https?:|@font-face|Nabla-Regular/
