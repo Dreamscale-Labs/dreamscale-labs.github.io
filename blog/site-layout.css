@@ -108,3 +108,6 @@ body { zoom: 1; }
   .article-toc[open] summary::after { content: '−'; }
   .article-toc nav { margin-top: 14px; }
 }
+
+.post-meta time { display: block; }
+.post-reading-time { display: block; margin-top: 6px; color: var(--muted); font-size: 12px; line-height: 1.45; }
