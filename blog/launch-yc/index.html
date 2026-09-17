@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link rel="canonical" href="https://www.dreamscalelabs.com/blog/launch-yc/">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="The fastest cloud inference platform for robotics. from Dreamscale Labs.">
+    <title>Dreamscale Labs: Running robot brains in the cloud — Dreamscale Labs</title>
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link
+      rel="preload"
+      href="/assets/fonts/Mluvka-Regular-web.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    >
+    <link
+      rel="stylesheet"
+      href="/blog/why/article.css"
+    >
+    <link rel="stylesheet" href="/blog/site-layout.css">
+    <link rel="stylesheet" href="/blog/launch-yc/launch.css">
+  </head>
+  <body>
+    <header class="site-header" aria-label="Primary navigation">
+      <a class="site-logo" href="/" aria-label="Dreamscale Labs home">
+        <img
+          src="/assets/landing/brand.svg"
+          alt="Dreamscale Labs"
+          width="188"
+          fetchpriority="high"
+        >
+      </a>
+      <nav>
+        <a class="nav-link" href="/blog/">Blog</a>
+        <a class="demo-link" href="https://cal.com/team/dreamscale-labs/demo" target="_blank" rel="noopener">Schedule a demo</a>
+      </nav>
+    </header>
+
+    <main class="article-shell" id="top">
+      <header class="article-hero">
+        <div class="article-title-block">
+          <h1>Dreamscale Labs: Running robot brains in the cloud</h1>
+          <p class="article-dek">The fastest cloud inference platform for robotics.</p>
+          <p class="reading-meta"><time datetime="2026-09-17">September 17, 2026</time><span aria-hidden="true">·</span><span>2 min read</span></p>
+        </div>
+      </header>
+
+      <article class="article" id="article-introduction">
+<p><strong>TL;DR: We're 40-50% faster than existing cloud providers in serving frontier robot AI models, e.g. DreamZero, MolmoAct2.</strong></p>
+<p><a href="https://www.youtube.com/watch?v=jVqvJFBRcd0">https://www.youtube.com/watch?v=jVqvJFBRcd0</a></p>
+<div class="launch-video"><iframe src="https://www.youtube.com/embed/jVqvJFBRcd0" title="Dreamscale Labs launch video" allowfullscreen loading="lazy"></iframe></div>
+<p>[1x speed, autonomous]</p>
+<p>DSL is building the fastest cloud inference platform for robotics. We let you deploy physical AI without needing expensive local GPUs.</p>
+<p>Robot foundation models are growing more and more computationally expensive. The latest frontier of robotics no longer fits feasibly on local GPUs. Compute costs keep soaring amidst a global LPDDR shortage; NVIDIA just doubled the prices of Jetsons in July.</p>
+<p><strong>We're taking a contrarian bet that the future is moving inference <em>off the robot</em> and <em>into the cloud.</em></strong></p>
+<p><img src="/assets/blog/launch-yc/robot-inference.gif" alt="uploaded image"></p>
+<p>How do we do this? We work across the full stack of robot inference to push latency down:</p>
+<ul>
+<li>Model-level architectural adjustments for faster inference</li>
+<li>Kernel-level optimizations to maximally leverage server-grade GPUs</li>
+<li>Network-level optimizations for fast and reliable transport over the cloud</li>
+<li>Region-specific compute allocation to ensure the shortest physical distance between the servers and our customers' robots</li>
+</ul>
+<p>These optimizations enable us to be <strong>8% faster</strong> than NVIDIA's implementation <strong>at half the GPU count</strong> (320ms vs 350ms, for DreamZero 14B).</p>
+<p><img src="/assets/blog/launch-yc/inference-performance.gif" alt="uploaded image"></p>
+<p>Furthermore, something we noticed for robotics companies with fast R&amp;D cycles was that their GPUs had long idle periods with concentrated bursts of inference traffic. We're one of the first companies in the world to offer on-demand pricing for physical AI inference, giving users more flexibility with the cost.</p>
+<p>We're already working closely with a range of early partners across deployment, research and evaluation. In full FDE spirit, we collaborate with our customers to custom-fit inference stacks that address their unique deployment challenges. We help you get your robot AI to deployment faster.</p>
+<p>Our mission is to democratize access to frontier physical intelligence, and we believe cloud is the way forward. You can read our thesis here:</p>
+<p>•⁠ ⁠<a href="http://dreamscalelabs.com/blog/why">http://dreamscalelabs.com/blog/why</a></p>
+<p><br>
+<strong>Our ask:</strong> Reach out at <a href="mailto:founders@dreamscalelabs.com">founders@dreamscalelabs.com</a> !</p>
+
+<div class="launch-yc-badge"><a href="https://www.ycombinator.com/launches/U24-dreamscale-labs-running-robot-brains-in-the-cloud" target="_blank" rel="noopener"><img src="https://www.ycombinator.com/launches/U24-dreamscale-labs-running-robot-brains-in-the-cloud/upvote_embed.svg" alt="Dreamscale Labs: Running robot brains in the cloud — Launch YC"></a><p class="yc-source-link"><a href="https://www.ycombinator.com/launches/U24-dreamscale-labs-running-robot-brains-in-the-cloud">View the original post on Launch YC ↗</a></p></div>
+</article>
+    </main>
+
+    <footer class="blog-footer">
+      <span>Dreamscale Labs © 2026</span>
+      <a href="#top">Back to top ↑</a>
+    </footer>
+    <div class="reading-progress" role="progressbar" aria-label="Article reading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+    <script src="/blog/why/reading-progress.js" defer></script>
+  </body>
+</html>

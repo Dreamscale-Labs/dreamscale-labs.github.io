@@ -139,15 +139,15 @@ test("every public page declares the complete favicon metadata set", () => {
   }
 });
 
-test("site headers use the undistorted standard favicon", () => {
+test("blog headers use the shared Dreamscale wordmark", () => {
   const pages = new Map([
     ["blog/index.html", blogIndex],
     [articlePath, articleHtml],
   ]);
 
   for (const [path, source] of pages) {
-    assert.match(source, /src="\/android-chrome-512x512\.png"/);
-    assert.match(source, /width="512"\s+height="512"/);
+    assert.match(source, /src="\/assets\/landing\/brand\.svg"/);
+    assert.match(source, /width="188"/);
     assert.doesNotMatch(source, /src="\/assets\/logo\/dsl-mark\.png"/);
   }
 
@@ -168,7 +168,7 @@ test("blog index matches the Dreamscale identity and lists the canonical essay",
   assert.match(blogIndex, /<h1 class="index-title">Blog<\/h1>/);
   assert.match(blogIndex, /<title>Blog — Dreamscale Labs<\/title>/);
   assert.match(blogIndex, /aria-label="Blog posts"/);
-  assert.doesNotMatch(blogIndex, /<article class="article">/);
+  assert.doesNotMatch(blogIndex, /<article class="article"/);
   assert.match(
     blogIndex,
     /href="\/blog\/why\/"/
@@ -176,7 +176,7 @@ test("blog index matches the Dreamscale identity and lists the canonical essay",
   assert.match(blogIndex, /<time datetime="2026-07-24">July 24, 2026<\/time>/);
   assert.match(blogIndex, /Why Robot Brains Will Live in the Cloud/);
   assert.match(blogIndex, /The case for off-board robotics inference/);
-  assert.match(blogIndex, /src="\/android-chrome-512x512\.png"/);
+  assert.match(blogIndex, /src="\/assets\/landing\/brand\.svg"/);
 });
 
 test("blog index uses Mluvka titles and Crimson Text descriptions at the shared scale", () => {
@@ -213,7 +213,7 @@ test("canonical article route preserves the complete research essay and latest a
   assert.ok(existsSync(articlePath));
   assert.ok(existsSync(articleCssPath));
   assert.ok(existsSync("assets/blog/cloud-inference-architecture.png"));
-  assert.match(articleHtml, /<article class="article">/);
+  assert.match(articleHtml, /<article class="article"/);
   assert.match(articleHtml, /<h1>Why Robot Brains Will Live in the Cloud<\/h1>/);
   assert.match(articleHtml, /The case for off-board robotics inference/);
   assert.doesNotMatch(articleHtml, /Essay 001|18 min read/);
@@ -231,13 +231,13 @@ test("canonical article route preserves the complete research essay and latest a
   assert.equal([...articleHtml.matchAll(/<figcaption>/g)].length, 2);
   assert.match(articleHtml, /class="end-note"/);
   assert.match(articleHtml, /mailto:contact@dreamscalelabs\.com/);
-  assert.match(articleHtml, /src="\/android-chrome-512x512\.png"/);
+  assert.match(articleHtml, /src="\/assets\/landing\/brand\.svg"/);
   assert.match(
     articleHtml,
     /href="\/blog\/why\/article\.css"/
   );
-  assert.equal([...articleHtml.matchAll(/<p(?:\s|>)/g)].length, 60);
-  assert.equal([...articleHtml.matchAll(/<h2>/g)].length, 6);
+  assert.equal([...articleHtml.matchAll(/<p(?:\s|>)/g)].length, 61);
+  assert.equal([...articleHtml.matchAll(/<h2(?:\s|>)/g)].length, 6);
   assert.equal([...articleHtml.matchAll(/<h3>/g)].length, 6);
 });
 

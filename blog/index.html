@@ -29,20 +29,21 @@
       crossorigin
     >
     <link rel="stylesheet" href="/blog/blog-index.css">
+    <link rel="stylesheet" href="/blog/site-layout.css">
   </head>
   <body>
     <header class="site-header" aria-label="Primary navigation">
       <a class="site-logo" href="/" aria-label="Dreamscale Labs home">
         <img
-          src="/android-chrome-512x512.png"
-          alt=""
-          width="512"
-          height="512"
+          src="/assets/landing/brand.svg"
+          alt="Dreamscale Labs"
+          width="188"
           fetchpriority="high"
         >
       </a>
       <nav>
         <a class="nav-link" href="/blog/" aria-current="page">Blog</a>
+        <a class="demo-link" href="https://cal.com/team/dreamscale-labs/demo" target="_blank" rel="noopener">Schedule a demo</a>
       </nav>
     </header>
 
@@ -52,6 +53,7 @@
       </header>
 
       <ol class="post-list" aria-label="Blog posts">
+        <li class="post-item"><time datetime="2026-09-17">September 17, 2026</time><a class="post-link" href="/blog/launch-yc/"><h2 class="post-title">Dreamscale Labs: Running robot brains in the cloud</h2><p class="post-description">The fastest cloud inference platform for robotics.</p></a></li>
         <li class="post-item">
           <time datetime="2026-07-24">July 24, 2026</time>
           <a
