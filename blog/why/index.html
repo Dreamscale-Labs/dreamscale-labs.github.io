@@ -31,20 +31,21 @@
       rel="stylesheet"
       href="/blog/why/article.css"
     >
+    <link rel="stylesheet" href="/blog/site-layout.css">
   </head>
   <body>
     <header class="site-header" aria-label="Primary navigation">
       <a class="site-logo" href="/" aria-label="Dreamscale Labs home">
         <img
-          src="/android-chrome-512x512.png"
-          alt=""
-          width="512"
-          height="512"
+          src="/assets/landing/brand.svg"
+          alt="Dreamscale Labs"
+          width="188"
           fetchpriority="high"
         >
       </a>
       <nav>
         <a class="nav-link" href="/blog/">Blog</a>
+        <a class="demo-link" href="https://cal.com/team/dreamscale-labs/demo" target="_blank" rel="noopener">Schedule a demo</a>
       </nav>
     </header>
 
@@ -53,10 +54,26 @@
         <div class="article-title-block">
           <h1>Why Robot Brains Will Live in the Cloud</h1>
           <p class="article-dek">The case for off-board robotics inference</p>
+          <p class="reading-meta"><time datetime="2026-07-24">July 24, 2026</time><span aria-hidden="true">·</span><span>16 min read</span></p>
         </div>
       </header>
 
-      <article class="article">
+      <div class="article-layout">
+        <aside class="toc-sidebar">
+          <details class="article-toc" open>
+            <summary>On this page</summary>
+            <nav aria-label="Table of contents">
+              <a href="#article-introduction">Introduction</a>
+              <a href="#scaling-laws">Scaling laws</a>
+              <a href="#onboard-compute">On-board compute</a>
+              <a href="#cost-hardware-access">Cost, hardware &amp; access</a>
+              <a href="#safety">Safety</a>
+              <a href="#critiques">Critiques &amp; questions</a>
+              <a href="#future">Future</a>
+            </nav>
+          </details>
+        </aside>
+      <article class="article" id="article-introduction" tabindex="-1">
         <p>The promise of generalist robotics is automating physical work such that no human has to perform dirty, dangerous, or demeaning labor.</p>
 
         <p>To achieve this, robots must be able to perform a wide range of tasks, adapt to a broad variety of environments, and handle an indefinite number of unexpected scenarios. This requires much more intelligent physical AI models than we have now, especially ones that are trained on extremely large training corpora and are equipped with deep reasoning capabilities. We think this necessarily results in a substantially larger model that just won’t be able to fit on GPUs on-board the robot, and that these ‘brains’ will live in the cloud where they can be served on powerful servers.</p>
@@ -69,7 +86,7 @@
 
         <p>In this post, we’ll walk through the limitations of on-board inference, how cloud inference addresses these problems, then ultimately show how, with the right tradeoffs, a future for off-board inference can and should exist.</p>
 
-        <h2>Scaling Laws are Here to Stay</h2>
+        <h2 id="scaling-laws" tabindex="-1">Scaling Laws are Here to Stay</h2>
 
         <p>We, <a href="https://youtu.be/3Y8aq_ofEVs?t=753">like others</a>, also believe that much of the next waves of progress for generalist robotics R&amp;D will adhere to scaling laws.</p>
 
@@ -100,7 +117,7 @@
 
         <p>It’s clear that scaling laws are here to stay.</p>
 
-        <h2>The State of On-board Compute</h2>
+        <h2 id="onboard-compute" tabindex="-1">The State of On-board Compute</h2>
 
         <p>Right now, there are only a handful of hardware options for onboard inference. Many frontier robotics labs today, including 1X and Boston Dynamics, rely on NVIDIA’s Jetson AGX series for running AI models. Let’s take a closer look at two of the most popular offerings in this series:</p>
 
@@ -151,7 +168,7 @@
 
         <p>Irrespective of how you look at it, there’s a bitter lesson for robotics to be found here. Models consistently get better when you make them bigger and give them more data. We believe that off-board inference is the necessary infrastructure to support this future.</p>
 
-        <h2>Impacts on Robot Cost, Hardware, Access, and Beyond</h2>
+        <h2 id="cost-hardware-access" tabindex="-1">Impacts on Robot Cost, Hardware, Access, and Beyond</h2>
 
         <h3>Cost</h3>
 
@@ -185,7 +202,7 @@
 
         <p>A big problem for tinkerers in Physical AI is that access to running performant models on their robots is gated by owning a powerful GPU. Small labs and development teams lack the capital to purchase compute upfront, let alone have the time to wait for it to arrive. GPU access is load-bearing to the R&amp;D cycle. Waiting for one of your 5 GPUs to free up to test a policy kills development velocity. But this isn’t exclusive to small, scrappy teams - Physical Intelligence themselves say "<em>running compute on cloud simplified operations and enabled rapid experimentation with larger models, while only adding 10-15ms of network overhead</em>". As we can see, off-board inference offers a significant operational advantage on the ease and velocity of development.</p>
 
-        <h2>Safety</h2>
+        <h2 id="safety" tabindex="-1">Safety</h2>
 
         <p>Larger, more capable models are safer robots. In some sense, safety is intrinsically tied to capability. It’s extremely likely that larger and more diversely trained robot models will generalise better to unseen, complex domains, as well as attain stronger perception and semantic understanding. For instance, more complex emergencies (e.g. rescuing people during house fires) will require more complex reasoning patterns to resolve, so it’s reasonable to infer that the most capable models should be deployed in these high-stakes situations. Large models will be generally better at recognising hazards, reasoning through unfamiliar situations and instruction-following for safety policies. Bigger models will reduce embodied mistakes arising from weak perception and reasoning.</p>
 
@@ -211,7 +228,7 @@
 
         <p>Helix 02 is just an example, but we think that this could serve as inspiration for a very real and optimal shape for robot control going forward: a hybrid system where body control and safety is handled by a lightweight fallback model/policy that feasibly sits on-device. The rest is put off-board to leverage the highest performance possible for dexterity, reasoning and conversation.</p>
 
-        <h2>Critiques on Off-board Inference</h2>
+        <h2 id="critiques" tabindex="-1">Critiques on Off-board Inference</h2>
 
         <p>Here, we address potential concerns against off-board inference.</p>
 
@@ -239,7 +256,7 @@
 
         <p>However, we don’t believe there will be a “<em>sufficiently capable</em>” model for physical intelligence that fits comfortably on an onboard GPU for a long time. Just like how despite the existence of many efficient open-source models, the world still yearns for even higher levels of capability for AI (e.g. GPT 5.6 Sol, Claude Mythos) to perform even more meaningfully impactful and economically productive tasks. We are far from, if ever, a future in which truly generalist models are able to be contained in a single GPU.</p>
 
-        <h2>Future</h2>
+        <h2 id="future" tabindex="-1">Future</h2>
 
         <p>Ultimately, we think the future of generalist robotics is dependent on off-board compute. With the ability to run large-scale models at highly optimised latency and reliability, we will see an exponential uplift in the capability and safety of general-purpose robots.</p>
 
@@ -253,11 +270,14 @@
           <p><em>If you have thoughts you'd like to share and/or disagree with our perspective, please reach out to us at <strong><a href="mailto:contact@dreamscalelabs.com">contact@dreamscalelabs.com</a></strong>.</em></p>
         </aside>
       </article>
+      </div>
     </main>
 
     <footer class="blog-footer">
       <span>Dreamscale Labs © 2026</span>
       <a href="#top">Back to top ↑</a>
     </footer>
+    <div class="reading-progress" role="progressbar" aria-label="Article reading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+    <script src="/blog/why/reading-progress.js" defer></script>
   </body>
 </html>
