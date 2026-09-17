@@ -3,7 +3,7 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import test from "node:test";
 
 const html = existsSync("index.html") ? readFileSync("index.html", "utf8") : "";
-const landingCssPath = "styles-75.css";
+const landingCssPath = "assets/landing/landing.css";
 const blogCssPath = "blog/blog-index.css";
 const articlePath = "blog/why/index.html";
 const articleCssPath =
@@ -52,32 +52,6 @@ function readIcoSizes(path) {
     };
   });
 }
-
-test("landing page contains the required Dreamscale copy and links directly to the blog", () => {
-  assert.ok(existsSync("android-chrome-512x512.png"));
-  assert.ok(existsSync("assets/logo/dropbear-logo.svg"));
-  assert.match(html, /<a class="site-logo" href="\/" aria-label="Dreamscale Labs home">/);
-  assert.match(html, /src="\/android-chrome-512x512\.png"/);
-  assert.match(html, /width="512"/);
-  assert.match(html, /height="512"/);
-  assert.match(html, /aria-label="Dreamscale Labs"/);
-  assert.match(
-    html,
-    /DSL is an applied research company working towards a future of truly general robots\./
-  );
-  assert.match(html, /<a class="nav-link" href="\/blog\/">Blog<\/a>/);
-  assert.match(
-    html,
-    /<a class="dropbear-cta" href="https:\/\/dropbear\.dreamscalelabs\.com">/
-  );
-  assert.match(html, /src="\/assets\/logo\/dropbear-logo\.svg"/);
-  assert.match(html, /width="1254"/);
-  assert.match(html, /height="1254"/);
-  assert.match(
-    html,
-    /Introducing Dropbear: fast cloud inference for robotics/
-  );
-});
 
 test("favicon raster assets cover modern platform sizes", () => {
   const pngSizes = new Map([
@@ -167,7 +141,6 @@ test("every public page declares the complete favicon metadata set", () => {
 
 test("site headers use the undistorted standard favicon", () => {
   const pages = new Map([
-    ["index.html", html],
     ["blog/index.html", blogIndex],
     [articlePath, articleHtml],
   ]);
@@ -189,104 +162,6 @@ test("site headers use the undistorted standard favicon", () => {
       `${path} must not distort the header favicon`
     );
   }
-});
-
-test("landing page uses one optimized self-contained SVG wordmark", () => {
-  assert.ok(existsSync(wordmarkPath));
-  assert.match(
-    html,
-    /rel="preload"\s+href="\/assets\/logo\/dreamscale-labs\.svg"\s+as="image"/
-  );
-  assert.equal(
-    [...html.matchAll(/src="\/assets\/logo\/dreamscale-labs\.svg"/g)].length,
-    1
-  );
-  assert.match(html, /class="wordmark-image"/);
-  assert.match(html, /aria-hidden="true"/);
-  assert.match(wordmarkSvg, /<svg\b/);
-  assert.match(wordmarkSvg, /viewBox="0 0 [0-9.]+ [0-9.]+"/);
-  assert.match(wordmarkSvg, /data:image\/webp;base64,/);
-  assert.doesNotMatch(
-    wordmarkSvg,
-    /(?:href|src)="https?:|@font-face|Nabla-Regular/
-  );
-  assert.ok(
-    statSync(wordmarkPath).size < 200_000,
-    `wordmark SVG is ${statSync(wordmarkPath).size} bytes`
-  );
-  assert.doesNotMatch(html, /Nabla-Regular-VariableFont/);
-  assert.doesNotMatch(css, /font-family:\s*"Nabla"|@font-palette-values/);
-});
-
-test("pages load fresh scaled styles and expose no visible fallback wordmark", () => {
-  assert.ok(existsSync(landingCssPath));
-  assert.ok(existsSync(blogCssPath));
-  assert.match(html, /<link rel="stylesheet" href="\/styles-75\.css">/);
-  assert.match(
-    blogIndex,
-    /<link rel="stylesheet" href="\/blog\/blog-index\.css">/
-  );
-  assert.match(
-    html,
-    /<h1 class="wordmark" id="wordmark" aria-label="Dreamscale Labs">\s*<img/
-  );
-  assert.doesNotMatch(html, /visually-hidden|>Dreamscale Labs<\/span>/);
-  assert.ok(!existsSync("blog/blog-75.css"));
-});
-
-test("landing page uses the local Mluvka body font", () => {
-  assert.match(css, /@font-face\s*{[^}]*font-family:\s*"Mluvka"/s);
-  assert.match(css, /Mluvka-Regular-web\.woff2/);
-  assert.match(css, /\.tagline\s*{[^}]*font-family:\s*"Mluvka"/s);
-  assert.match(css, /\.tagline\s*{[^}]*font-weight:\s*400/s);
-});
-
-test("landing page uses monochrome branding and responsive safeguards", () => {
-  assert.match(css, /--paper:\s*#ffffff/);
-  assert.match(css, /body\s*{[^}]*background:\s*var\(--paper\)/s);
-  assert.match(css, /\.site-header\s*{[^}]*justify-content:\s*space-between/s);
-  assert.match(
-    css,
-    /\.site-logo\s*{[^}]*width:\s*clamp\(4\.25rem,\s*7vw,\s*5\.5rem\)/s
-  );
-  assert.match(css, /\.site-logo img\s*{[^}]*height:\s*auto/s);
-  assert.match(css, /\.hero-lockup\s*{[^}]*display:\s*grid/s);
-  assert.match(css, /\.hero-lockup\s*{[^}]*justify-items:\s*center/s);
-  assert.match(css, /\.wordmark-image\s*{[^}]*width:\s*100%/s);
-  assert.match(css, /\.wordmark-image\s*{[^}]*height:\s*auto/s);
-  assert.match(css, /\.dropbear-cta\s*{[^}]*display:\s*inline-flex/s);
-  assert.match(css, /\.dropbear-cta\s*{[^}]*align-items:\s*center/s);
-  assert.match(css, /\.dropbear-cta\s*{[^}]*border-radius:\s*999px/s);
-  assert.match(css, /\.dropbear-cta-logo\s*{[^}]*width:\s*2rem/s);
-  assert.match(css, /\.dropbear-cta-logo\s*{[^}]*height:\s*2rem/s);
-  assert.match(css, /\.dropbear-cta:focus-visible\s*{/);
-  assert.match(css, /min-height:\s*100svh/);
-  assert.match(css, /clamp\(/);
-  assert.match(css, /overflow-wrap:\s*balance|text-wrap:\s*balance/);
-  assert.match(
-    css,
-    /@media \(max-width:\s*480px\)[\s\S]*\.hero-lockup\s*{[\s\S]*width:\s*min\(calc\(133\.333333vw\s*-\s*2rem\),\s*30rem\)/
-  );
-  assert.match(
-    css,
-    /@media \(max-width:\s*480px\)[\s\S]*\.wordmark\s*{[^}]*width:\s*min\(117\.333333vw,\s*24rem\)/s
-  );
-  assert.match(
-    css,
-    /@media \(max-width:\s*480px\)[\s\S]*\.dropbear-cta\s*{[^}]*max-width:\s*100%/s
-  );
-  assert.match(
-    css,
-    /@media \(max-width:\s*480px\)[\s\S]*\.dropbear-cta\s*{[^}]*white-space:\s*normal/s
-  );
-});
-
-test("landing page reproduces 75 percent browser zoom", () => {
-  assert.match(css, /body\s*{[^}]*zoom:\s*0\.75/s);
-  assert.match(css, /\.landing\s*{[^}]*min-height:\s*133\.333333svh/s);
-  assert.match(css, /\.hero-lockup\s*{[^}]*width:\s*min\(104vw,\s*64rem\)/s);
-  assert.match(css, /@media \(max-width:\s*480px\)/);
-  assert.doesNotMatch(css, /@media \(max-width:\s*640px\)/);
 });
 
 test("blog index matches the Dreamscale identity and lists the canonical essay", () => {
@@ -427,4 +302,18 @@ test("blog routes use root-relative local references that exist", () => {
     assert.equal(fontRef, "/assets/fonts/Mluvka-Regular-web.woff2");
     assert.ok(existsSync(fontRef.slice(1)), `${cssPath} resolves ${fontRef}`);
   }
+});
+
+test("landing serves the selected design with working local assets and demo links", () => {
+  assert.doesNotMatch(html, /Dropbear|dropbear|noindex|prototypes\/|All concepts/);
+  assert.match(html, /on a single H100/);
+  assert.match(html, /Real-Time Chunking \(RTC\)/);
+  assert.match(html, /<span class="yc-launch">/);
+  assert.match(html, /https:\/\/cal.com\/team\/dreamscale-labs\/demo/);
+  assert.ok(html.indexOf('youtube.com/embed') < html.indexOf('class="proof"'));
+  for (const [, ref] of html.matchAll(/(?:src|href|poster)="(\/[^"?#]*)"/g)) {
+    const target = ref.endsWith('/') ? ref.slice(1) + 'index.html' : ref.slice(1);
+    assert.ok(existsSync(target), `Missing asset: ${ref}`);
+  }
+  assert.match(css, /prefers-reduced-motion/);
 });
