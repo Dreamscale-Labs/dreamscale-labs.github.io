@@ -56,7 +56,7 @@
 <a class="cta" href="https://cal.com/team/dreamscale-labs/demo" target="_blank" rel="noopener">Schedule a demo</a>
 </div>
 <figure class="robot">
-<video loop muted playsinline preload="metadata" poster="/assets/landing/robot-execution.jpg" aria-label="MolmoAct2 controlling an SO-101 through cloud inference">
+<video autoplay loop muted playsinline preload="metadata" poster="/assets/landing/robot-execution.jpg" aria-label="MolmoAct2 controlling an SO-101 through cloud inference">
 <source src="/assets/landing/robot-execution.mp4" type="video/mp4">
 </video>
 <figcaption>
@@ -65,7 +65,7 @@
 </figure>
 </section>
 <div class="video">
-<iframe loading="lazy" src="https://www.youtube.com/embed/jVqvJFBRcd0?rel=0" title="Dreamscale Labs launch video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
+<iframe loading="lazy" src="https://www.youtube.com/embed/jVqvJFBRcd0?rel=0&autoplay=1&mute=1&playsinline=1" title="Dreamscale Labs launch video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
 </iframe>
 </div>
 <section class="proof" aria-label="Performance">
@@ -272,6 +272,6 @@
 <a href="/blog/">Blog ↗</a>
 </footer>
 </div>
-<script>document.querySelectorAll('.robot video').forEach(v=>{const q=matchMedia('(prefers-reduced-motion: reduce)');q.addEventListener('change',()=>{if(q.matches)v.pause();else v.play().catch(()=>{})});if(!q.matches)v.play().catch(()=>{})});</script>
+<script>document.querySelectorAll('.robot video').forEach(v=>{const q=matchMedia('(prefers-reduced-motion: reduce)');q.addEventListener('change',()=>{if(q.matches)v.pause();else v.play().catch(()=>{})});if(q.matches)v.pause();else v.play().catch(()=>{})});</script>
 </body>
 </html>
