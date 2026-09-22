@@ -11,4 +11,4 @@
 
 .schematic-row:first-child{border-top:0}.signal-3 i{animation-delay:calc(3s + var(--i)*.12s)}.schematic-row h3{font-size:15px}@media(max-width:420px){.schematic-row{gap:10px}.schematic-row>div:first-child{gap:10px}.schematic-row h3{font-size:13px}.signal{gap:3px}.signal i{width:3px}}
 
-.yc-launch{display:inline-flex;margin-bottom:22px;vertical-align:top}.yc-launch img{display:block;width:32px;height:32px}
+.yc-launch{display:inline-flex;align-items:center;gap:12px;margin-bottom:22px;vertical-align:top}.yc-launch img{display:block;width:auto;height:32px}
