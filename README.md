@@ -18,4 +18,4 @@ node --test tests/static-page.test.mjs
 
 The homepage uses `assets/landing/` for its styles, brand, robot video, and model-provider logos. Blog pages retain their existing styles and routes. Demo links point to the Dreamscale Labs Cal.com event.
 
-Changes to this repository do not migrate the dashboard, API, or documentation hosted on Dropbear subdomains.
+The product lives at `app.dreamscalelabs.com` (dashboard), `api.dreamscalelabs.com` (API) and `docs.dreamscalelabs.com` (docs); those are deployed from other repositories, not from this one.

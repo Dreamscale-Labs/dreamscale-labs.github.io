@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
 import test from "node:test";
 
 const html = existsSync("index.html") ? readFileSync("index.html", "utf8") : "";
@@ -305,7 +306,7 @@ test("blog routes use root-relative local references that exist", () => {
 });
 
 test("landing serves the selected design with working local assets and demo links", () => {
-  assert.doesNotMatch(html, /Dropbear|dropbear|noindex|prototypes\/|All concepts/);
+  assert.doesNotMatch(html, /noindex|prototypes\/|All concepts/);
   assert.match(html, /on a single H100/);
   assert.match(html, /Real-Time Chunking \(RTC\)/);
   assert.match(html, /<span class="yc-launch">/);
@@ -316,4 +317,27 @@ test("landing serves the selected design with working local assets and demo link
     assert.ok(existsSync(target), `Missing asset: ${ref}`);
   }
   assert.match(css, /prefers-reduced-motion/);
+});
+
+// The product was renamed to Dreamscale. Every file GitHub Pages serves is public,
+// including prototypes and unreferenced assets, so the legacy name must not appear
+// in any served path or text file.
+const legacyName = /drop[\s_-]?bear/i;
+
+function servedFiles(dir = ".") {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    if (entry.name.startsWith(".") || entry.name === "node_modules") return [];
+    const path = join(dir, entry.name);
+    return entry.isDirectory() ? servedFiles(path) : [path];
+  });
+}
+
+test("no served path or text file uses the legacy product name", () => {
+  const textFile = /\.(?:html|css|js|mjs|md|svg|json|webmanifest|txt|xml)$|^CNAME$/;
+  for (const path of servedFiles()) {
+    assert.doesNotMatch(path, legacyName, `${path} is served under a legacy name`);
+    if (path === join("tests", "static-page.test.mjs")) continue;
+    if (!textFile.test(path)) continue;
+    assert.doesNotMatch(readFileSync(path, "utf8"), legacyName, `${path} mentions the legacy name`);
+  }
 });
