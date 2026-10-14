@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dreamscale Labs — Run robot brains in the cloud</title>    <!-- Google Tag Manager -->
+<title>Dreamscale Labs — Real-time cloud inference for physical AI</title>    <!-- Google Tag Manager -->
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
     j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
@@ -19,14 +19,19 @@
     <meta name="theme-color" content="#ffffff">
 <meta name="description" content="Deploy frontier robot AI without expensive local GPUs. Dreamscale optimizes models, GPU kernels, network, and real-time chunking. Schedule a demo.">
 <link rel="canonical" href="https://dreamscalelabs.com/">
-<meta property="og:title" content="Dreamscale Labs — Run robot brains in the cloud">
+<meta property="og:title" content="Dreamscale Labs — Real-time cloud inference for physical AI">
 <meta property="og:description" content="Deploy frontier robot AI without expensive local GPUs.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dreamscalelabs.com/">
 <link rel="preload" href="/assets/fonts/Mluvka-Regular-web.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/landing/landing.css">
+<link rel="preload" href="/assets/fonts/Unbounded-Variable.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="/assets/landing/landing.css?v=black-restored-1">
+<link rel="stylesheet" href="/assets/landing/cloud-hero.css?v=black-restored-1">
+<script defer src="/assets/landing/robot-motion.js?v=franka-detail-2"></script>
+<script defer src="/assets/landing/robot-motion-3d.js?v=franka-aligned-2"></script>
+<script defer src="/assets/landing/cloud-hero.js?v=efficient-1"></script>
 </head>
-<body class="a e v7">    <!-- Google Tag Manager (noscript) -->
+<body class="cloud-page">    <!-- Google Tag Manager (noscript) -->
     <noscript>
 <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TSVFWT88"
     height="0" width="0" style="display:none;visibility:hidden">
@@ -44,18 +49,21 @@
 </nav>
 </header>
 <main>
-<section class="hero">
-<div>
-<span class="yc-launch">
-<img src="/assets/logo/yc-logo.svg" alt="Y Combinator" width="32" height="32">
-<img src="/assets/logo/nvidia-inception-badge.webp" alt="NVIDIA Inception Program" width="92" height="32">
-</span>
-<h1>Run robot brains<br>
-<em>in the cloud.</em>
-</h1>
-<p class="lead">Deploy frontier robot AI without expensive local GPUs.</p>
-<a class="cta" href="https://cal.com/team/dreamscale-labs/demo" target="_blank" rel="noopener">Schedule a demo</a>
+<section class="hero cloud-hero" aria-labelledby="hero-title">
+<div class="cloud-art" aria-hidden="true"><canvas id="cloud-canvas"></canvas></div>
+<div class="hero-copy">
+<h1 id="hero-title">Real-time cloud inference for physical AI</h1>
+<p class="lead">Dreamscale Inference is fast, low-latency infrastructure for robot deployment and evaluation.</p>
+<a class="cta" href="https://cal.com/team/dreamscale-labs/demo" target="_blank" rel="noopener">Schedule a demo <span aria-hidden="true">↗</span></a>
+<div class="hero-partners" aria-label="Y Combinator and NVIDIA Inception">
+<img src="/assets/logo/yc-logo.svg" alt="Y Combinator" width="36" height="36">
+<span class="partner-divider" aria-hidden="true"></span>
+<img src="/assets/logo/nvidia-inception-badge.webp" alt="NVIDIA Inception" width="115" height="40">
 </div>
+</div>
+</section>
+<section class="rollout" aria-label="Robot rollout">
+<div class="rollout-copy"><span class="eyebrow">FROM CLOUD TO ACTION</span><h2>Real-time inference.<br>Real-world execution.</h2></div>
 <figure class="robot">
 <video autoplay loop muted playsinline preload="metadata" poster="/assets/landing/dreamzero-execution.jpg" aria-label="NVIDIA DreamZero world action model controlling a robot arm through cloud inference">
 <source src="/assets/landing/dreamzero-execution.mp4" type="video/mp4">
@@ -65,10 +73,6 @@
 </figcaption>
 </figure>
 </section>
-<div class="video">
-<iframe loading="lazy" src="https://www.youtube.com/embed/jVqvJFBRcd0?rel=0&autoplay=1&mute=1&playsinline=1&controls=1&modestbranding=1&fs=0&iv_load_policy=3&cc_load_policy=0&loop=1&playlist=jVqvJFBRcd0" title="Dreamscale Labs launch video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin">
-</iframe>
-</div>
 <section class="proof" aria-label="Performance">
 <div>
 <strong>40–50%</strong>
@@ -267,10 +271,20 @@
 <a class="cta" href="https://cal.com/team/dreamscale-labs/demo" target="_blank" rel="noopener">Schedule a demo</a>
 </section>
 </main>
-<footer>
+<footer class="dreamscale-footer">
+<div class="footer-top">
+<div class="footer-contact">
 <span>Dreamscale Labs</span>
 <a href="mailto:founders@dreamscalelabs.com">founders@dreamscalelabs.com</a>
-<a href="/blog/">Blog ↗</a>
+</div>
+<nav class="footer-links" aria-label="Footer">
+<a href="https://docs.dreamscalelabs.com/guides/inspect-robots">Docs ↗</a>
+<a href="https://www.linkedin.com/company/109885685/">LinkedIn ↗</a>
+<a href="https://x.com/dreamscalelabs">X ↗</a>
+<a href="https://dreamscalelabs.com/blog">Blog ↗</a>
+</nav>
+</div>
+<div class="footer-wordmark">Dreamscale</div>
 </footer>
 </div>
 <script>document.querySelectorAll('.robot video').forEach(v=>{const q=matchMedia('(prefers-reduced-motion: reduce)');q.addEventListener('change',()=>{if(q.matches)v.pause();else v.play().catch(()=>{})});if(q.matches)v.pause();else v.play().catch(()=>{})});</script>

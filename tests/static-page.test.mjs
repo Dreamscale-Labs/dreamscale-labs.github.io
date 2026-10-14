@@ -309,10 +309,14 @@ test("landing serves the selected design with working local assets and demo link
   assert.doesNotMatch(html, /noindex|prototypes\/|All concepts/);
   assert.match(html, /on a single H100/);
   assert.match(html, /Real-Time Chunking \(RTC\)/);
-  assert.match(html, /<span class="yc-launch">/);
+  assert.match(html, /class="hero-partners"/);
+  assert.match(html, /id="cloud-canvas"/);
+  assert.match(html, /Real-time cloud inference for physical AI/);
   assert.match(html, /https:\/\/cal.com\/team\/dreamscale-labs\/demo/);
-  assert.ok(html.indexOf('youtube.com/embed') < html.indexOf('class="proof"'));
-  for (const [, ref] of html.matchAll(/(?:src|href|poster)="(\/[^"?#]*)"/g)) {
+  assert.doesNotMatch(html, /youtube\.com\/embed/);
+  assert.ok(html.indexOf('class="rollout"') < html.indexOf('class="proof"'));
+  assert.match(html, /dreamzero-execution\.mp4/);
+  for (const [, ref] of html.matchAll(/(?:src|href|poster)="(\/[^"?#]*)(?:[?#][^"]*)?"/g)) {
     const target = ref.endsWith('/') ? ref.slice(1) + 'index.html' : ref.slice(1);
     assert.ok(existsSync(target), `Missing asset: ${ref}`);
   }

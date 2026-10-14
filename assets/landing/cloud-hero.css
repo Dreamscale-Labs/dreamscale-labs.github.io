@@ -1,0 +1,84 @@
+@font-face {
+  font-family: Unbounded;
+  src: url('/assets/fonts/Unbounded-Variable.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 200 900;
+  font-display: swap;
+}
+.cloud-page .wrap { max-width: 1440px; padding: 0 64px; }
+.cloud-page header { height: 112px; }
+.cloud-page .brand { width: 192px; }
+.cloud-page .cta { border-radius: 4px; gap: 28px; align-items: center; }
+.cloud-hero { position: relative; isolation: isolate; display: flex; align-items: center; min-height: 650px; padding: 72px 0 94px; }
+.hero-copy { position: relative; z-index: 1; width: 59%; max-width: 735px; }
+.cloud-page h1 { font-family: Unbounded, DSL, sans-serif; font-size: clamp(42px, 4.25vw, 62px); font-weight: 450; letter-spacing: -.052em; line-height: 1.18; max-width: 735px; margin-bottom: 26px; text-wrap: balance; }
+.cloud-page .lead { font-size: 20px; line-height: 1.55; max-width: 470px; margin: 0 0 30px; color: #65696c; }
+.hero-partners { display: flex; align-items: center; gap: 21px; margin-top: 44px; }
+.hero-partners img { object-fit: contain; }
+.partner-divider { height: 26px; width: 1px; background: #e2e4e7; }
+.cloud-art { position: absolute; z-index: 0; top: 0; bottom: 0; right: -64px; width: 66%; overflow: hidden; mask-image: linear-gradient(to right, transparent 0%, transparent 8%, #000 42%, #000 100%); }
+.cloud-art::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, white, transparent 18%, transparent 80%, white); pointer-events: none; }
+#cloud-canvas { display: block; width: 100%; height: 100%; }
+.cloud-page .rollout { display: grid; grid-template-columns: 1fr 1.1fr; gap: 80px; align-items: center; border-top: 1px solid #e6e7e8; padding: 66px 0; }
+.eyebrow { display: block; color: #777d85; font-size: 11px; letter-spacing: .12em; margin-bottom: 24px; }
+.rollout h2 { font-size: 38px; line-height: 1.2; }
+.cloud-page .proof { border-top: 1px solid #e6e7e8; }
+.cloud-page h2, .cloud-page h3, .cloud-page em, .cloud-page .file-symbol { font-family: DSL, Arial, sans-serif; }
+.cloud-page h2 em { font-style: normal; }
+.cloud-page .stack-option { padding-top: 66px; }
+@media (min-width: 1441px) { .cloud-art { right: calc((1440px - 100vw) / 2 - 64px); width: calc(66% + (100vw - 1440px) / 2); } }
+@media (max-width: 1100px) {
+  .cloud-page .wrap { padding: 0 36px; }
+  .cloud-art { right: -36px; width: 64%; }
+  .cloud-page h1 { font-size: 46px; }
+  .hero-copy { width: 62%; }
+  .cloud-page .lead { max-width: 410px; font-size: 18px; }
+  .cloud-page .rollout { gap: 40px; }
+}
+@media (max-width: 760px) {
+  .cloud-page .wrap { padding: 0 24px; }
+  .cloud-page header { height: 90px; gap: 20px; }
+  .cloud-page .brand { width: 150px; }
+  .cloud-page nav { gap: 18px; }
+  .cloud-page nav .cta { padding: 10px 12px; font-size: 12px; }
+  .cloud-hero { display: block; padding: 48px 0 310px; min-height: 0; }
+  .hero-copy { width: 100%; max-width: 580px; }
+  .cloud-page h1 { font-size: clamp(33px, 6.2vw, 46px); line-height: 1.2; letter-spacing: -.045em; text-wrap: initial; }
+  .cloud-page .lead { font-size: 18px; max-width: 440px; }
+  .hero-partners { margin-top: 32px; }
+  .cloud-art { top: auto; bottom: 0; height: 285px; width: calc(100% + 48px); right: -24px; mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent); }
+  .cloud-page .rollout { grid-template-columns: 1fr; gap: 25px; padding: 42px 0; }
+  .rollout h2 { font-size: 30px; margin: 0; }
+  .eyebrow { margin-bottom: 15px; }
+}
+@media (max-width: 390px) { .cloud-page nav > a:first-child { display: none; } }
+
+/* A full-width typographic sign-off, sized to the footer itself. */
+.cloud-page .dreamscale-footer {
+  display: block;
+  padding: 38px 0 30px;
+  color: #17191a;
+  container-type: inline-size;
+}
+.footer-top { display: flex; justify-content: space-between; gap: 32px; }
+.footer-contact { display: flex; flex-direction: column; gap: 12px; font-size: 14px; }
+.footer-contact > a { color: #73777b; }
+.cloud-page .footer-links { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 32px; font-size: 14px; }
+.footer-wordmark {
+  margin-top: 76px;
+  color: #17191a;
+  font-family: Unbounded, DSL, sans-serif;
+  font-size: 14.2cqw;
+  font-weight: 550;
+  letter-spacing: -.055em;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+@media (max-width: 760px) {
+  .cloud-page .dreamscale-footer { padding: 28px 0 24px; }
+  .footer-top { flex-direction: column; gap: 28px; }
+  .cloud-page .footer-links { gap: 24px; }
+  .footer-wordmark { margin-top: 48px; }
+}
+/* Keep footer Docs visible at the smallest header breakpoint. */
+@media (max-width: 390px) { .cloud-page .footer-links > a:first-child { display: inline; } }
