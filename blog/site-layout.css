@@ -17,9 +17,9 @@ body { zoom: 1; }
 .demo-link {
   display: inline-flex;
   padding: 15px 22px;
-  background: #1b1d1e;
+  background: #0047ab;
   color: white;
-  border: 1px solid #1b1d1e;
+  border: 1px solid #0047ab;
   border-radius: 5px;
   font-size: 15px;
   text-decoration: none;
