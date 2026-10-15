@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preload" href="/assets/fonts/Unbounded-Latin-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Mluvka-Regular-web.woff2" as="font" type="font/woff2" crossorigin>
 <title>Dreamscale Labs — Real-time cloud inference for physical AI</title>    <!-- Google Tag Manager -->
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -23,10 +25,8 @@
 <meta property="og:description" content="Deploy frontier robot AI without expensive local GPUs.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dreamscalelabs.com/">
-<link rel="preload" href="/assets/fonts/Mluvka-Regular-web.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/assets/fonts/Unbounded-Variable.ttf" as="font" type="font/ttf" crossorigin>
-<link rel="stylesheet" href="/assets/landing/landing.css?v=black-restored-1">
-<link rel="stylesheet" href="/assets/landing/cloud-hero.css?v=black-restored-1">
+<link rel="stylesheet" href="/assets/landing/landing.css?v=font-loading-1">
+<link rel="stylesheet" href="/assets/landing/cloud-hero.css?v=font-loading-1">
 <script defer src="/assets/landing/robot-motion.js?v=franka-detail-2"></script>
 <script defer src="/assets/landing/robot-motion-3d.js?v=franka-aligned-2"></script>
 <script defer src="/assets/landing/cloud-hero.js?v=efficient-1"></script>
@@ -41,7 +41,7 @@
 <div class="wrap">
 <header>
 <a href="/" aria-label="Dreamscale Labs home">
-<img class="brand" src="/assets/landing/brand.svg" alt="Dreamscale Labs">
+<img class="brand" src="/assets/landing/brand.svg" width="1562" height="272" fetchpriority="high" alt="Dreamscale Labs">
 </a>
 <nav>
 <a href="/blog/">Blog</a>
@@ -233,27 +233,27 @@
 <p class="provider-sub">Examples of providers whose models we can onboard.</p>
 <ul class="compact-logos">
 <li>
-<img src="/assets/landing/providers/nvidia.svg" alt="" width="36" height="36">
+<img src="/assets/landing/providers/nvidia.svg" alt="" width="36" height="36" loading="lazy" decoding="async">
 <span>NVIDIA</span>
 </li>
 <li>
-<img src="/assets/landing/providers/ai2.svg" alt="" width="36" height="36">
+<img src="/assets/landing/providers/ai2.svg" alt="" width="36" height="36" loading="lazy" decoding="async">
 <span>Ai2</span>
 </li>
 <li>
-<img src="/assets/landing/providers/physical-intelligence.png" alt="" width="36" height="36">
+<img src="/assets/landing/providers/physical-intelligence.png" alt="" width="36" height="36" loading="lazy" decoding="async">
 <span>Physical Intelligence</span>
 </li>
 <li>
-<img src="/assets/landing/providers/robbyant.png" alt="" width="36" height="36">
+<img src="/assets/landing/providers/robbyant.png" alt="" width="36" height="36" loading="lazy" decoding="async">
 <span>Robbyant</span>
 </li>
 <li>
-<img src="/assets/landing/providers/perceptron.png" alt="" width="36" height="36">
+<img src="/assets/landing/providers/perceptron.png" alt="" width="36" height="36" loading="lazy" decoding="async">
 <span>Perceptron</span>
 </li>
 <li>
-<img src="/assets/landing/providers/hugging-face.svg" alt="" width="36" height="36">
+<img src="/assets/landing/providers/hugging-face.svg" alt="" width="36" height="36" loading="lazy" decoding="async">
 <span>Hugging Face</span>
 </li>
 </ul>

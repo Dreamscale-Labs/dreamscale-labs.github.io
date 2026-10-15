@@ -1,9 +1,9 @@
 @font-face {
   font-family: Unbounded;
-  src: url('/assets/fonts/Unbounded-Variable.ttf') format('truetype');
+  src: url('/assets/fonts/Unbounded-Latin-Variable.woff2') format('woff2');
   font-style: normal;
   font-weight: 200 900;
-  font-display: swap;
+  font-display: block;
 }
 .cloud-page .wrap { max-width: 1440px; padding: 0 64px; }
 .cloud-page header { height: 112px; }
