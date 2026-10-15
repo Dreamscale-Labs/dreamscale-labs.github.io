@@ -82,3 +82,5 @@
 }
 /* Keep footer Docs visible at the smallest header breakpoint. */
 @media (max-width: 390px) { .cloud-page .footer-links > a:first-child { display: inline; } }
+
+.cloud-page .cta-contact { margin-top: 22px; }
