@@ -2,6 +2,13 @@
   max-width: none;
 }
 
+.article-cover {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 3rem;
+}
+
 .article video {
   display: block;
   width: 100%;
