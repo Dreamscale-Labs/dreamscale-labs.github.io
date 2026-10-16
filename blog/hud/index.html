@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link rel="canonical" href="https://www.dreamscalelabs.com/blog/hud/">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="We're partnering with HUD to enable robot developers to benchmark and evaluate frontier robot foundation models.">
+    <title>Evaluating Robot Models in the Cloud — Dreamscale Labs</title>
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link
+      rel="preload"
+      href="/assets/fonts/Mluvka-Regular-web.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    >
+    <link
+      rel="stylesheet"
+      href="/blog/why/article.css"
+    >
+    <link rel="stylesheet" href="/blog/site-layout.css?v=blue-cta-1">
+    <link rel="stylesheet" href="/blog/hud/hud.css">
+  </head>
+  <body>
+    <header class="site-header" aria-label="Primary navigation">
+      <a class="site-logo" href="/" aria-label="Dreamscale Labs home">
+        <img
+          src="/assets/landing/brand.svg"
+          alt="Dreamscale Labs"
+          width="188"
+          fetchpriority="high"
+        >
+      </a>
+      <nav>
+        <a class="nav-link" href="/blog/">Blog</a>
+        <a class="demo-link" href="https://app.dreamscalelabs.com">Get started</a>
+      </nav>
+    </header>
+
+    <main class="article-shell" id="top">
+      <header class="article-hero">
+        <div class="article-title-block">
+          <h1>Evaluating Robot Models in the Cloud</h1>
+          <p class="article-dek">We're partnering with HUD to enable robot developers to benchmark and evaluate frontier robot foundation models.</p>
+          <p class="reading-meta"><time datetime="2026-10-16">October 16, 2026</time><span aria-hidden="true">·</span><span>6 min read</span></p>
+        </div>
+      </header>
+
+      <article class="article" id="article-introduction">
+        <h2>Introduction</h2>
+
+        <p><a href="https://www.hud.ai/">HUD</a> creates RL environments to evaluate and train frontier AI models. Over the past few months, they've been working on utilizing the same infrastructure that enables highly parallelized and containerized evaluations of coding agents to evaluate frontier robotics models.</p>
+
+        <p>However, efficient robotics evals in the cloud is still quite greenfield, and they learned this the hard way.</p>
+
+        <p>Think of there being two sides to the eval process: the environment side, and the agent side. HUD lives on the environment side. It allows users to create and run evals on any CPU- or GPU-enabled robotics simulator they could think up. As for the agent-side, people often take it for granted. With coding agents, we don't need to worry about hosting the model, batching its inputs for efficient GPU usage, and the latency that might result. We just query an API. Robotics models (until now) had no such analogue, and HUD had to build and provide that tooling themselves.</p>
+
+        <p>What's more, robotics has a standardization problem. There's no accepted convention for interfaces and any eval requires at least a minimal “adapter” layer to interact with different embodiments and their input/output contracts.</p>
+
+        <p>So that's why we're excited to partner with HUD. Our API and SDK enable HUD to evaluate robotics models in the cloud as efficiently as they evaluate coding agents.</p>
+
+        <p>In this blog post, we explore 3 different scenarios in which we use Dreamscale and HUD to evaluate different robot AI models in both simulation and the real world.</p>
+
+        <h2>Experiment 1: Running VLAs at Scale</h2>
+
+        <p>As robot developers post-train VLAs to improve performance, it's important to evaluate them across diverse tasks and environments in simulation to catch failure modes early before they are deployed to the real world.</p>
+
+        <p>Some of the common robotics simulation benchmarks have varying numbers of tasks, ranging from 60 tasks in RoboDojo <sup><a href="#ref-1">[1]</a></sup> to over 10K tasks in LIBERO-Plus <sup><a href="#ref-2">[2]</a></sup>. And if you are developing custom simulation environments, the number of task permutations (such as slight scene shifts) increases drastically. For any evaluation you'd then have to run hundreds or thousands of rollouts.</p>
+
+        <p>Therefore, a key challenge for sim evaluations is scaling up the inference compute to roll out hundreds of trajectories in parallel and reduce the time it takes to perform the evaluation.</p>
+
+        <p>We put our inference to the test. For MolmoAct2 <sup><a href="#ref-3">[3]</a></sup> and π0.5 <sup><a href="#ref-4">[4]</a></sup>, we ran 128 simulated robots running simultaneously against 128 different LIBERO <sup><a href="#ref-5">[5]</a></sup> tasks. This could have been an arbitrary number from 1 to 128, as Dreamscale's scalable inference supports an arbitrary number of concurrent policies, with the underlying GPUs spinning up and down on-demand.</p>
+
+        <figure class="wide-figure">
+          <div class="figure-frame">
+            <video src="/assets/blog/hud/libero-128.mp4" poster="/assets/blog/hud/libero-128.jpg" width="1920" height="960" autoplay muted loop playsinline preload="metadata" aria-label="A grid of 128 simulated LIBERO robots running at once, with successful episodes turning green"></video>
+          </div>
+          <figcaption>
+            <span class="figure-number">Fig. 01</span>
+            <span>Rolling out 128 trajectories in simulation with Dreamscale's cloud inference.</span>
+          </figcaption>
+        </figure>
+
+        <p>Under the hood, Dreamscale leverages several tricks to achieve high inference throughput while keeping latency low.</p>
+
+        <ul>
+          <li><strong>Disaggregation:</strong> splitting the VLA into the VLM module and action expert, and running them in parallel <em>(maximizes throughput)</em></li>
+          <li><strong>Stream batching:</strong> the model allows requests to come in at any time without waiting for previous requests to fully complete <em>(minimizes latency)</em></li>
+          <li><strong>Client-side orchestration:</strong> multiple clients coordinate when they should send fresh observations to the server <em>(maximizes utilization)</em></li>
+          <li><strong>Urgency-based scheduling:</strong> embodiments that are closest to approaching the end of their action buffer are prioritized <em>(minimizes stalls)</em></li>
+        </ul>
+
+        <p>HUD makes it easy to record the rollouts, view detailed traces, assign evaluation scores and review the action and observation history tick by tick.</p>
+
+        <h2>Experiment 2: Running World Action Models in the Cloud</h2>
+
+        <p>The physical AI field is waking up to a new trend in model architecture: World Action Models (WAMs) <sup><a href="#ref-6">[6]</a></sup>. Instead of learning a direct map from vision to action, WAMs try to learn the causal dynamics of how the world progresses over time, making predictions about the future state and deriving the actions that lead to a desired state.</p>
+
+        <p>These WAMs are often built on top of video diffusion models to leverage the ability to predict future sequences of observations, which leads to better generalization across domains. However, because they must predict future state as well as future actions, WAMs are significantly more compute-intensive than VLAs, often exceeding the bounds of local compute (e.g. Jetson Orin and Thor).</p>
+
+        <p>One example is NVIDIA's Cosmos 3 <sup><a href="#ref-7">[7]</a></sup>, a multi-modal model where a single Mixture-of-Transformers architecture jointly processes and generates language, image, video, audio, and action sequences. By passing in specific inputs (for our case, language instruction, observation video and proprioceptive state) and masking out the others, Cosmos 3 becomes a world action model that outputs action trajectories.</p>
+
+        <p>Cosmos 3 comes in three different sizes, from Edge 4B to Nano 16B to Super 64B, which gives a glimpse into the compounding scale of parameter counts we are seeing with newer world models. We take the Nano variant which has a DROID <sup><a href="#ref-8">[8]</a></sup> checkpoint available, and evaluate it on the RoboLab benchmark <sup><a href="#ref-9">[9]</a></sup>, a high-fidelity simulation benchmark released by NVIDIA in April 2026. It has a leaderboard that ranks over 15 submitted policies across a suite of 120 diverse tasks, where Cosmos 3 Nano Policy places 6th.</p>
+
+        <figure class="wide-figure">
+          <div class="figure-frame">
+            <video src="/assets/blog/hud/robolab.mp4" poster="/assets/blog/hud/robolab.jpg" width="1920" height="894" autoplay muted loop playsinline controls preload="metadata" aria-label="A grid of RoboLab tasks in Isaac Sim, each controlled by a world action model served from the cloud"></video>
+          </div>
+          <figcaption>
+            <span class="figure-number">Fig. 02</span>
+            <span>Evaluating computationally-expensive world action models in RoboLab (Isaac Sim).</span>
+          </figcaption>
+        </figure>
+
+        <p>A recent addition to the RoboLab-120 leaderboard is FLUX 3 Action <sup><a href="#ref-10">[10]</a></sup>, a 7B world action model built by Black Forest Labs, based on their existing FLUX 3 vision backbone. It had reached #1 upon release, demonstrating stronger performance with more efficient inference. However, it's still slower than the typical VLA, and only after a series of distillation and quantization steps do they start to match the inference speeds of VLAs.</p>
+
+        <p>Rather than trying to squeeze intelligence into the tight constraints of local compute, we envision a future where these larger, more capable models control robots over a real-time cloud inference API.</p>
+
+        <p>Again, we use Dreamscale's inference with HUD's environment framework to run Flux 3 Action, demonstrating the ability to easily experiment with the latest world action models using flexible inference.</p>
+
+        <h2>Experiment 3: Into the Real World</h2>
+
+        <p>HUD is beginning to extend its imagination beyond evaluations in simulated environments, towards physical rollouts on real robots. A key challenge here is that because frontier physical AI models have grown heavier in compute demand, you either need to pay up front for an expensive high-end GPU, or accept the slow inference loop as you watch your compute-constrained GPU struggle.</p>
+
+        <p>A core reason why HUD partnered with us is our ability to serve inference of the strongest physical AI models over the cloud with real-time latency. Dreamscale applies a vast suite of optimizations across the full stack of inference: from the network to the GPU to the model architecture.</p>
+
+        <p>We ran a select number of real-world rollouts of π0.5 on a bimanual YAM robot setup via cloud inference, and using HUD as the live trajectory recorder and evaluation tool.</p>
+
+        <figure class="wide-figure">
+          <div class="figure-frame">
+            <video src="/assets/blog/hud/hud-pi05-yam.mp4" poster="/assets/blog/hud/hud-pi05-yam.jpg" width="1920" height="1174" autoplay muted loop playsinline controls preload="metadata" aria-label="A π0.5 rollout on a bimanual YAM robot in HUD, showing camera feeds next to a tick-by-tick log of observations and predicted action chunks"></video>
+          </div>
+          <figcaption>
+            <span class="figure-number">Fig. 03</span>
+            <span>π0.5 rollout recorded in HUD, public trace available <a href="https://www.hud.ai/shared/jobs/90822306-b5a5-4df0-8fff-b743d3bad4e8">here</a>, ran with <code>dreamscale run yam --hud --model pi0.5-bimanualyam --instruction "pick up the blocks and put it into the bowl"</code></span>
+          </figcaption>
+        </figure>
+
+        <p>Through a mixture of inference optimizations, network-level optimizations and real-time action chunking (RTC) <sup><a href="#ref-11">[11]</a></sup>, Dreamscale's cloud inference produced imperceptible delay (&lt;50ms) and achieved smooth control at 30hz, quickly recovering from missed grips and slight bumps.</p>
+
+        <h2>Conclusion &amp; The Future</h2>
+
+        <p>We're excited by what this partnership signals for robot developers in being able to use, evaluate and benchmark VLAs and WAMs, namely:</p>
+
+        <ul>
+          <li>Scalable cloud inference unlocking massively parallel sim evaluations</li>
+          <li>Running powerful world action models that otherwise do not fit on conventional GPUs</li>
+          <li>Bringing frontier physical intelligence to the real world via a frictionless API</li>
+        </ul>
+
+        <p>Beyond evaluations, we envision a future where Reinforcement Learning drives the need for an even bigger number of rollouts being performed at scale, with HUD as the environment-side fabric on which Dreamscale provides agent-side inference. The possibilities are limitless: robots testing in and learning from an incredible diversity of real-world environments via cloud inference.</p>
+
+        <p>In collaboration with our friends at HUD, we are open-sourcing a ready-to-use cookbook where you can replicate the experiments and run cloud evaluations yourself.</p>
+
+        <p class="post-links"><a href="https://github.com/Dreamscale-Labs/dreamscale-hud">Repo</a><a href="https://www.hud.ai/">HUD</a></p>
+
+        <section class="references" aria-label="References">
+          <h2>References</h2>
+          <ol>
+            <li id="ref-1">Chen, Tianxing, et al. “RoboDojo: A Unified Sim-and-Real Benchmark for Comprehensive Evaluation of Generalist Robot Manipulation Policies.” 2607.04434v3, 5 July 2026, arXiv, <a href="https://arxiv.org/abs/2607.04434v3">arxiv.org/abs/2607.04434v3</a>. Accessed 16 Oct. 2026.</li>
+            <li id="ref-2">Fei, Senyu, et al. “LIBERO-Plus: In-Depth Robustness Analysis of Vision-Language-Action Models.” <em>arXiv.Org</em>, 2025, <a href="https://arxiv.org/abs/2510.13626">arxiv.org/abs/2510.13626</a>. Accessed 16 Oct. 2026.</li>
+            <li id="ref-3">Fang, Haoquan, et al. “MolmoAct2: Action Reasoning Models for Real-World Deployment.” 2605.02881v2, 4 May 2026, arXiv, <a href="https://arxiv.org/abs/2605.02881v2">arxiv.org/abs/2605.02881v2</a>. Accessed 15 Oct. 2026.</li>
+            <li id="ref-4">Intelligence, Physical, et al. “π0.5: A Vision-Language-Action Model With Open-World Generalization.” <em>arXiv.Org</em>, 2025, <a href="https://arxiv.org/abs/2504.16054">arxiv.org/abs/2504.16054</a>. Accessed 15 Oct. 2026.</li>
+            <li id="ref-5">Liu, Bo, et al. “LIBERO: Benchmarking Knowledge Transfer for Lifelong Robot Learning.” <em>arXiv.Org</em>, 14 Oct. 2023, <a href="https://arxiv.org/abs/2306.03310">arxiv.org/abs/2306.03310</a>. Accessed 15 Oct. 2026.</li>
+            <li id="ref-6">Ye, Seonghyeon, et al. “World Action Models Are Zero-Shot Policies.” <em>arXiv.Org</em>, 2026, <a href="https://arxiv.org/abs/2602.15922">arxiv.org/abs/2602.15922</a>. Accessed 15 Oct. 2026.</li>
+            <li id="ref-7">NVIDIA, et al. “Cosmos 3: Omnimodal World Models for Physical AI.” <em>arXiv.Org</em>, 2026, <a href="https://arxiv.org/abs/2606.02800">arxiv.org/abs/2606.02800</a>. Accessed 15 Oct. 2026.</li>
+            <li id="ref-8">Khazatsky, Alexander, et al. “DROID: A Large-Scale In-The-Wild Robot Manipulation Dataset.” <em>arXiv.Org</em>, 19 Mar. 2024, <a href="https://arxiv.org/abs/2403.12945">arxiv.org/abs/2403.12945</a>. Accessed 16 Oct. 2026.</li>
+            <li id="ref-9">Xuning, Yang Jenai, et al. “RoboLab: A High-Fidelity Simulation Benchmark for Analysis of Task Generalist Policies.” 2604.09860v4, 10 Apr. 2026, arXiv, <a href="https://arxiv.org/abs/2604.09860v4">arxiv.org/abs/2604.09860v4</a>. Accessed 15 Oct. 2026.</li>
+            <li id="ref-10">Labs, Black Forest. “FLUX 3 Action: A 7B World Action Model for Robot Control.” <em>Black Forest Labs</em>, 22 Sept. 2026, <a href="https://bfl.ai/models/flux-3-action">bfl.ai/models/flux-3-action</a>. Accessed 15 Oct. 2026.</li>
+            <li id="ref-11">Black, Kevin, et al. “Real-Time Execution of Action Chunking Flow Policies.” <em>arXiv.Org</em>, 2025, <a href="https://arxiv.org/abs/2506.07339">arxiv.org/abs/2506.07339</a>. Accessed 15 Oct. 2026.</li>
+          </ol>
+        </section>
+      </article>
+    </main>
+
+    <footer class="blog-footer">
+      <span>Dreamscale Labs © 2026</span>
+      <a href="#top">Back to top ↑</a>
+    </footer>
+    <div class="reading-progress" role="progressbar" aria-label="Article reading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+    <script src="/blog/why/reading-progress.js" defer></script>
+  </body>
+</html>

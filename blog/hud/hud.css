@@ -1,0 +1,50 @@
+.article-dek {
+  max-width: none;
+}
+
+.article video {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #000000;
+}
+
+.article li {
+  margin-bottom: 8px;
+}
+
+.article sup {
+  font-size: 0.68em;
+  line-height: 0;
+}
+
+.article sup a {
+  text-decoration: none;
+}
+
+.article code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.86em;
+  overflow-wrap: anywhere;
+}
+
+.post-links {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.references h2 {
+  font-size: clamp(1.55rem, 3.466667vw, 1.85rem);
+}
+
+.references ol {
+  padding-left: 1.5rem;
+  color: var(--muted);
+  font-size: 1.02rem;
+  line-height: 1.5;
+}
+
+.references li {
+  overflow-wrap: anywhere;
+  scroll-margin-top: 2rem;
+}
