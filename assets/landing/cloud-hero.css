@@ -12,11 +12,14 @@
 .cloud-page .cta:hover { opacity: 1; background: #003a8c; border-color: #003a8c; box-shadow: 0 1px 2px rgba(0, 35, 90, .25), 0 12px 26px -10px rgba(0, 71, 171, .7); }
 .cloud-page .cta .arrow { transition: transform .2s; }
 .cloud-page .cta:hover .arrow { transform: translateX(3px); }
-.cloud-page nav .cta { padding: 12px 20px; }
+.cloud-page nav { font-size: 16px; }
+.cloud-page nav .cta { padding: 14px 24px; border-radius: 999px; font-size: 16px; }
 .nav-signin { color: #17191a; }
+.cloud-page nav a { white-space: nowrap; }
 .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 30px; }
-.cloud-page .hero-cta { padding: 19px 32px; font-size: 18px; }
-.signin-link { font-size: 17px; color: #17191a; border-bottom: 1px solid #c3c7cb; padding-bottom: 3px; transition: border-color .2s; }
+.cloud-page .hero-cta { padding: 25px 44px; border-radius: 8px; gap: 16px; font-size: 22px; box-shadow: 0 2px 4px rgba(0, 35, 90, .25), 0 18px 36px -12px rgba(0, 71, 171, .75); }
+.cloud-page .hero-cta:hover { box-shadow: 0 2px 4px rgba(0, 35, 90, .3), 0 22px 40px -12px rgba(0, 71, 171, .85); }
+.signin-link { font-size: 19px; color: #17191a; border-bottom: 1px solid #c3c7cb; padding-bottom: 3px; transition: border-color .2s; }
 .signin-link:hover { opacity: 1; border-color: #17191a; }
 .cloud-hero { position: relative; isolation: isolate; display: flex; align-items: center; min-height: 650px; padding: 72px 0 94px; }
 .hero-copy { position: relative; z-index: 1; width: 59%; max-width: 735px; }
@@ -46,11 +49,13 @@
 }
 @media (max-width: 760px) {
   .cloud-page .wrap { padding: 0 24px; }
-  .cloud-page header { height: 90px; gap: 20px; }
+  .cloud-page header { height: 90px; gap: 12px; }
   .cloud-page .brand { width: 150px; }
-  .cloud-page nav { gap: 18px; }
-  .cloud-page nav .cta { padding: 10px 12px; font-size: 12px; }
-  .cloud-page .hero-cta { padding: 17px 26px; font-size: 17px; }
+  .cloud-page nav { gap: 14px; }
+  .cloud-page nav { font-size: 14px; }
+  .cloud-page nav .cta { padding: 10px 16px; font-size: 13px; }
+  .cloud-page .hero-cta { padding: 21px 34px; font-size: 19px; }
+  .signin-link { font-size: 17px; }
   .cloud-hero { display: block; padding: 48px 0 310px; min-height: 0; }
   .hero-copy { width: 100%; max-width: 580px; }
   .cloud-page h1 { font-size: clamp(33px, 6.2vw, 46px); line-height: 1.2; letter-spacing: -.045em; text-wrap: initial; }
