@@ -8,7 +8,16 @@
 .cloud-page .wrap { max-width: 1440px; padding: 0 64px; }
 .cloud-page header { height: 112px; }
 .cloud-page .brand { width: 192px; }
-.cloud-page .cta { background: #0047ab; border-color: #0047ab; border-radius: 4px; gap: 28px; align-items: center; }
+.cloud-page .cta { background: #0047ab; border-color: #0047ab; border-radius: 6px; gap: 12px; align-items: center; box-shadow: 0 1px 2px rgba(0, 35, 90, .2), 0 8px 20px -10px rgba(0, 71, 171, .55); transition: background-color .2s, border-color .2s, box-shadow .2s; }
+.cloud-page .cta:hover { opacity: 1; background: #003a8c; border-color: #003a8c; box-shadow: 0 1px 2px rgba(0, 35, 90, .25), 0 12px 26px -10px rgba(0, 71, 171, .7); }
+.cloud-page .cta .arrow { transition: transform .2s; }
+.cloud-page .cta:hover .arrow { transform: translateX(3px); }
+.cloud-page nav .cta { padding: 12px 20px; }
+.nav-signin { color: #17191a; }
+.hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 30px; }
+.cloud-page .hero-cta { padding: 19px 32px; font-size: 18px; }
+.signin-link { font-size: 17px; color: #17191a; border-bottom: 1px solid #c3c7cb; padding-bottom: 3px; transition: border-color .2s; }
+.signin-link:hover { opacity: 1; border-color: #17191a; }
 .cloud-hero { position: relative; isolation: isolate; display: flex; align-items: center; min-height: 650px; padding: 72px 0 94px; }
 .hero-copy { position: relative; z-index: 1; width: 59%; max-width: 735px; }
 .cloud-page h1 { font-family: Unbounded, DSL, sans-serif; font-size: clamp(42px, 4.25vw, 62px); font-weight: 450; letter-spacing: -.052em; line-height: 1.18; max-width: 735px; margin-bottom: 26px; text-wrap: balance; }
@@ -41,6 +50,7 @@
   .cloud-page .brand { width: 150px; }
   .cloud-page nav { gap: 18px; }
   .cloud-page nav .cta { padding: 10px 12px; font-size: 12px; }
+  .cloud-page .hero-cta { padding: 17px 26px; font-size: 17px; }
   .cloud-hero { display: block; padding: 48px 0 310px; min-height: 0; }
   .hero-copy { width: 100%; max-width: 580px; }
   .cloud-page h1 { font-size: clamp(33px, 6.2vw, 46px); line-height: 1.2; letter-spacing: -.045em; text-wrap: initial; }
@@ -52,6 +62,7 @@
   .eyebrow { margin-bottom: 15px; }
 }
 @media (max-width: 390px) { .cloud-page nav > a:first-child { display: none; } }
+@media (prefers-reduced-motion: reduce) { .cloud-page .cta, .cloud-page .cta .arrow, .signin-link { transition: none; } }
 
 /* A full-width typographic sign-off, sized to the footer itself. */
 .cloud-page .dreamscale-footer {
