@@ -180,7 +180,7 @@ test("blog index matches the Dreamscale identity and lists the canonical essay",
   assert.match(blogIndex, /src="\/assets\/landing\/brand\.svg"/);
 });
 
-test("blog index uses Mluvka titles and Crimson Text descriptions at the shared scale", () => {
+test("blog index uses Unbounded heading, Mluvka post titles, and Crimson Text descriptions", () => {
   assert.match(blogCss, /@font-face\s*{[^}]*font-family:\s*"Mluvka"/s);
   assert.match(blogCss, /Mluvka-Regular-web\.woff2/);
   assert.match(
@@ -191,7 +191,7 @@ test("blog index uses Mluvka titles and Crimson Text descriptions at the shared 
   assert.match(blogCss, /--text-font:\s*"Crimson Text"/);
   assert.match(
     blogCss,
-    /\.index-title\s*{[^}]*font-family:\s*var\(--title-font\)/s
+    /\.index-title\s*{[^}]*font-family:\s*"Unbounded",\s*var\(--title-font\)/s
   );
   assert.match(
     blogCss,

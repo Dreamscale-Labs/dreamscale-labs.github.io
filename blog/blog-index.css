@@ -1,4 +1,12 @@
 @font-face {
+  font-family: "Unbounded";
+  src: url("/assets/fonts/Unbounded-Latin-Variable.woff2") format("woff2");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
   font-family: "Mluvka";
   src: url("/assets/fonts/Mluvka-Regular-web.woff2") format("woff2");
   font-weight: 400;
@@ -104,7 +112,7 @@ a {
 
 .index-title {
   margin: 0;
-  font-family: var(--title-font);
+  font-family: "Unbounded", var(--title-font);
   font-size: clamp(3.75rem, 12vw, 8rem);
   font-weight: 400;
   letter-spacing: -0.045em;
