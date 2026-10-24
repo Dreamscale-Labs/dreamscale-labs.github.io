@@ -100,3 +100,16 @@
 @media (max-width: 390px) { .cloud-page .footer-links > a:first-child { display: inline; } }
 
 .cloud-page .cta-contact { margin-top: 28px; }
+
+/* Launch announcement above the header. */
+.announce { background: #0047ab; color: #fff; }
+.announce p { max-width: 1440px; margin: 0 auto; padding: 7px 64px; color: inherit; font-size: 13.5px; line-height: 1.4; text-align: center; }
+.announce strong { font-weight: inherit; font-family: Unbounded, DSL, sans-serif; font-size: 12.5px; letter-spacing: -.02em; margin-right: 3px; }
+.announce-link { display: inline-flex; align-items: center; gap: 4px; margin-left: 6px; color: #fff; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(255, 255, 255, .55); white-space: nowrap; transition: text-decoration-color .2s; }
+.announce-link:hover { opacity: 1; text-decoration-color: #fff; }
+.announce-icon { width: 13px; height: 13px; transition: transform .2s; }
+.announce-link:hover .announce-icon { transform: translateX(2px); }
+.announce-link:focus-visible { outline-color: #fff; outline-offset: 3px; }
+@media (max-width: 1100px) { .announce p { padding: 7px 36px; } }
+@media (max-width: 760px) { .announce p { padding: 7px 24px; font-size: 13px; } .announce strong { font-size: 12px; } }
+@media (prefers-reduced-motion: reduce) { .announce-link, .announce-icon { transition: none; } }
