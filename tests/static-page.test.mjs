@@ -164,6 +164,38 @@ test("every public page loads PostHog through the proxy with the app's shared co
   assert.ok(html.includes("GTM-TSVFWT88"), "the homepage keeps Google Analytics");
 });
 
+test("every public page has a large-image link preview", () => {
+  const pages = [
+    "index.html",
+    "blog/index.html",
+    articlePath,
+    "blog/launch-yc/index.html",
+    "blog/hud/index.html",
+  ];
+  const requiredTags = [
+    '<meta property="og:image" content="https://www.dreamscalelabs.com/assets/social/og-image.png">',
+    '<meta property="og:image:width" content="1200">',
+    '<meta property="og:image:height" content="630">',
+    '<meta name="twitter:card" content="summary_large_image">',
+    '<meta name="twitter:site" content="@dreamscalelabs">',
+  ];
+  for (const path of pages) {
+    const source = readFileSync(path, "utf8");
+    for (const tag of requiredTags) {
+      assert.ok(source.includes(tag), `${path} must contain ${tag}`);
+    }
+    for (const property of ["og:title", "og:description", "og:url"]) {
+      assert.ok(source.includes(`<meta property="${property}" content="`), `${path} must set ${property}`);
+    }
+  }
+
+  assert.deepEqual(readPngMetadata("assets/social/og-image.png"), {
+    width: 1200,
+    height: 630,
+    colorType: 2,
+  });
+});
+
 test("blog headers use the shared Dreamscale wordmark", () => {
   const pages = new Map([
     ["blog/index.html", blogIndex],
