@@ -140,6 +140,30 @@ test("every public page declares the complete favicon metadata set", () => {
   }
 });
 
+test("every public page loads PostHog through the proxy with the app's shared cookie", () => {
+  const pages = [
+    "index.html",
+    "blog/index.html",
+    articlePath,
+    "blog/launch-yc/index.html",
+    "blog/hud/index.html",
+  ];
+  for (const path of pages) {
+    assert.match(
+      readFileSync(path, "utf8"),
+      /<script defer src="\/assets\/analytics\/posthog\.js\?v=\d+"><\/script>\s*<\/head>/,
+      `${path} must load PostHog in its head`,
+    );
+  }
+
+  const posthog = readFileSync("assets/analytics/posthog.js", "utf8");
+  assert.match(posthog, /api_host: "https:\/\/v\.dreamscalelabs\.com"/);
+  assert.match(posthog, /cross_subdomain_cookie: true/);
+  assert.match(posthog, /person_profiles: "identified_only"/);
+  assert.match(posthog, /"marketing_link_clicked"/);
+  assert.ok(html.includes("GTM-TSVFWT88"), "the homepage keeps Google Analytics");
+});
+
 test("blog headers use the shared Dreamscale wordmark", () => {
   const pages = new Map([
     ["blog/index.html", blogIndex],
