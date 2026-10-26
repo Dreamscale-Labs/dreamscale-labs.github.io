@@ -147,6 +147,8 @@ test("every public page loads PostHog through the proxy with the app's shared co
     articlePath,
     "blog/launch-yc/index.html",
     "blog/hud/index.html",
+    "terms/index.html",
+    "privacy/index.html",
   ];
   for (const path of pages) {
     assert.match(
@@ -367,5 +369,27 @@ test("no served path or text file uses the legacy product name", () => {
     if (path === join("tests", "static-page.test.mjs")) continue;
     if (!textFile.test(path)) continue;
     assert.doesNotMatch(readFileSync(path, "utf8"), legacyName, `${path} mentions the legacy name`);
+  }
+});
+
+test("legal pages exist but are linked only from a quiet homepage footer corner", () => {
+  for (const [path, title] of [
+    ["terms/index.html", "Terms of Use"],
+    ["privacy/index.html", "Privacy Policy"],
+  ]) {
+    const page = readFileSync(path, "utf8");
+    assert.ok(page.includes(`<h1>${title}</h1>`), `${path} must be titled ${title}`);
+    assert.ok(!/\[publish date|____|DRAFT|▸/.test(page), `${path} must not carry draft markers`);
+    assert.ok(page.includes('<meta name="robots" content="noindex">'), `${path} must stay out of search results`);
+    const footer = page.match(/<footer[\s\S]*?<\/footer>/)[0];
+    assert.ok(!/\/terms\/|\/privacy\//.test(footer), `${path} must not link the legal pages from its footer`);
+  }
+
+  // The only way in is the quiet corner link under the homepage wordmark.
+  assert.match(html, /<div class="footer-legal"><a href="\/terms\/">Terms<\/a><a href="\/privacy\/">Privacy<\/a><\/div>/);
+  const footerLinks = html.match(/<nav class="footer-links"[\s\S]*?<\/nav>/)[0];
+  assert.ok(!/\/terms\/|\/privacy\//.test(footerLinks), "legal pages stay out of the footer navigation");
+  for (const path of ["blog/index.html", articlePath, "blog/launch-yc/index.html", "blog/hud/index.html"]) {
+    assert.ok(!/href="\/(terms|privacy)\/"/.test(readFileSync(path, "utf8")), `${path} must not link to the legal pages`);
   }
 });

@@ -1,0 +1,17 @@
+/* Terms of Use and Privacy Policy: article type, tuned for long legal text. */
+.legal-shell .article-title-block h1 { max-width: none; }
+.article.legal { font-size: clamp(1.15rem, 2vw, 1.25rem); line-height: 1.6; }
+.article.legal h2 {
+  margin: 3.5rem 0 1.25rem;
+  font-size: clamp(1.75rem, 3.6vw, 2.3rem);
+  letter-spacing: -0.015em;
+}
+.article.legal h2:first-child { margin-top: 0; }
+.article.legal h3 { margin: 2.25rem 0 0.75rem; font-size: clamp(1.3rem, 2.6vw, 1.5rem); }
+.article.legal ul, .article.legal ol { margin: 0 0 1.4rem; padding-left: 1.5rem; }
+.article.legal li { margin: 0 0 0.6rem; }
+.article.legal .legal-alpha { list-style: lower-roman; }
+.article.legal .legal-num { font-family: var(--title-font); font-size: 0.85em; color: var(--muted); margin-right: 0.15em; }
+.article.legal .legal-caps { font-size: 0.92em; line-height: 1.55; }
+.article.legal .legal-contact { padding-left: 1rem; border-left: 2px solid var(--line); }
+.article.legal a { overflow-wrap: anywhere; }
