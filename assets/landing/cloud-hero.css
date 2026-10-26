@@ -96,6 +96,10 @@
   .cloud-page .footer-links { gap: 24px; }
   .footer-wordmark { margin-top: 48px; }
 }
+/* Legal links stay deliberately quiet: small and muted, in the footer's bottom-right corner. */
+.footer-legal { display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px; font-size: 11px; }
+.footer-legal a { color: #a3a7ab; text-decoration: none; }
+.footer-legal a:hover { color: #73777b; }
 /* Keep footer Docs visible at the smallest header breakpoint. */
 @media (max-width: 390px) { .cloud-page .footer-links > a:first-child { display: inline; } }
 
