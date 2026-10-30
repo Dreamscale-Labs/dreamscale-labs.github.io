@@ -46,3 +46,5 @@ html{scroll-behavior:smooth;scroll-padding-top:32px}.cloud-page header{display:g
 @media(min-width:761px) and (max-width:1100px){
  .loss-art,.robot-art{width:calc((100% - 35px)/2 + var(--art-bleed))}
 }
+
+.footer-bottom .footer-socials{align-items:center;gap:12px}.footer-socials a{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:4px}.footer-socials svg{display:block;flex-shrink:0}.footer-socials a:focus-visible{outline:2px solid currentColor;outline-offset:3px}
