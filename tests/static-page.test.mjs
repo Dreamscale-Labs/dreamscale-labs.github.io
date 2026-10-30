@@ -304,8 +304,8 @@ test("blog routes use root-relative local references that exist", () => {
 
   for (const [pagePath, pageHtml] of pages) {
     const refs = [...pageHtml.matchAll(/(?:href|src)="([^"]+)"/g)]
-      .map((match) => match[1])
-      .filter((ref) => !/^(?:https?:|mailto:|#)/.test(ref));
+      .map((match) => match[1].split(/[?#]/)[0])
+      .filter((ref) => ref && !/^(?:https?:|mailto:|#)/.test(ref));
 
     for (const ref of refs) {
       assert.match(ref, /^\//, `${pagePath} must use a root-relative reference`);
@@ -333,15 +333,17 @@ test("blog routes use root-relative local references that exist", () => {
 
 test("landing serves the selected design with working local assets and demo links", () => {
   assert.doesNotMatch(html, /noindex|prototypes\/|All concepts/);
-  assert.match(html, /on a single H100/);
-  assert.match(html, /Real-Time Chunking \(RTC\)/);
+  assert.match(html, /id="training"/);
+  assert.match(html, /id="inference-canvas"/);
+  assert.match(html, /id="models"/);
+  assert.match(html, /id="blog"/);
   assert.match(html, /class="hero-partners"/);
   assert.match(html, /id="cloud-canvas"/);
-  assert.match(html, /Real-time cloud inference for physical AI/);
+  assert.match(html, /The real-time cloud for physical AI/);
   assert.match(html, /https:\/\/cal.com\/team\/dreamscale-labs\/demo/);
   assert.doesNotMatch(html, /youtube\.com\/embed/);
-  assert.ok(html.indexOf('class="rollout"') < html.indexOf('class="proof"'));
-  assert.match(html, /dreamzero-execution\.mp4/);
+  assert.ok(html.indexOf('id="training"') < html.indexOf('id="inference"'));
+  assert.equal((html.match(/class="model-card"/g) || []).length, 2);
   for (const [, ref] of html.matchAll(/(?:src|href|poster)="(\/[^"?#]*)(?:[?#][^"]*)?"/g)) {
     const target = ref.endsWith('/') ? ref.slice(1) + 'index.html' : ref.slice(1);
     assert.ok(existsSync(target), `Missing asset: ${ref}`);

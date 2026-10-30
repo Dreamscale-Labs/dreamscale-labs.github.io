@@ -1,0 +1,22 @@
+Official logo sources checked 2026-10-29
+
+BFL: https://bfl.ai/brand (symbol-black.svg)
+Odyssey: https://odyssey.systems/ (light-mode SVG favicon)
+NVIDIA: https://www.nvidia.com/content/dam/en-zz/Solutions/about-nvidia/nvidia-brochure/images/nvidia-logo-black.svg
+Ai2: https://allenai.org/icon.png
+Hugging Face: https://huggingface.co/front/assets/huggingface_logo-noborder.svg
+Physical Intelligence: https://www.physicalintelligence.company/icon.png
+Perceptron: https://perceptron.inc/icons/favicon-light.svg
+Robbyant: https://www.robbyant.com/ (official favicon, served as ICO)
+Xiaomi: https://i01.appmifile.com/webfile/globalimg/logo/pwa-mi/72x72.png
+Tencent: https://www.tencent.com/wp-content/uploads/2024/05/logo@2x-en.png
+
+Wordmark sources:
+Ai2: inline ai2-logo-svg symbol on allenai.org
+Robbyant: header SVG on robbyant.com
+Perceptron: header SVG on perceptron.inc (monochrome presentation)
+Odyssey: header SVG on odyssey.systems
+BFL: https://bfl.ai/brand/logotype-black.svg
+Hugging Face: https://huggingface.co/brand (hf-logo-with-title.svg)
+Xiaomi: https://commons.wikimedia.org/wiki/File:Xiaomi_logo_horizontal_(2021-).svg
+Physical Intelligence: serif typography matching the header on physicalintelligence.company

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="preload" href="/assets/fonts/Unbounded-Latin-Variable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/Mluvka-Regular-web.woff2" as="font" type="font/woff2" crossorigin>
-<title>Dreamscale Labs — Real-time cloud inference for physical AI</title>    <!-- Google Tag Manager -->
+<title>Dreamscale Labs — The real-time cloud for physical AI</title>    <!-- Google Tag Manager -->
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
     j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
@@ -19,17 +19,19 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="manifest" href="/site.webmanifest">
     <meta name="theme-color" content="#ffffff">
-<meta name="description" content="Deploy frontier robot AI without expensive local GPUs. Dreamscale optimizes models, GPU kernels, network, and real-time chunking. Get started.">
+<meta name="description" content="Fast, reliable and private infrastructure for robot training and inference.">
 <link rel="canonical" href="https://dreamscalelabs.com/">
-<meta property="og:title" content="Dreamscale Labs — Real-time cloud inference for physical AI">
-<meta property="og:description" content="Deploy frontier robot AI without expensive local GPUs.">
+<meta property="og:title" content="Dreamscale Labs — The real-time cloud for physical AI">
+<meta property="og:description" content="Fast, reliable and private infrastructure for robot training and inference.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dreamscalelabs.com/">
 <link rel="stylesheet" href="/assets/landing/landing.css?v=font-loading-1">
 <link rel="stylesheet" href="/assets/landing/cloud-hero.css?v=legal-corner-1">
 <script defer src="/assets/landing/robot-motion.js?v=franka-detail-2"></script>
 <script defer src="/assets/landing/robot-motion-3d.js?v=franka-aligned-2"></script>
-<script defer src="/assets/landing/cloud-hero.js?v=efficient-1"></script>
+<script defer src="/assets/landing/cloud-hero.js?v=platform-2"></script>
+<link rel="stylesheet" href="/assets/landing/platform.css?v=2">
+<script defer src="/assets/landing/loss-curve.js?v=1"></script>
 <script defer src="/assets/analytics/posthog.js?v=1"></script>
 </head>
 <body class="cloud-page">    <!-- Google Tag Manager (noscript) -->
@@ -47,21 +49,19 @@
 <a href="/" aria-label="Dreamscale Labs home">
 <img class="brand" src="/assets/landing/brand.svg" width="1562" height="272" fetchpriority="high" alt="Dreamscale Labs">
 </a>
-<nav>
-<a href="/blog/">Blog</a>
-<a class="nav-signin" href="https://app.dreamscalelabs.com/signin">Sign in</a>
-<a class="cta" href="https://app.dreamscalelabs.com">Get started</a>
-</nav>
+<nav class="primary-nav" aria-label="Main navigation">
+<a href="#training">Training</a><a href="#inference">Inference</a><a href="#models">Models</a><a href="#blog">Blog</a>
+</nav><div class="account-nav"><a class="cta outline" href="https://app.dreamscalelabs.com/signin">Sign in</a><a class="cta" href="https://app.dreamscalelabs.com">Get started</a></div>
 </header>
 <main>
 <section class="hero cloud-hero" aria-labelledby="hero-title">
 <div class="cloud-art" aria-hidden="true"><canvas id="cloud-canvas"></canvas></div>
 <div class="hero-copy">
-<h1 id="hero-title">Real-time cloud inference for physical AI</h1>
-<p class="lead">Dreamscale Inference is fast, low-latency infrastructure for robot deployment and evaluation.</p>
+<h1 id="hero-title">The real-time cloud for physical AI</h1>
+<p class="lead">Fast, reliable and private infrastructure for robot training and inference.</p>
 <div class="hero-actions">
 <a class="cta hero-cta" href="https://app.dreamscalelabs.com">Get started <span class="arrow" aria-hidden="true">→</span></a>
-<a class="signin-link" href="https://app.dreamscalelabs.com/signin">Sign in</a>
+<a class="cta hero-cta outline" href="https://cal.com/team/dreamscale-labs/demo">Talk to us <span aria-hidden="true">↗</span></a>
 </div>
 <div class="hero-partners" aria-label="Y Combinator and NVIDIA Inception">
 <img src="/assets/logo/yc-logo.svg" alt="Y Combinator" width="36" height="36">
@@ -70,232 +70,25 @@
 </div>
 </div>
 </section>
-<section class="rollout" aria-label="Robot rollout">
-<div class="rollout-copy"><span class="eyebrow">FROM CLOUD TO ACTION</span><h2>Real-time inference.<br>Real-world execution.</h2></div>
-<figure class="robot">
-<video autoplay loop muted playsinline preload="metadata" poster="/assets/landing/dreamzero-execution.jpg" aria-label="NVIDIA DreamZero world action model controlling a robot arm through cloud inference">
-<source src="/assets/landing/dreamzero-execution.mp4" type="video/mp4">
-</video>
-<figcaption>
-<span>Real-time execution of NVIDIA’s DreamZero world action model over the cloud.</span>
-</figcaption>
-</figure>
+<section class="product-section" id="training" aria-labelledby="training-title">
+<h2 class="section-title" id="training-title"><span>01</span> Training</h2>
+<div class="product-grid training-grid">
+<div class="loss-art" role="img" aria-label="Illustration of training loss decreasing over time">
+<canvas id="loss-canvas" aria-hidden="true"></canvas>
+</div>
+<div class="training-copy"><p class="section-intro">Ridiculously easy fine-tuning.</p><ol class="training-steps"><li>Choose a model</li><li>Bring a dataset</li><li><a href="https://app.dreamscalelabs.com/signin?callbackURL=/dashboard/training">Start training <span aria-hidden="true">↗</span></a></li></ol></div>
+</div></section>
+<section class="product-section" id="inference" aria-labelledby="inference-title">
+<h2 class="section-title" id="inference-title"><span>02</span> Inference</h2>
+<div class="product-grid inference-grid"><div class="inference-copy"><p class="section-intro">Connect your robot.<br>We handle the compute.</p><p>Dreamscale optimizes across the entire stack: network, model and GPUs to maximise throughput and minimise latency.</p><p>Bring your own fine-tuned model with Dreamscale Deployments, or choose a model off the shelf.</p><a class="textlink" href="https://app.dreamscalelabs.com">Deploy a model <span aria-hidden="true">↗</span></a></div><div class="robot-art" aria-hidden="true"><canvas id="inference-canvas"></canvas></div></div>
 </section>
-<section class="proof" aria-label="Performance">
-<div>
-<strong>40–50%</strong>
-<p>Lower tail latency than existing cloud providers.</p>
-</div>
-<div>
-<strong>320 ms</strong>
-<p>DreamZero 14B inference. <br>Beats NVIDIA’s reported speed, <em>with half the silicon</em>.
-</p>
-</div>
-<div>
-<strong>8+ robots</strong>
-<p>Running concurrently <br>on a single H100.</p>
-</div>
-</section>
-<section class="about">
-<h2>Choose a model.<br>Connect your robot.<br>We handle the compute.</h2>
-<div>
-<p>Run models like DreamZero and MolmoAct2 in the cloud. We optimize across the entire stack: model, GPU kernels, and network layer to bring inference closer to your robot.</p>
-<p style="margin-top:16px">On-demand compute for the way robotics teams work: experiment, iterate, deploy.</p>
-<a class="textlink" href="/blog/why/">Why we’re building this ↗</a>
-</div>
-</section>
-<section class="stack-option" id="stack-options">
-<div class="stack-split">
-<div>
-<h2>One platform.<br>
-<em>The whole stack.</em>
-</h2>
-<p>Performance is more than a fast model. We optimize the layers underneath it, so you don’t have to.</p>
-</div>
-<div class="schematic">
-<div class="schematic-row">
-<div>
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" aria-hidden="true">
-<path d="m12 2 9 5v10l-9 5-9-5V7zM3 7l9 5 9-5M12 12v10M7.5 4.5l9 5"/>
-</svg>
-<h3>Model</h3>
-</div>
-<div class="signal signal-0">
-<i style="--i:0">
-</i>
-<i style="--i:1">
-</i>
-<i style="--i:2">
-</i>
-<i style="--i:3">
-</i>
-<i style="--i:4">
-</i>
-<i style="--i:5">
-</i>
-<i style="--i:6">
-</i>
-<i style="--i:7">
-</i>
-<i style="--i:8">
-</i>
-</div>
-</div>
-<div class="schematic-row">
-<div>
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" aria-hidden="true">
-<rect x="5" y="5" width="14" height="14" rx="2"/>
-<rect x="9" y="9" width="6" height="6"/>
-<path d="M8 2v3m8-3v3M8 19v3m8-3v3M2 8h3m-3 8h3M19 8h3m-3 8h3"/>
-</svg>
-<h3>GPU kernels</h3>
-</div>
-<div class="signal signal-1">
-<i style="--i:0">
-</i>
-<i style="--i:1">
-</i>
-<i style="--i:2">
-</i>
-<i style="--i:3">
-</i>
-<i style="--i:4">
-</i>
-<i style="--i:5">
-</i>
-<i style="--i:6">
-</i>
-<i style="--i:7">
-</i>
-<i style="--i:8">
-</i>
-</div>
-</div>
-<div class="schematic-row">
-<div>
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" aria-hidden="true">
-<circle cx="12" cy="12" r="10"/>
-<ellipse cx="12" cy="12" rx="4" ry="10"/>
-<path d="M2 12h20M4 6h16M4 18h16"/>
-</svg>
-<h3>Network</h3>
-</div>
-<div class="signal signal-2">
-<i style="--i:0">
-</i>
-<i style="--i:1">
-</i>
-<i style="--i:2">
-</i>
-<i style="--i:3">
-</i>
-<i style="--i:4">
-</i>
-<i style="--i:5">
-</i>
-<i style="--i:6">
-</i>
-<i style="--i:7">
-</i>
-<i style="--i:8">
-</i>
-</div>
-</div>
-<div class="schematic-row">
-<div>
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" aria-hidden="true">
-<path d="M3 7h8v4H3zM9 13h8v4H9zM15 7h6v4h-6zM3 17h3M20 15v4m-2-2h4"/>
-</svg>
-<h3>Real-Time Chunking (RTC)</h3>
-</div>
-<div class="signal signal-3">
-<i style="--i:0">
-</i>
-<i style="--i:1">
-</i>
-<i style="--i:2">
-</i>
-<i style="--i:3">
-</i>
-<i style="--i:4">
-</i>
-<i style="--i:5">
-</i>
-<i style="--i:6">
-</i>
-<i style="--i:7">
-</i>
-<i style="--i:8">
-</i>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section class="provider-section split-providers" id="provider-options">
-<h2>Start with a frontier model.<br>
-<em>Or bring your own.</em>
-</h2>
-<div class="provider-columns">
-<div>
-<p class="provider-sub">Models are currently in research preview. Get in touch to request access.</p>
-<ul class="compact-logos">
-<li>
-<img src="/assets/landing/providers/nvidia.svg" alt="" width="36" height="36" loading="lazy" decoding="async">
-<span>NVIDIA</span>
-</li>
-<li>
-<img src="/assets/landing/providers/ai2.svg" alt="" width="36" height="36" loading="lazy" decoding="async">
-<span>Ai2</span>
-</li>
-<li>
-<img src="/assets/landing/providers/physical-intelligence.png" alt="" width="36" height="36" loading="lazy" decoding="async">
-<span>Physical Intelligence</span>
-</li>
-<li>
-<img src="/assets/landing/providers/robbyant.png" alt="" width="36" height="36" loading="lazy" decoding="async">
-<span>Robbyant</span>
-</li>
-<li>
-<img src="/assets/landing/providers/perceptron.png" alt="" width="36" height="36" loading="lazy" decoding="async">
-<span>Perceptron</span>
-</li>
-<li>
-<img src="/assets/landing/providers/hugging-face.svg" alt="" width="36" height="36" loading="lazy" decoding="async">
-<span>Hugging Face</span>
-</li>
-</ul>
-</div>
-<div class="checkpoint">
-<span class="file-symbol" aria-hidden="true">↳</span>
-<h3>Your checkpoint.</h3>
-<p>Fine-tuned for your robot.<br>Trained for your task.<br>Let’s get it running in the cloud.</p>
-<a class="cta cta-contact" href="https://cal.com/team/dreamscale-labs/demo" target="_blank" rel="noopener">Get in touch</a>
-</div>
-</div>
-</section>
-<section class="close">
-<h2>Cloud inference<br>that feels local.</h2>
-<a class="cta" href="https://app.dreamscalelabs.com">Get started <span class="arrow" aria-hidden="true">→</span></a>
-</section>
-</main>
-<footer class="dreamscale-footer">
-<div class="footer-top">
-<div class="footer-contact">
-<span>Dreamscale Labs</span>
-<a href="mailto:founders@dreamscalelabs.com">founders@dreamscalelabs.com</a>
-</div>
-<nav class="footer-links" aria-label="Footer">
-<a href="https://docs.dreamscalelabs.com/">Docs ↗</a>
-<a href="https://www.linkedin.com/company/109885685/">LinkedIn ↗</a>
-<a href="https://x.com/dreamscalelabs">X ↗</a>
-<a href="https://dreamscalelabs.com/blog">Blog ↗</a>
-</nav>
-</div>
-<div class="footer-wordmark">Dreamscale</div>
-<div class="footer-legal"><a href="/terms/">Terms</a><a href="/privacy/">Privacy</a></div>
-</footer>
-</div>
-<script>document.querySelectorAll('.robot video').forEach(v=>{const q=matchMedia('(prefers-reduced-motion: reduce)');q.addEventListener('change',()=>{if(q.matches)v.pause();else v.play().catch(()=>{})});if(q.matches)v.pause();else v.play().catch(()=>{})});</script>
-</body>
-</html>
+<section class="product-section models-section" id="models" aria-labelledby="models-title"><h2 class="section-title" id="models-title"><span>03</span> Models</h2><p class="section-intro">Explore available open-weight models:</p><div class="model-grid">
+<a class="model-card" href="https://app.dreamscalelabs.com"><div class="model-logo"><img src="/assets/landing/providers/physical-intelligence.png" alt="Physical Intelligence" width="64" height="64"></div><div><p class="model-maker pi-wordmark">Physical Intelligence</p><h3>Pi 0.5</h3></div><span class="card-action">Explore model <span aria-hidden="true">↗</span></span></a>
+<a class="model-card" href="https://app.dreamscalelabs.com"><div class="model-logo"><img class="bfl-wordmark" src="/assets/landing/providers/bfl-wordmark.svg" alt="Black Forest Labs" width="180" height="45"></div><div><h3>FLUX 3 Action</h3></div><span class="card-action">Explore model <span aria-hidden="true">↗</span></span></a>
+
+
+</div><div class="ecosystem"><p>More models, one cloud.</p><div class="ecosystem-logos"><a href="https://cal.com/team/dreamscale-labs/demo" aria-label="Request access to NVIDIA models"><img class="provider-wordmark" src="/assets/landing/providers/nvidia-official.svg" alt="NVIDIA" width="150" height="36"></a><a href="https://cal.com/team/dreamscale-labs/demo" aria-label="Request access to Ai2 models"><img class="provider-wordmark" src="/assets/landing/providers/ai2-wordmark.svg" alt="Ai2" width="150" height="36"></a><a href="https://cal.com/team/dreamscale-labs/demo" aria-label="Request access to Hugging Face models"><img class="provider-wordmark" src="/assets/landing/providers/hugging-face-wordmark.svg" alt="Hugging Face" width="150" height="36"></a><a href="https://cal.com/team/dreamscale-labs/demo" aria-label="Request access to Robbyant models"><img class="provider-wordmark" src="/assets/landing/providers/robbyant-wordmark.svg" alt="Robbyant" width="150" height="36"></a><a href="https://cal.com/team/dreamscale-labs/demo" aria-label="Request access to Xiaomi models"><img class="provider-wordmark" src="/assets/landing/providers/xiaomi-wordmark.svg" alt="Xiaomi" width="150" height="36"></a><a href="https://cal.com/team/dreamscale-labs/demo" aria-label="Request access to Tencent models"><img class="provider-wordmark" src="/assets/landing/providers/tencent.png" alt="Tencent" width="150" height="36"></a><a href="https://cal.com/team/dreamscale-labs/demo" aria-label="Request access to Perceptron models"><img class="provider-wordmark" src="/assets/landing/providers/perceptron-wordmark.svg" alt="Perceptron" width="150" height="36"></a><a href="https://cal.com/team/dreamscale-labs/demo" aria-label="Request access to Odyssey models"><img class="provider-wordmark" src="/assets/landing/providers/odyssey-wordmark.svg" alt="Odyssey" width="150" height="36"></a></div><a class="textlink" href="https://cal.com/team/dreamscale-labs/demo">Request access ↗</a></div></section>
+<section class="product-section blog-section" id="blog" aria-labelledby="blog-title"><div class="section-top"><h2 class="section-title" id="blog-title">Blog</h2><a class="textlink" href="/blog/">All posts ↗</a></div><div class="home-posts">
+<a class="home-post" href="/blog/hud/"><time>October 16, 2026</time><h3>Evaluating robot models in the cloud</h3><span aria-hidden="true">↗</span></a><a class="home-post" href="/blog/launch-yc/"><time>September 17, 2026</time><h3>Launch YC: Running robot brains in the cloud</h3><span aria-hidden="true">↗</span></a><a class="home-post" href="/blog/why/"><time>July 24, 2026</time><h3>Why Robot Brains Will Live in the Cloud</h3><span aria-hidden="true">↗</span></a></div></section></main></div>
+<footer class="platform-footer"><div class="footer-inner"><div class="footer-top"><div class="footer-pitch"><h2>Cloud inference<br>that feels local</h2><a class="cta" href="https://app.dreamscalelabs.com">Get started <span aria-hidden="true">↗</span></a></div><nav class="footer-links" aria-label="Footer"><div><span>PLATFORM</span><a href="#training">Training ↗</a><a href="#inference">Inference ↗</a><a href="#models">Models ↗</a></div><div><span>EXPLORE</span><a href="https://docs.dreamscalelabs.com/">Docs ↗</a><a href="/blog/">Blog ↗</a><a href="https://cal.com/team/dreamscale-labs/demo">Talk to us ↗</a></div></nav></div><div class="footer-wordmark">Dreamscale</div><div class="footer-bottom"><span>© 2026 Dreamscale Labs</span><div><a href="https://x.com/dreamscalelabs">X ↗</a><a href="https://www.linkedin.com/company/109885685/">LinkedIn ↗</a><a href="mailto:founders@dreamscalelabs.com">Email ↗</a></div><div class="footer-legal"><a href="/terms/">Terms</a><a href="/privacy/">Privacy</a></div></div></div></footer>
+</body></html>

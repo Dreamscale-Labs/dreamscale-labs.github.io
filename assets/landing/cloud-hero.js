@@ -1,7 +1,9 @@
 // The same dotted animation as the p5 sketch, drawn directly on a canvas.
 // Using both favicon contours preserves the cloud's dimensional lower edge.
 (() => {
-  const canvas = document.getElementById('cloud-canvas');
+  document.querySelectorAll('#cloud-canvas, #inference-canvas').forEach(canvas => {
+  const isRobot = canvas.id === 'inference-canvas';
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -39,10 +41,8 @@
     centerX = width * (mobile ? 0.5 : 0.57);
     centerY = height * (mobile ? 0.5 : 0.49);
     robotScale = Math.min(width * (mobile ? 0.94 : 0.84) / 640, height * 0.88 / 480);
-    const button = document.querySelector('.hero-copy .cta');
-    robotCenterY = mobile ? centerY - 12 * dotScale
-      : button.getBoundingClientRect().bottom - canvas.getBoundingClientRect().top
-        - (DreamscaleRobot.baseBottom - 240) * robotScale;
+    robotCenterY = height * 0.5;
+    if (isRobot) centerX = width * 0.5;
     const robotIndexAt = (x, y) => {
       const rx = Math.round((x - centerX) / robotScale + 320);
       const ry = Math.round((y - robotCenterY) / robotScale + 240);
@@ -73,13 +73,10 @@
     ctx.clearRect(0, 0, width, height);
     const driftX = mobile ? 0 : Math.sin(time * 0.00045) * 5;
     const driftY = Math.sin(time * 0.00065) * 3 * dotScale;
-    const cycle = (time / 1000) % 13;
-    const ease = v => v * v * (3 - 2 * v);
-    const robotWeight = cycle < 3 ? 0 : cycle < 3.4 ? ease((cycle - 3) / 0.4)
-      : cycle < 12.6 ? 1 : 1 - ease((cycle - 12.6) / 0.4);
+    const robotWeight = isRobot ? 1 : 0;
     let robotPixels = null;
     if (robotWeight > 0) {
-      const poseTime = Math.min(9.2, Math.max(0, cycle - 3.4));
+      const poseTime = (time / 1000) % 9.2;
       const nextFrame = Math.floor(poseTime * 24);
       if (nextFrame !== robotFrame) {
         DreamscaleRobot.draw(robotContext, nextFrame / 24);
@@ -92,6 +89,7 @@
     for (const outline of [false, true]) {
       const shapeWeight = Number(outline) * (1 - robotWeight);
       ctx.fillStyle = `rgb(0 ${Math.round(71 * shapeWeight)} ${Math.round(171 * shapeWeight)})`;
+      ctx.globalAlpha = outline && !isRobot ? 1 : 0.22;
       ctx.beginPath();
       for (const dot of dots) {
         if (dot.outline !== outline) continue;
@@ -103,6 +101,7 @@
       }
       ctx.fill();
     }
+    ctx.globalAlpha = 1;
     if (robotPixels) {
       ctx.globalAlpha = robotWeight;
       const paths = Array.from({ length: 32 }, () => new Path2D());
@@ -134,7 +133,8 @@
     cancelAnimationFrame(frame);
     lastTime = null;
     lastRender = null;
-    if (visible && !document.hidden) frame = requestAnimationFrame(tick);
+    if (reducedMotion.matches) render(0);
+    else if (visible && !document.hidden) frame = requestAnimationFrame(tick);
   }
   const layoutObserver = new ResizeObserver(resize);
   layoutObserver.observe(canvas);
@@ -145,4 +145,6 @@
     sync();
   }).observe(canvas);
   document.addEventListener('visibilitychange', sync);
+  reducedMotion.addEventListener('change', sync);
+  });
 })();
