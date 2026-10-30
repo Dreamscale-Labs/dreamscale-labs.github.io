@@ -23,12 +23,12 @@
     }
     // Three parallel dot trails give the curve thickness without enlarging dots.
     // Sample by pixel distance so density does not depend on viewport width.
-    const samples = Math.max(360, Math.ceil((right - left) * 2));
+    const samples = Math.max(720, Math.ceil((right - left) * 4));
     let previous = null;
     for (let i = 0; i <= samples; i++) {
       const t = i / samples;
       const point = {x:left+t*(right-left), y:bottom-loss(t)*(bottom-top), t};
-      if (previous && Math.hypot(point.x-previous.x,point.y-previous.y) < 3.2) continue;
+      if (previous && Math.hypot(point.x-previous.x,point.y-previous.y) < 2.6) continue;
       const dt = 1 / samples;
       const dx = (right-left) * 2 * dt;
       const dy = -(loss(t+dt)-loss(t-dt)) * (bottom-top);
@@ -49,17 +49,17 @@
       ctx.moveTo(d.x + radius, d.y);ctx.arc(d.x,d.y,radius,0,Math.PI*2);
     }
     ctx.fill();ctx.globalAlpha=1;
-    // Reveal one training run over eight seconds, hold, then dissolve to restart.
-    const cycle = elapsed % 11000;
-    const progress = motion.matches ? 1 : Math.min(cycle / 8000, 1);
-    const opacity = motion.matches || cycle < 10000 ? 1 : 1 - (cycle - 10000) / 1000;
+    // Reveal one training run over three seconds, hold, then dissolve to restart.
+    const cycle = elapsed % 4500;
+    const progress = motion.matches ? 1 : Math.min(cycle / 3000, 1);
+    const opacity = motion.matches || cycle < 4000 ? 1 : 1 - (cycle - 4000) / 500;
     for (const p of curve) {
       if (p.t > progress) break;
       const pulse = Math.abs(Math.sin(p.x*p.y + elapsed * .0005));
       const reveal = motion.matches ? 1 : Math.min(1, (progress - p.t) / .018);
       const highlight = Math.exp(-Math.pow((p.t-progress)/.025,2));
       ctx.fillStyle='#0047ab';ctx.globalAlpha=(.75+.25*highlight)*reveal*opacity;
-      const radius=.85+.35*pulse+.25*highlight;
+      const radius=.98+.35*pulse+.25*highlight;
       ctx.beginPath();ctx.arc(p.x,p.y,radius,0,Math.PI*2);ctx.fill();
     }
     ctx.globalAlpha=1;

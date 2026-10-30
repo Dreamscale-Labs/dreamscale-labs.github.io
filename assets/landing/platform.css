@@ -19,15 +19,30 @@ html{scroll-behavior:smooth;scroll-padding-top:32px}.cloud-page header{display:g
 .ecosystem-logos img[src$="odyssey-wordmark.svg"]{filter:brightness(0)}
 .model-card:has(.bfl-wordmark)>div:nth-child(2){padding-top:34px}
 
-/* Bleed artwork to the viewport, fading only toward the adjacent copy. */
+/* Bleed artwork to the viewport and separator, with a soft fade at the heading. */
 .cloud-page{--art-bleed:max(64px,calc((100vw - 1312px)/2))}
-.loss-art,.robot-art{position:relative;isolation:isolate;overflow:hidden;min-width:0;height:410px;width:calc(100% + var(--art-bleed));border:0;border-radius:0}
+.loss-art,.robot-art{position:relative;isolation:isolate;overflow:hidden;min-width:0;align-self:stretch;height:auto;min-height:546px;margin-top:-56px;margin-bottom:-80px;width:calc(100% + var(--art-bleed));border:0;border-radius:0}
 .loss-art{margin-left:calc(-1 * var(--art-bleed));mask-image:linear-gradient(to right,#000 0%,#000 68%,transparent 100%)}
 .robot-art{margin-right:calc(-1 * var(--art-bleed));mask-image:linear-gradient(to right,transparent 0%,#000 32%,#000 100%)}
-.loss-art canvas{height:100%;aspect-ratio:auto}
-.loss-art::after,.robot-art::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(to bottom,#fff,transparent 18%,transparent 80%,#fff)}
+.loss-art canvas,.robot-art canvas{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto}
+.loss-art::after,.robot-art::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(to bottom,#fff 0%,rgba(255,255,255,.8) 4%,rgba(255,255,255,.3) 10%,transparent 18%,transparent 82%,rgba(255,255,255,.3) 90%,rgba(255,255,255,.8) 96%,#fff 100%)}
 @media(max-width:1100px){.cloud-page{--art-bleed:36px}}
 @media(max-width:760px){
  .cloud-page{--art-bleed:24px}
- .loss-art,.robot-art{width:calc(100% + 48px);height:340px;margin-left:-24px;margin-right:-24px;mask-image:none}
+ .loss-art,.robot-art{width:calc(100% + 48px);min-height:390px;margin-top:0;margin-bottom:-50px;margin-left:-24px;margin-right:-24px;mask-image:none}
+}
+
+/* Anchor desktop artwork to the section boundaries, not the content row. */
+@media(min-width:761px){
+ #training,#inference{position:relative;isolation:isolate}
+ .training-grid,.inference-grid{min-height:410px;--art-gap:70px}
+ #training .section-title,#inference .section-title,.training-copy,.inference-copy{position:relative;z-index:1}
+ .training-copy{grid-column:2}
+ .loss-art,.robot-art{position:absolute;top:0;bottom:0;height:auto;min-height:0;margin:0;width:calc((100% - 70px)/2 + var(--art-bleed));z-index:0}
+ .loss-art{left:calc(-1 * var(--art-bleed))}
+ .robot-art{right:calc(-1 * var(--art-bleed))}
+ .loss-art::after,.robot-art::after{background:linear-gradient(to bottom,rgba(255,255,255,.92),rgba(255,255,255,.8) 12%,rgba(255,255,255,.3) 26%,transparent 38%,transparent 82%,rgba(255,255,255,.3) 90%,rgba(255,255,255,.8) 96%,#fff 100%)}
+}
+@media(min-width:761px) and (max-width:1100px){
+ .loss-art,.robot-art{width:calc((100% - 35px)/2 + var(--art-bleed))}
 }
