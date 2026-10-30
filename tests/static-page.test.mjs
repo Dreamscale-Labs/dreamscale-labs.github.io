@@ -145,7 +145,6 @@ test("every public page loads PostHog through the proxy with the app's shared co
     "index.html",
     "blog/index.html",
     articlePath,
-    "blog/launch-yc/index.html",
     "blog/hud/index.html",
     "terms/index.html",
     "privacy/index.html",
@@ -391,7 +390,7 @@ test("legal pages exist but are linked only from a quiet homepage footer corner"
   assert.match(html, /<div class="footer-legal"><a href="\/terms\/">Terms<\/a><a href="\/privacy\/">Privacy<\/a><\/div>/);
   const footerLinks = html.match(/<nav class="footer-links"[\s\S]*?<\/nav>/)[0];
   assert.ok(!/\/terms\/|\/privacy\//.test(footerLinks), "legal pages stay out of the footer navigation");
-  for (const path of ["blog/index.html", articlePath, "blog/launch-yc/index.html", "blog/hud/index.html"]) {
+  for (const path of ["blog/index.html", articlePath, "blog/hud/index.html"]) {
     assert.ok(!/href="\/(terms|privacy)\/"/.test(readFileSync(path, "utf8")), `${path} must not link to the legal pages`);
   }
 });
