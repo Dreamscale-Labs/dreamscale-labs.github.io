@@ -38,15 +38,16 @@
       ctx.moveTo(d.x + radius, d.y);ctx.arc(d.x,d.y,radius,0,Math.PI*2);
     }
     ctx.fill();ctx.globalAlpha=1;
-    ctx.strokeStyle = '#ccd5e2';ctx.lineWidth=.75;
-    ctx.beginPath();ctx.moveTo(38,25);ctx.lineTo(38,height-35);ctx.lineTo(width-18,height-35);ctx.stroke();
-    ctx.fillStyle='#788494';ctx.font='10px monospace';ctx.fillText('LOSS',38,15);ctx.fillText('STEPS →',width-75,height-12);
-    // Keep the complete curve legible, with a soft wave of brighter particles.
-    const wave = (elapsed * .00009) % 1.35 - .15;
+    // Reveal one training run over eight seconds, hold, then dissolve to restart.
+    const cycle = elapsed % 11000;
+    const progress = motion.matches ? 1 : Math.min(cycle / 8000, 1);
+    const opacity = motion.matches || cycle < 10000 ? 1 : 1 - (cycle - 10000) / 1000;
     for (const p of curve) {
+      if (p.t > progress) break;
       const pulse = Math.abs(Math.sin(p.x*p.y + elapsed * .0005));
-      const highlight = Math.exp(-Math.pow((p.t-wave)/.07,2));
-      ctx.fillStyle='#0047ab';ctx.globalAlpha=.65+.35*highlight;
+      const reveal = motion.matches ? 1 : Math.min(1, (progress - p.t) / .018);
+      const highlight = Math.exp(-Math.pow((p.t-progress)/.025,2));
+      ctx.fillStyle='#0047ab';ctx.globalAlpha=(.75+.25*highlight)*reveal*opacity;
       const radius=.85+.35*pulse+.25*highlight;
       ctx.beginPath();ctx.arc(p.x,p.y,radius,0,Math.PI*2);ctx.fill();
     }

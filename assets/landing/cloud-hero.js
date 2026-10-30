@@ -89,7 +89,6 @@
     for (const outline of [false, true]) {
       const shapeWeight = Number(outline) * (1 - robotWeight);
       ctx.fillStyle = `rgb(0 ${Math.round(71 * shapeWeight)} ${Math.round(171 * shapeWeight)})`;
-      ctx.globalAlpha = outline && !isRobot ? 1 : 0.22;
       ctx.beginPath();
       for (const dot of dots) {
         if (dot.outline !== outline) continue;
