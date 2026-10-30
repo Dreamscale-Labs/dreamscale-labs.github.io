@@ -395,3 +395,13 @@ test("legal pages exist but are linked only from a quiet homepage footer corner"
     assert.ok(!/href="\/(terms|privacy)\/"/.test(readFileSync(path, "utf8")), `${path} must not link to the legal pages`);
   }
 });
+
+test("robots.txt opens the site and never blocks a page that relies on noindex", () => {
+  const rules = readFileSync("robots.txt", "utf8")
+    .split("\n")
+    .filter((line) => line && !line.startsWith("#"));
+  assert.deepEqual(rules, ["User-agent: *", "Allow: /", "Disallow: /docs/"]);
+  for (const path of ["terms/index.html", "privacy/index.html", "prototypes/index.html"]) {
+    assert.ok(readFileSync(path, "utf8").includes("noindex"), `${path} must carry the noindex robots.txt leaves readable`);
+  }
+});
