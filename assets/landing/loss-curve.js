@@ -3,7 +3,6 @@
   const canvas = document.getElementById('loss-canvas');
   const ctx = canvas?.getContext('2d');
   if (!ctx) return;
-  const motion = matchMedia('(prefers-reduced-motion: reduce)');
   let width = 0, height = 0, frame = 0, elapsed = 0, lastTime = null;
   let visible = false, dots = [], curve = [];
   // Deterministic mini-batch noise decays as optimization converges.
@@ -51,12 +50,12 @@
     ctx.fill();ctx.globalAlpha=1;
     // Reveal one training run over three seconds, hold, then dissolve to restart.
     const cycle = elapsed % 4500;
-    const progress = motion.matches ? 1 : Math.min(cycle / 3000, 1);
-    const opacity = motion.matches || cycle < 4000 ? 1 : 1 - (cycle - 4000) / 500;
+    const progress = Math.min(cycle / 3000, 1);
+    const opacity = cycle < 4000 ? 1 : 1 - (cycle - 4000) / 500;
     for (const p of curve) {
       if (p.t > progress) break;
       const pulse = Math.abs(Math.sin(p.x*p.y + elapsed * .0005));
-      const reveal = motion.matches ? 1 : Math.min(1, (progress - p.t) / .018);
+      const reveal = Math.min(1, (progress - p.t) / .018);
       const highlight = Math.exp(-Math.pow((p.t-progress)/.025,2));
       ctx.fillStyle='#0047ab';ctx.globalAlpha=(.75+.25*highlight)*reveal*opacity;
       const radius=.98+.35*pulse+.25*highlight;
@@ -70,8 +69,7 @@
   }
   function sync() {
     cancelAnimationFrame(frame);lastTime=null;
-    if(motion.matches){elapsed=0;render();}
-    else if(visible&&!document.hidden)frame=requestAnimationFrame(tick);
+    if(visible&&!document.hidden)frame=requestAnimationFrame(tick);
   }
   let resolutionQuery;
   function watchResolution() {
@@ -83,5 +81,5 @@
   watchResolution();
   new ResizeObserver(resize).observe(canvas);
   new IntersectionObserver(([entry])=>{visible=entry.isIntersecting;sync();}).observe(canvas);
-  motion.addEventListener('change',sync);document.addEventListener('visibilitychange',sync);
+  document.addEventListener('visibilitychange',sync);
 })();

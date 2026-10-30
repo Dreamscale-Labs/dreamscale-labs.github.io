@@ -3,7 +3,6 @@
 (() => {
   document.querySelectorAll('#cloud-canvas, #inference-canvas').forEach(canvas => {
   const isRobot = canvas.id === 'inference-canvas';
-  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -132,8 +131,7 @@
     cancelAnimationFrame(frame);
     lastTime = null;
     lastRender = null;
-    if (reducedMotion.matches) render(0);
-    else if (visible && !document.hidden) frame = requestAnimationFrame(tick);
+    if (visible && !document.hidden) frame = requestAnimationFrame(tick);
   }
   let resolutionQuery;
   function watchResolution() {
@@ -152,6 +150,5 @@
     sync();
   }).observe(canvas);
   document.addEventListener('visibilitychange', sync);
-  reducedMotion.addEventListener('change', sync);
   });
 })();
