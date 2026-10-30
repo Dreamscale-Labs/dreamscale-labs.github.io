@@ -16,7 +16,7 @@
   let dots = [], width = 0, height = 0, frame = 0;
   let visible = false, elapsed = 0, lastTime = null, lastRender = null;
   const frameInterval = 1000 / 30;
-  const pulseSpeed = 0.0005;
+  const pulseSpeed = isRobot ? 0.0005 : 0.0007;
   let robotFrame = -1, cachedRobotPixels = null;
   const robotColors = Array.from({ length: 32 }, (_, i) =>
     `rgb(0 ${Math.round(71 * i / 31)} ${Math.round(171 * i / 31)})`);
