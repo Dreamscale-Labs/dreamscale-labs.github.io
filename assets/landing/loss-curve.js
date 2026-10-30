@@ -13,28 +13,39 @@
   }
   function resize() {
     width = canvas.clientWidth; height = canvas.clientHeight;
-    const dpr = Math.min(devicePixelRatio || 1, 2);
+    const dpr = devicePixelRatio || 1;
     canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     dots = []; curve = [];
-    const left = 38, right = width - 18, top = 30, bottom = height - 35;
-    for (let y = top; y < bottom; y += 8) {
-      for (let x = left; x < right; x += 8) dots.push({x, y, phase:x*y});
+    const left = width * .12, right = width * .88, top = height * .18, bottom = height * .82;
+    for (let y = 6; y < height; y += 8) {
+      for (let x = 6; x < width; x += 8) dots.push({x, y, phase:x*y});
     }
+    // Three parallel dot trails give the curve thickness without enlarging dots.
+    // Sample by pixel distance so density does not depend on viewport width.
+    const samples = Math.max(360, Math.ceil((right - left) * 2));
     let previous = null;
-    for (let i = 0; i <= 360; i++) {
-      const t = i / 360;
+    for (let i = 0; i <= samples; i++) {
+      const t = i / samples;
       const point = {x:left+t*(right-left), y:bottom-loss(t)*(bottom-top), t};
-      if (!previous || Math.hypot(point.x-previous.x,point.y-previous.y) > 2.5) {curve.push(point);previous=point;}
+      if (previous && Math.hypot(point.x-previous.x,point.y-previous.y) < 3.2) continue;
+      const dt = 1 / samples;
+      const dx = (right-left) * 2 * dt;
+      const dy = -(loss(t+dt)-loss(t-dt)) * (bottom-top);
+      const length = Math.hypot(dx,dy) || 1;
+      for (const offset of [-2.4, 0, 2.4]) {
+        curve.push({x:point.x-dy/length*offset, y:point.y+dx/length*offset, t});
+      }
+      previous=point;
     }
     render();
   }
   function render() {
     ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = '#17191a'; ctx.globalAlpha = .18;
+    ctx.fillStyle = '#000'; ctx.globalAlpha = 1;
     ctx.beginPath();
     for (const d of dots) {
-      const radius = .25 + .7 * Math.abs(Math.sin(d.phase + elapsed * .0005));
+      const radius = 1.5 * Math.abs(Math.sin(d.phase + elapsed * .0005));
       ctx.moveTo(d.x + radius, d.y);ctx.arc(d.x,d.y,radius,0,Math.PI*2);
     }
     ctx.fill();ctx.globalAlpha=1;
@@ -62,6 +73,14 @@
     if(motion.matches){elapsed=0;render();}
     else if(visible&&!document.hidden)frame=requestAnimationFrame(tick);
   }
+  let resolutionQuery;
+  function watchResolution() {
+    resolutionQuery?.removeEventListener('change', onResolutionChange);
+    resolutionQuery = matchMedia(`(resolution: ${devicePixelRatio || 1}dppx)`);
+    resolutionQuery.addEventListener('change', onResolutionChange);
+  }
+  function onResolutionChange() { resize(); watchResolution(); }
+  watchResolution();
   new ResizeObserver(resize).observe(canvas);
   new IntersectionObserver(([entry])=>{visible=entry.isIntersecting;sync();}).observe(canvas);
   motion.addEventListener('change',sync);document.addEventListener('visibilitychange',sync);

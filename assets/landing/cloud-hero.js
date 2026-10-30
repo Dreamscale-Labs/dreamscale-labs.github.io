@@ -27,15 +27,15 @@
   function resize() {
     width = canvas.clientWidth;
     height = canvas.clientHeight;
-    const dpr = Math.min(devicePixelRatio || 1, 2);
+    const dpr = devicePixelRatio || 1;
     canvas.width = Math.round(width * dpr);
     canvas.height = Math.round(height * dpr);
-    // Keep a similar number of samples across the cloud on smaller screens.
+    // Scale the composition, but keep dot sizes and sampling pitch in CSS pixels.
     mobile = matchMedia('(max-width: 760px)').matches;
     const scale = mobile
       ? Math.min(width * 0.82 / 1600, height * 0.64 / 690)
       : Math.min(width * 0.68 / 1600, height * 0.54 / 690);
-    dotScale = mobile ? Math.min(1, scale / 0.368) : 1;
+    dotScale = 1;
     const spacing = 8 * dotScale;
     const origin = 6 * dotScale;
     centerX = width * (mobile ? 0.5 : 0.57);
@@ -58,7 +58,7 @@
       }
     }
     fineRobotDots = [];
-    fineDotScale = dotScale * (mobile ? 0.6 : 0.5);
+    fineDotScale = 0.5;
     for (let y = 6 * fineDotScale; y < height; y += 8 * fineDotScale) {
       for (let x = 6 * fineDotScale; x < width; x += 8 * fineDotScale) {
         const robotIndex = robotIndexAt(x, y);
@@ -135,6 +135,14 @@
     if (reducedMotion.matches) render(0);
     else if (visible && !document.hidden) frame = requestAnimationFrame(tick);
   }
+  let resolutionQuery;
+  function watchResolution() {
+    resolutionQuery?.removeEventListener('change', onResolutionChange);
+    resolutionQuery = matchMedia(`(resolution: ${devicePixelRatio || 1}dppx)`);
+    resolutionQuery.addEventListener('change', onResolutionChange);
+  }
+  function onResolutionChange() { resize(); watchResolution(); }
+  watchResolution();
   const layoutObserver = new ResizeObserver(resize);
   layoutObserver.observe(canvas);
   layoutObserver.observe(document.querySelector('.hero-copy'));
