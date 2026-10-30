@@ -3,7 +3,8 @@
   const canvas = document.getElementById('loss-canvas');
   const ctx = canvas?.getContext('2d');
   if (!ctx) return;
-  let width = 0, height = 0, frame = 0, elapsed = 0, lastTime = null;
+  let width = 0, height = 0, frame = 0, elapsed = 0, lastTime = null, lastRender = null;
+  const frameInterval = 1000 / 30;
   let visible = false, dots = [], curve = [];
   // Deterministic mini-batch noise decays as optimization converges.
   function loss(t) {
@@ -65,10 +66,15 @@
   }
   function tick(now) {
     if(lastTime!==null)elapsed+=Math.min(now-lastTime,64);
-    lastTime=now;render();frame=requestAnimationFrame(tick);
+    lastTime=now;
+    if(lastRender===null || now-lastRender>=frameInterval-0.1){
+      render();
+      lastRender=lastRender===null ? now : lastRender+Math.floor((now-lastRender+0.1)/frameInterval)*frameInterval;
+    }
+    frame=requestAnimationFrame(tick);
   }
   function sync() {
-    cancelAnimationFrame(frame);lastTime=null;
+    cancelAnimationFrame(frame);lastTime=null;lastRender=null;
     if(visible&&!document.hidden)frame=requestAnimationFrame(tick);
   }
   let resolutionQuery;
@@ -80,6 +86,6 @@
   function onResolutionChange() { resize(); watchResolution(); }
   watchResolution();
   new ResizeObserver(resize).observe(canvas);
-  new IntersectionObserver(([entry])=>{visible=entry.isIntersecting;sync();}).observe(canvas);
+  new IntersectionObserver(([entry])=>{visible=entry.isIntersecting&&entry.intersectionRatio>=0.2;sync();},{threshold:[0,0.2]}).observe(canvas);
   document.addEventListener('visibilitychange',sync);
 })();
