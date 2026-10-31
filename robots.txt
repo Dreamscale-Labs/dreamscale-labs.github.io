@@ -1,0 +1,4 @@
+# /terms/, /privacy/ and /prototypes/ stay crawlable: their noindex only works if it can be read.
+User-agent: *
+Allow: /
+Disallow: /docs/

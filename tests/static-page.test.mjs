@@ -145,8 +145,9 @@ test("every public page loads PostHog through the proxy with the app's shared co
     "index.html",
     "blog/index.html",
     articlePath,
-    "blog/launch-yc/index.html",
     "blog/hud/index.html",
+    "terms/index.html",
+    "privacy/index.html",
   ];
   for (const path of pages) {
     assert.match(
@@ -169,7 +170,6 @@ test("every public page has a large-image link preview", () => {
     "index.html",
     "blog/index.html",
     articlePath,
-    "blog/launch-yc/index.html",
     "blog/hud/index.html",
   ];
   const requiredTags = [
@@ -334,8 +334,8 @@ test("blog routes use root-relative local references that exist", () => {
 
   for (const [pagePath, pageHtml] of pages) {
     const refs = [...pageHtml.matchAll(/(?:href|src)="([^"]+)"/g)]
-      .map((match) => match[1])
-      .filter((ref) => !/^(?:https?:|mailto:|#)/.test(ref));
+      .map((match) => match[1].split(/[?#]/)[0])
+      .filter((ref) => ref && !/^(?:https?:|mailto:|#)/.test(ref));
 
     for (const ref of refs) {
       assert.match(ref, /^\//, `${pagePath} must use a root-relative reference`);
@@ -363,15 +363,17 @@ test("blog routes use root-relative local references that exist", () => {
 
 test("landing serves the selected design with working local assets and demo links", () => {
   assert.doesNotMatch(html, /noindex|prototypes\/|All concepts/);
-  assert.match(html, /on a single H100/);
-  assert.match(html, /Real-Time Chunking \(RTC\)/);
+  assert.match(html, /id="training"/);
+  assert.match(html, /id="inference-canvas"/);
+  assert.match(html, /id="models"/);
+  assert.match(html, /id="blog"/);
   assert.match(html, /class="hero-partners"/);
   assert.match(html, /id="cloud-canvas"/);
-  assert.match(html, /Real-time cloud inference for physical AI/);
+  assert.match(html, /The real-time cloud for physical AI/);
   assert.match(html, /https:\/\/cal.com\/team\/dreamscale-labs\/demo/);
   assert.doesNotMatch(html, /youtube\.com\/embed/);
-  assert.ok(html.indexOf('class="rollout"') < html.indexOf('class="proof"'));
-  assert.match(html, /dreamzero-execution\.mp4/);
+  assert.ok(html.indexOf('id="training"') < html.indexOf('id="inference"'));
+  assert.equal((html.match(/class="model-card"/g) || []).length, 2);
   for (const [, ref] of html.matchAll(/(?:src|href|poster)="(\/[^"?#]*)(?:[?#][^"]*)?"/g)) {
     const target = ref.endsWith('/') ? ref.slice(1) + 'index.html' : ref.slice(1);
     assert.ok(existsSync(target), `Missing asset: ${ref}`);
@@ -399,5 +401,37 @@ test("no served path or text file uses the legacy product name", () => {
     if (path === join("tests", "static-page.test.mjs")) continue;
     if (!textFile.test(path)) continue;
     assert.doesNotMatch(readFileSync(path, "utf8"), legacyName, `${path} mentions the legacy name`);
+  }
+});
+
+test("legal pages exist but are linked only from a quiet homepage footer corner", () => {
+  for (const [path, title] of [
+    ["terms/index.html", "Terms of Use"],
+    ["privacy/index.html", "Privacy Policy"],
+  ]) {
+    const page = readFileSync(path, "utf8");
+    assert.ok(page.includes(`<h1>${title}</h1>`), `${path} must be titled ${title}`);
+    assert.ok(!/\[publish date|____|DRAFT|▸/.test(page), `${path} must not carry draft markers`);
+    assert.ok(page.includes('<meta name="robots" content="noindex">'), `${path} must stay out of search results`);
+    const footer = page.match(/<footer[\s\S]*?<\/footer>/)[0];
+    assert.ok(!/\/terms\/|\/privacy\//.test(footer), `${path} must not link the legal pages from its footer`);
+  }
+
+  // The only way in is the quiet corner link under the homepage wordmark.
+  assert.match(html, /<div class="footer-legal"><a href="\/terms\/">Terms<\/a><a href="\/privacy\/">Privacy<\/a><\/div>/);
+  const footerLinks = html.match(/<nav class="footer-links"[\s\S]*?<\/nav>/)[0];
+  assert.ok(!/\/terms\/|\/privacy\//.test(footerLinks), "legal pages stay out of the footer navigation");
+  for (const path of ["blog/index.html", articlePath, "blog/hud/index.html"]) {
+    assert.ok(!/href="\/(terms|privacy)\/"/.test(readFileSync(path, "utf8")), `${path} must not link to the legal pages`);
+  }
+});
+
+test("robots.txt opens the site and never blocks a page that relies on noindex", () => {
+  const rules = readFileSync("robots.txt", "utf8")
+    .split("\n")
+    .filter((line) => line && !line.startsWith("#"));
+  assert.deepEqual(rules, ["User-agent: *", "Allow: /", "Disallow: /docs/"]);
+  for (const path of ["terms/index.html", "privacy/index.html", "prototypes/index.html"]) {
+    assert.ok(readFileSync(path, "utf8").includes("noindex"), `${path} must carry the noindex robots.txt leaves readable`);
   }
 });
