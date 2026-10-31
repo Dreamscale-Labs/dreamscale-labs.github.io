@@ -20,3 +20,5 @@ BFL: https://bfl.ai/brand/logotype-black.svg
 Hugging Face: https://huggingface.co/brand (hf-logo-with-title.svg)
 Xiaomi: https://commons.wikimedia.org/wiki/File:Xiaomi_logo_horizontal_(2021-).svg
 Physical Intelligence: serif typography matching the header on physicalintelligence.company
+
+Physical Intelligence high-resolution mark (392×392): https://github.com/Physical-Intelligence.png?size=512 (official GitHub profile, retrieved 2026-10-31)
