@@ -52,14 +52,13 @@ html{scroll-behavior:smooth;scroll-padding-top:32px}.cloud-page header{display:g
 /* Compact mobile navigation. */
 .mobile-menu,.mobile-brand{display:none}
 @media(max-width:900px){
-  .cloud-page header{position:relative;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:20px 0}
+  .cloud-page header{position:relative;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:20px 0}
   .cloud-page .primary-nav{display:none}
-  .cloud-page .account-nav{grid-column:2;grid-row:1}
-  .cloud-page .account-nav .outline{display:none}
+  .cloud-page .account-nav{display:none}
   .cloud-page header>a{display:flex;align-items:center}
   .cloud-page .brand{display:none}
   .cloud-page .mobile-brand{display:block;width:52px;height:52px}
-  .mobile-menu{display:block;grid-column:3;grid-row:1}
+  .mobile-menu{display:block;grid-column:2;grid-row:1}
   .mobile-menu summary{display:flex;flex-direction:column;justify-content:center;gap:6px;width:44px;height:44px;cursor:pointer;list-style:none}
   .mobile-menu summary::-webkit-details-marker{display:none}
   .mobile-menu summary span{display:block;width:22px;height:2px;background:#17191a;margin:auto}
