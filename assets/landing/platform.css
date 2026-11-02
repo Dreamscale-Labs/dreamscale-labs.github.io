@@ -48,3 +48,23 @@ html{scroll-behavior:smooth;scroll-padding-top:32px}.cloud-page header{display:g
 }
 
 .footer-bottom .footer-socials{align-items:center;gap:12px}.footer-socials a{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:4px}.footer-socials svg{display:block;flex-shrink:0}.footer-socials a:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+
+/* Compact mobile navigation. */
+.mobile-menu{display:none}
+@media(max-width:900px){
+  .cloud-page header{position:relative;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:20px 0}
+  .cloud-page .primary-nav{display:none}
+  .cloud-page .account-nav{grid-column:2;grid-row:1}
+  .cloud-page .account-nav .outline{display:none}
+  .cloud-page .brand{width:min(140px,100%)}
+  .mobile-menu{display:block;grid-column:3;grid-row:1}
+  .mobile-menu summary{display:flex;flex-direction:column;justify-content:center;gap:6px;width:44px;height:44px;cursor:pointer;list-style:none}
+  .mobile-menu summary::-webkit-details-marker{display:none}
+  .mobile-menu summary span{display:block;width:22px;height:2px;background:#17191a;margin:auto}
+  .mobile-menu summary span:first-child{margin-bottom:0}
+  .mobile-menu summary span:last-child{margin-top:0}
+  .mobile-menu nav{position:absolute;z-index:10;top:100%;left:0;right:0;display:flex;flex-direction:column;align-items:stretch;gap:0;padding:8px 20px;background:#fff;border:1px solid #e5e8ed;border-radius:12px;box-shadow:0 12px 24px rgba(0,35,90,.1)}
+  .mobile-menu nav a{padding:14px 0;color:#505050;font-size:15px}
+  .mobile-menu nav a+a{border-top:1px solid #eee}
+}
+@media(max-width:380px){.cloud-page .brand{width:min(115px,100%)}.cloud-page header{gap:6px}}
