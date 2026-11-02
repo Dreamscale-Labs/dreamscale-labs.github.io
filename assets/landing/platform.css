@@ -56,7 +56,8 @@ html{scroll-behavior:smooth;scroll-padding-top:32px}.cloud-page header{display:g
   .cloud-page .primary-nav{display:none}
   .cloud-page .account-nav{grid-column:2;grid-row:1}
   .cloud-page .account-nav .outline{display:none}
-  .cloud-page .brand{width:min(140px,100%)}
+  .cloud-page header>a{display:flex;align-items:center}
+  .cloud-page .brand{display:block;width:min(140px,100%)}
   .mobile-menu{display:block;grid-column:3;grid-row:1}
   .mobile-menu summary{display:flex;flex-direction:column;justify-content:center;gap:6px;width:44px;height:44px;cursor:pointer;list-style:none}
   .mobile-menu summary::-webkit-details-marker{display:none}
