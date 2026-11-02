@@ -31,8 +31,8 @@
     // Scale the composition, but keep dot sizes and sampling pitch in CSS pixels.
     mobile = matchMedia('(max-width: 760px)').matches;
     const scale = mobile
-      ? Math.min(width * 0.82 / 1600, height * 0.64 / 690)
-      : Math.min(width * 0.68 / 1600, height * 0.54 / 690);
+      ? Math.min(width * 0.76 / 1600, height * 0.60 / 690)
+      : Math.min(width * 0.59 / 1600, height * 0.49 / 690);
     dotScale = 1;
     const spacing = 8 * dotScale;
     const origin = 6 * dotScale;
@@ -86,6 +86,7 @@
     // Two fills for the entire cloud/background grid instead of one per dot.
     for (const outline of [false, true]) {
       const shapeWeight = Number(outline) * (1 - robotWeight);
+      ctx.globalAlpha = !isRobot && !outline ? 0.38 : 1;
       ctx.fillStyle = `rgb(0 ${Math.round(71 * shapeWeight)} ${Math.round(171 * shapeWeight)})`;
       ctx.beginPath();
       for (const dot of dots) {
