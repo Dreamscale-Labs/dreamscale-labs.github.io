@@ -373,7 +373,7 @@ test("landing serves the selected design with working local assets and demo link
   assert.match(html, /https:\/\/cal.com\/team\/dreamscale-labs\/demo/);
   assert.doesNotMatch(html, /youtube\.com\/embed/);
   assert.ok(html.indexOf('id="training"') < html.indexOf('id="inference"'));
-  assert.equal((html.match(/class="model-card"/g) || []).length, 2);
+  assert.equal((html.match(/class="model-card"/g) || []).length, 4);
   for (const [, ref] of html.matchAll(/(?:src|href|poster)="(\/[^"?#]*)(?:[?#][^"]*)?"/g)) {
     const target = ref.endsWith('/') ? ref.slice(1) + 'index.html' : ref.slice(1);
     assert.ok(existsSync(target), `Missing asset: ${ref}`);
