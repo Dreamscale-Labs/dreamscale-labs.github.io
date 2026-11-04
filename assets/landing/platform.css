@@ -78,4 +78,8 @@ html{scroll-behavior:smooth;scroll-padding-top:32px}.cloud-page header{display:g
 @media(min-width:761px){
  #training .loss-art::after{background:linear-gradient(to bottom,#fff 0%,rgba(255,255,255,.96) 16%,rgba(255,255,255,.65) 28%,transparent 48%,transparent 82%,rgba(255,255,255,.3) 90%,rgba(255,255,255,.8) 96%,#fff 100%)}
 }
-@media(max-width:760px){.cloud-hero{margin-bottom:20px}#training{padding-top:68px}}
+@media(max-width:760px){
+ .cloud-hero{margin-bottom:20px;padding:0 0 40px}
+ .cloud-art{position:relative;right:auto;bottom:auto;margin-left:-24px}
+ #training{padding-top:68px}
+}
