@@ -404,7 +404,7 @@ test("no served path or text file uses the legacy product name", () => {
   }
 });
 
-test("legal pages exist but are linked only from a quiet homepage footer corner", () => {
+test("legal pages exist and are linked from the homepage footer navigation", () => {
   for (const [path, title] of [
     ["terms/index.html", "Terms of Use"],
     ["privacy/index.html", "Privacy Policy"],
@@ -417,10 +417,11 @@ test("legal pages exist but are linked only from a quiet homepage footer corner"
     assert.ok(!/\/terms\/|\/privacy\//.test(footer), `${path} must not link the legal pages from its footer`);
   }
 
-  // The only way in is the quiet corner link under the homepage wordmark.
-  assert.match(html, /<div class="footer-legal"><a href="\/terms\/">Terms<\/a><a href="\/privacy\/">Privacy<\/a><\/div>/);
   const footerLinks = html.match(/<nav class="footer-links"[\s\S]*?<\/nav>/)[0];
-  assert.ok(!/\/terms\/|\/privacy\//.test(footerLinks), "legal pages stay out of the footer navigation");
+  assert.match(footerLinks, /<span>EXPLORE<\/span>[\s\S]*?<span>LEGAL<\/span><a href="\/terms\/">Terms ↗<\/a><a href="\/privacy\/">Privacy ↗<\/a>/);
+  const footerBottom = html.match(/<div class="footer-bottom">[\s\S]*?<\/footer>/)[0];
+  assert.match(footerBottom, /<span>© 2026 Dreamscale Labs<\/span><div class="footer-socials">/);
+  assert.doesNotMatch(footerBottom, /href="\/(terms|privacy)\/"/);
   for (const path of ["blog/index.html", articlePath, "blog/hud/index.html"]) {
     assert.ok(!/href="\/(terms|privacy)\/"/.test(readFileSync(path, "utf8")), `${path} must not link to the legal pages`);
   }
