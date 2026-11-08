@@ -24,3 +24,6 @@ Physical Intelligence: serif typography matching the header on physicalintellige
 Physical Intelligence high-resolution mark (392×392): https://github.com/Physical-Intelligence.png?size=512 (official GitHub profile, retrieved 2026-10-31)
 
 Verne Robotics wordmark (2026-11-07): symbol path from the homepage lockup on https://www.vernerobotics.com/ (#FF5202), "VERNE" set in its ABC Solar Display (ss12, -0.01em, 23.378px beside the 28.8x24 symbol, 9px gap), outlined to paths
+Robbyant wordmark viewBox cropped to its ink (110x17.84, was 110x30.6 with empty space below) so it centres with the other logos (2026-11-07)
+Physical Intelligence wordmark (2026-11-07): the pi and "Physical / Intelligence" set in Signifier, the serif of the header on https://www.physicalintelligence.company/, outlined to paths; viewBox cropped to the ink
+Ai2 (colour): ai2-wordmark.svg filled #F0529C, the colour allenai.org's header logo uses (fill_accent.primary), for the MolmoAct2 model card
