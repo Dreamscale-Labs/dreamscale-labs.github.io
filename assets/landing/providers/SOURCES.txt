@@ -22,3 +22,5 @@ Xiaomi: https://commons.wikimedia.org/wiki/File:Xiaomi_logo_horizontal_(2021-).s
 Physical Intelligence: serif typography matching the header on physicalintelligence.company
 
 Physical Intelligence high-resolution mark (392×392): https://github.com/Physical-Intelligence.png?size=512 (official GitHub profile, retrieved 2026-10-31)
+
+Verne Robotics wordmark (2026-11-07): symbol path from the homepage lockup on https://www.vernerobotics.com/ (#FF5202), "VERNE" set in its ABC Solar Display (ss12, -0.01em, 23.378px beside the 28.8x24 symbol, 9px gap), outlined to paths
