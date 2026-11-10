@@ -367,6 +367,13 @@ test("landing serves the selected design with working local assets and demo link
   assert.match(html, /id="inference-canvas"/);
   assert.match(html, /id="models"/);
   assert.match(html, /id="blog"/);
+  // Pricing sits between Models and Blog, is linked from both navs and the footer,
+  // and states the two public rates.
+  assert.ok(html.indexOf('id="models"') < html.indexOf('id="pricing"'));
+  assert.ok(html.indexOf('id="pricing"') < html.indexOf('id="blog"'));
+  assert.equal((html.match(/href="#pricing"/g) || []).length, 3);
+  assert.match(html, /\$5<\/span> <span class="price-unit">per robot-hour/);
+  assert.match(html, /\$6\.84<\/span> <span class="price-unit">per GPU-hour/);
   assert.match(html, /class="hero-partners"/);
   assert.match(html, /id="cloud-canvas"/);
   assert.match(html, /The real-time cloud for physical AI/);
