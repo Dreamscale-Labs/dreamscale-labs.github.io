@@ -88,3 +88,17 @@ html{scroll-behavior:smooth;scroll-padding-top:32px}.cloud-page header{display:g
 .section-label{font:12px monospace;letter-spacing:.08em;text-transform:uppercase;color:#0047ab;margin:0 0 18px}.product-headline{font-size:clamp(28px,2.5vw,38px);font-weight:400;letter-spacing:-.035em;line-height:1.2;margin:0 0 26px}.models-section .product-headline{margin-bottom:28px}.model-card{min-height:205px}.model-logo{height:65px}.model-logo .model-wordmark{width:110px;height:36px}.cloud-page .model-card h3{margin-bottom:20px}.ecosystem-logos .provider-wordmark{max-width:125px;max-height:32px}.cloud-page .hero-cta:not(.outline){box-shadow:0 2px 6px rgba(0,35,90,.18)}
 @media(min-width:761px){#training{padding-top:72px}.training-copy{padding-left:24px}.loss-art,.robot-art{opacity:.75}}
 @media(max-width:760px){#training{padding-top:48px}.model-card{min-height:190px}.product-headline{font-size:28px}}
+
+/* Pricing section. */
+.price-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.price-card{display:flex;flex-direction:column;gap:24px;padding:27px 23px 22px;background:#fafbfd;border:1px solid #dfe3e9;border-radius:12px}
+.cloud-page .price-kind{margin:0;font:12px monospace;letter-spacing:.08em;text-transform:uppercase;color:#65696c}
+.price{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;margin:0}
+.price-amount{font-size:64px;letter-spacing:-.05em;line-height:1;color:#17191a}
+.price-unit{font-size:18px;color:#65696c}
+.price-points{list-style:none;margin:0;padding:0;border-bottom:1px solid #e5e8ed}
+.price-points li{padding:14px 0;border-top:1px solid #e5e8ed;font-size:16px;line-height:1.4}
+.price-action{display:flex;justify-content:space-between;margin-top:auto;padding:6px 0;font-size:13px;color:#0047ab}
+.price-note{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:44px;text-align:center}
+.price-note p{margin:0;font-size:14px;line-height:1.6;color:#65696c}
+@media(max-width:760px){.price-grid{grid-template-columns:1fr;gap:12px}.price-amount{font-size:52px}.price-note{margin-top:32px}}
