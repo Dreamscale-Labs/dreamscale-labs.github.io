@@ -1,4 +1,5 @@
-/* /praxis: Praxis-1 on Dreamscale (Chris's P2, 2026-11-11). Black, the launch video full screen. */
+/* /praxis: Praxis-1 on Dreamscale (Chris's P2, 2026-11-11). Black, the launch video full screen.
+   The free week shows in the hero (.free) and the closing facts; take both off on day 7. */
 @font-face { font-family: DSL; src: url("/assets/fonts/Mluvka-Regular-web.woff2") format("woff2"); font-display: block; }
 @font-face { font-family: Unbounded; src: url("/assets/fonts/Unbounded-Latin-Variable.woff2") format("woff2"); font-weight: 200 900; font-display: block; }
 
@@ -21,12 +22,11 @@ a:focus-visible, button:focus-visible { outline: 3px solid #8fb0ff; outline-offs
 .runway { height: 26px; width: auto; }
 h1 { margin: 0; font-family: Unbounded, DSL, sans-serif; font-size: clamp(76px, 12vw, 168px); font-weight: 500; letter-spacing: -.07em; line-height: .9; }
 .sub { margin: 0; font-size: 22px; color: #c9ccd0; }
-.free { display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px; border-radius: 999px; background: rgba(255,255,255,.12); backdrop-filter: blur(8px); font-size: 15px; color: #fff; }
+.free { display: inline-flex; align-items: center; gap: 10px; padding: 12px 18px; border-radius: 999px; background: rgba(255,255,255,.12); backdrop-filter: blur(8px); font-size: 16px; color: #fff; }
 .free::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #7fe0a0; }
-.actions { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; padding-top: 4px; }
+.actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: center; padding-top: 4px; }
 .btn { display: inline-flex; align-items: center; gap: 12px; padding: 18px 30px; border-radius: 6px; font-size: 17px; }
 .btn-primary { background: #fff; color: #000; }
-.btn-ghost { box-shadow: inset 0 0 0 1px rgba(255,255,255,.35); }
 
 .wrap { max-width: 1240px; margin: 0 auto; padding: 0 48px; }
 .stills { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; padding-top: 96px; }
@@ -38,6 +38,7 @@ h1 { margin: 0; font-family: Unbounded, DSL, sans-serif; font-size: clamp(76px, 
 h2 { margin: 0; font-family: Unbounded, DSL, sans-serif; font-size: 46px; font-weight: 450; letter-spacing: -.05em; line-height: 1.12; }
 .term { width: 100%; margin: 0; padding: 26px 28px; border-radius: 8px; background: #111315; box-shadow: inset 0 0 0 1px #24272a; text-align: left; font: 16px/2 ui-monospace, SFMono-Regular, Menlo, monospace; color: #e8eaec; overflow-x: auto; }
 .term span { color: #5f6468; user-select: none; }
+.plain { margin: -12px 0 0; max-width: 620px; font-size: 18px; line-height: 1.6; color: #b7bbbf; }
 .norobot { margin: 0; font-size: 16px; color: #8d9296; }
 .norobot code { font: 15px ui-monospace, SFMono-Regular, Menlo, monospace; color: #c9ccd0; }
 
@@ -53,7 +54,8 @@ footer { padding: 24px 0 40px; display: flex; justify-content: space-between; ga
   .hero nav { gap: 18px; font-size: 14px; }
   .hero-body { bottom: 56px; gap: 22px; }
   .sub { font-size: 18px; }
-  .actions, .btn { width: 100%; justify-content: center; }
+  .actions, .actions .btn { width: 100%; justify-content: center; }
+  .plain { font-size: 16px; }
   .wrap { padding: 0 22px; }
   .stills { grid-template-columns: repeat(2, minmax(0, 1fr)); padding-top: 64px; }
   .run { padding: 80px 22px; }

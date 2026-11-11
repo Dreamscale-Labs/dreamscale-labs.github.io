@@ -211,17 +211,21 @@ test("/praxis has its own link preview, a free week, sign-up links and local ass
     assert.ok(praxis.includes(tag), `praxis/index.html must contain ${tag}`);
   }
   assert.deepEqual(readPngMetadata("assets/social/praxis-og.png"), { width: 1200, height: 630, colorType: 2 });
-  assert.match(praxis, /Free for 7 days from launch/);
-  // Its sign-up buttons land signed-up visitors on the dashboard.
-  assert.equal((praxis.match(/href="https:\/\/app\.dreamscalelabs\.com\/signin\?callbackURL=\/dashboard"/g) || []).length, 2);
+  // The free week sits by the main call to action and in the closing facts, with the price after it.
+  assert.match(praxis, /<span class="free">Free for 7 days<\/span>/);
+  assert.match(praxis, /per robot-hour after/);
+  // Its sign-up buttons land signed-up visitors on the dashboard, tagged for the launch campaign.
+  assert.equal((praxis.match(/href="https:\/\/app\.dreamscalelabs\.com\/signin\?callbackURL=\/dashboard&amp;utm_source=dreamscalelabs&amp;utm_medium=praxis-page&amp;utm_campaign=praxis-1-launch"/g) || []).length, 2);
+  // The launch copy rules: no speed claims, nothing that reads as a partnership.
+  assert.doesNotMatch(praxis, /\b(fast|faster|fastest|real[- ]time|unlimited|free forever)\b|×|with Runway/i);
   assert.match(praxis, /praxis-1-yam/);
   assert.match(praxis, /praxis-1-droid/);
   for (const [, ref] of praxis.matchAll(/(?:src|href|poster)="(\/[^"?#]*)(?:[?#][^"]*)?"/g)) {
     const target = ref.endsWith("/") ? `${ref.slice(1)}index.html` : ref.slice(1);
     assert.ok(existsSync(target), `praxis/index.html: missing ${ref}`);
   }
-  // Nothing on the site links to it until it is announced.
-  assert.doesNotMatch(html, /href="\/praxis\/?"/);
+  // The homepage's announce bar is the only link to it, and the only place with the free week's end date.
+  assert.match(html, /<strong>Praxis-1 is live\.<\/strong> Free through Nov 19\. <a class="announce-link" href="\/praxis\/">/);
 });
 
 test("blog headers use the shared Dreamscale wordmark", () => {
