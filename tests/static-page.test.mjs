@@ -86,6 +86,7 @@ test("every public page declares the complete favicon metadata set", () => {
     ["index.html", html],
     ["blog/index.html", blogIndex],
     [articlePath, articleHtml],
+    ["praxis/index.html", readFileSync("praxis/index.html", "utf8")],
   ]);
   const requiredTags = [
     '<link rel="icon" href="/favicon.ico" sizes="any">',
@@ -148,6 +149,7 @@ test("every public page loads PostHog through the proxy with the app's shared co
     "blog/hud/index.html",
     "terms/index.html",
     "privacy/index.html",
+    "praxis/index.html",
   ];
   for (const path of pages) {
     assert.match(
@@ -194,6 +196,32 @@ test("every public page has a large-image link preview", () => {
     height: 630,
     colorType: 2,
   });
+});
+
+test("/praxis has its own link preview, a free week, sign-up links and local assets that exist", () => {
+  const praxis = readFileSync("praxis/index.html", "utf8");
+  for (const tag of [
+    '<meta property="og:image" content="https://www.dreamscalelabs.com/assets/social/praxis-og.png">',
+    '<meta property="og:image:width" content="1200">',
+    '<meta property="og:image:height" content="630">',
+    '<meta property="og:url" content="https://dreamscalelabs.com/praxis/">',
+    '<meta name="twitter:card" content="summary_large_image">',
+    '<meta name="twitter:site" content="@dreamscalelabs">',
+  ]) {
+    assert.ok(praxis.includes(tag), `praxis/index.html must contain ${tag}`);
+  }
+  assert.deepEqual(readPngMetadata("assets/social/praxis-og.png"), { width: 1200, height: 630, colorType: 2 });
+  assert.match(praxis, /Free for 7 days from launch/);
+  // Its sign-up buttons land signed-up visitors on the dashboard.
+  assert.equal((praxis.match(/href="https:\/\/app\.dreamscalelabs\.com\/signin\?callbackURL=\/dashboard"/g) || []).length, 2);
+  assert.match(praxis, /praxis-1-yam/);
+  assert.match(praxis, /praxis-1-droid/);
+  for (const [, ref] of praxis.matchAll(/(?:src|href|poster)="(\/[^"?#]*)(?:[?#][^"]*)?"/g)) {
+    const target = ref.endsWith("/") ? `${ref.slice(1)}index.html` : ref.slice(1);
+    assert.ok(existsSync(target), `praxis/index.html: missing ${ref}`);
+  }
+  // Nothing on the site links to it until it is announced.
+  assert.doesNotMatch(html, /href="\/praxis\/?"/);
 });
 
 test("blog headers use the shared Dreamscale wordmark", () => {

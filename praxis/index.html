@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preload" href="/assets/fonts/Unbounded-Latin-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Mluvka-Regular-web.woff2" as="font" type="font/woff2" crossorigin>
+<title>Praxis-1 on Dreamscale — run Runway's world action model on your robot</title>    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-TSVFWT88');</script>
+    <!-- End Google Tag Manager -->
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="theme-color" content="#ffffff">
+<meta name="description" content="Run Runway's Praxis-1 on your Bimanual YAM or Franka DROID, or in simulation, with one command. Free for 7 days from launch.">
+<link rel="canonical" href="https://dreamscalelabs.com/praxis/">
+<meta property="og:title" content="Praxis-1, now running on Dreamscale">
+<meta property="og:description" content="Run Runway's world action model on your robot with one command. Free for 7 days from launch.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://dreamscalelabs.com/praxis/">
+<meta property="og:site_name" content="Dreamscale Labs">
+<meta property="og:image" content="https://www.dreamscalelabs.com/assets/social/praxis-og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Praxis-1 by Runway, now running on Dreamscale. Free for 7 days from launch.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@dreamscalelabs">
+<link rel="stylesheet" href="/assets/praxis/praxis.css?v=1">
+<script defer src="/assets/analytics/posthog.js?v=1"></script>
+</head>
+<body>    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TSVFWT88"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
+<section class="hero" aria-label="Praxis-1">
+<video id="praxis-video" autoplay muted loop playsinline preload="metadata" poster="/assets/praxis/hero-poster.webp" aria-hidden="true">
+<source src="/assets/praxis/hero.mp4" type="video/mp4">
+</video>
+<div class="shade" aria-hidden="true"></div>
+<header>
+<a href="/" aria-label="Dreamscale Labs home"><img class="wordmark" src="/assets/landing/brand.svg" width="1562" height="272" alt="Dreamscale Labs"></a>
+<nav aria-label="Main">
+<a href="https://docs.dreamscalelabs.com/">Docs</a>
+<a href="https://app.dreamscalelabs.com/signin">Sign in</a>
+</nav>
+</header>
+<div class="hero-body">
+<img class="runway" src="/assets/praxis/runway-wordmark-white.svg" width="334" height="75" alt="Runway">
+<h1>Praxis-1</h1>
+<p class="sub">Now running on Dreamscale.</p>
+<span class="free">Free for 7 days from launch</span>
+<div class="actions">
+<a class="btn btn-primary" href="https://app.dreamscalelabs.com/signin?callbackURL=/dashboard">Run it free <span aria-hidden="true">→</span></a>
+<a class="btn btn-ghost" href="https://docs.dreamscalelabs.com/">Read the docs</a>
+</div>
+</div>
+</section>
+
+<main>
+<section class="wrap" aria-label="Rollouts">
+<div class="stills">
+<figure><img src="/assets/praxis/kitchen.jpg" width="800" height="450" alt="Two robot arms working in a kitchen" loading="lazy"><figcaption>Kitchen</figcaption></figure>
+<figure><img src="/assets/praxis/studio.jpg" width="800" height="450" alt="Two robot arms packing a paper bag" loading="lazy"><figcaption>Studio</figcaption></figure>
+<figure><img src="/assets/praxis/shelf.jpg" width="800" height="450" alt="A gripper taking a book from a shelf" loading="lazy"><figcaption>Shelf</figcaption></figure>
+<figure><img src="/assets/praxis/cloth.jpg" width="800" height="450" alt="A gripper folding a cloth" loading="lazy"><figcaption>Cloth</figcaption></figure>
+</div>
+<p class="credit">Footage: Runway</p>
+</section>
+
+<section class="run" aria-labelledby="run-title">
+<h2 id="run-title">One command on your Bimanual YAM or Franka DROID.</h2>
+<pre class="term"><span>$ </span>uv tool install dreamscale
+<span>$ </span>dreamscale login
+<span>$ </span>dreamscale run yam --model praxis-1-yam</pre>
+<p class="norobot">No robot? <code>dreamscale sim molmospaces --model praxis-1-droid</code></p>
+</section>
+
+<div class="wrap">
+<section class="close" aria-label="Pricing">
+<div class="facts">
+<div><strong>Free</strong><span>for 7 days from launch</span></div>
+<div><strong>27.2B</strong><span>open weights</span></div>
+<div><strong>$5 / hr</strong><span>per robot after that</span></div>
+</div>
+<a class="btn btn-primary" href="https://app.dreamscalelabs.com/signin?callbackURL=/dashboard">Run Praxis-1 <span aria-hidden="true">→</span></a>
+</section>
+<footer><span>Dreamscale Labs</span><span>Praxis-1 is made by Runway</span></footer>
+</div>
+</main>
+
+<script>
+// Reduced motion keeps the poster still (praxis.css hides the video).
+if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  document.getElementById("praxis-video").pause();
+}
+</script>
+</body>
+</html>

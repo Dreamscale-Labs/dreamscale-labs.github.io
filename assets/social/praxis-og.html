@@ -1,0 +1,35 @@
+<!doctype html>
+<!-- Source for praxis-og.png, /praxis's 1200x630 link preview. Re-render it with
+     assets/social/render-og-image.sh praxis-og after changing this page. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>Praxis-1 social preview</title>
+<style>
+@font-face { font-family: Unbounded; src: url('/assets/fonts/Unbounded-Latin-Variable.woff2') format('woff2'); font-weight: 200 900; font-display: block; }
+@font-face { font-family: DSL; src: url('/assets/fonts/Mluvka-Regular-web.woff2') format('woff2'); font-display: block; }
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; background: #000; color: #fff; -webkit-font-smoothing: antialiased; }
+.card { position: relative; width: 1200px; height: 630px; padding: 56px 72px; background: #000 url('/assets/praxis/hero-poster.webp') center 40% / cover no-repeat; isolation: isolate; }
+.card::before { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(0,0,0,.9) 0%, rgba(0,0,0,.72) 48%, rgba(0,0,0,.25) 100%); }
+.wordmark { display: block; width: 190px; height: auto; filter: invert(1); mix-blend-mode: screen; }
+.runway { display: block; height: 30px; width: auto; margin: 92px 0 22px; }
+h1 { font-family: Unbounded, sans-serif; font-size: 132px; font-weight: 500; letter-spacing: -.07em; line-height: .9; margin: 0 0 22px; }
+p { font-family: DSL, Arial, sans-serif; font-size: 30px; margin: 0; color: #d6d9dc; }
+.free { position: absolute; left: 72px; bottom: 54px; display: inline-flex; align-items: center; gap: 12px; padding: 10px 20px; border-radius: 999px; background: rgba(255,255,255,.14); font-family: DSL, Arial, sans-serif; font-size: 24px; }
+.free::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: #7fe0a0; }
+.domain { position: absolute; right: 72px; bottom: 62px; font-family: DSL, Arial, sans-serif; font-size: 22px; color: #c9ccd0; }
+</style>
+</head>
+<body>
+<div class="card">
+<img class="wordmark" src="/assets/landing/brand.svg" alt="Dreamscale Labs">
+<img class="runway" src="/assets/praxis/runway-wordmark-white.svg" alt="Runway">
+<h1>Praxis-1</h1>
+<p>Now running on Dreamscale.</p>
+<div class="free">Free for 7 days from launch</div>
+<div class="domain">dreamscalelabs.com/praxis</div>
+</div>
+</body>
+</html>
