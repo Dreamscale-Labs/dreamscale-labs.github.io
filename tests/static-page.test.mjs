@@ -147,6 +147,7 @@ test("every public page loads PostHog through the proxy with the app's shared co
     "blog/index.html",
     articlePath,
     "blog/hud/index.html",
+    "blog/transport-v2/index.html",
     "terms/index.html",
     "privacy/index.html",
     "praxis/index.html",
@@ -173,6 +174,7 @@ test("every public page has a large-image link preview", () => {
     "blog/index.html",
     articlePath,
     "blog/hud/index.html",
+    "blog/transport-v2/index.html",
   ];
   const requiredTags = [
     '<meta property="og:image" content="https://www.dreamscalelabs.com/assets/social/og-image.png">',
@@ -461,7 +463,7 @@ test("legal pages exist and are linked from the homepage footer navigation", () 
   const footerBottom = html.match(/<div class="footer-bottom">[\s\S]*?<\/footer>/)[0];
   assert.match(footerBottom, /<span>© 2026 Dreamscale Labs<\/span><div class="footer-socials">/);
   assert.doesNotMatch(footerBottom, /href="\/(terms|privacy)\/"/);
-  for (const path of ["blog/index.html", articlePath, "blog/hud/index.html"]) {
+  for (const path of ["blog/index.html", articlePath, "blog/hud/index.html", "blog/transport-v2/index.html"]) {
     assert.ok(!/href="\/(terms|privacy)\/"/.test(readFileSync(path, "utf8")), `${path} must not link to the legal pages`);
   }
 });
