@@ -99,7 +99,7 @@
 
         <ul>
           <li><strong>Transport V1:</strong> what we shipped until this month. QUIC straight to the GPU host, with standard congestion control.</li>
-          <li><strong>Transport V2:</strong> the same path with the changes described below.</li>
+          <li><strong>Transport V2:</strong> the same path, with the transport rebuilt to recover from loss faster.</li>
           <li><strong>Off-the-shelf WebRTC:</strong> a managed real-time platform of the kind many robotics teams reach for first, sending the same data over its reliable data channel.</li>
         </ul>
 
@@ -148,20 +148,6 @@
             <span>Share of time the robot spent waiting on a late reply, hour by hour, over 24 hours on one home Wi-Fi link. The same link carried both transports in every hour.</span>
           </figcaption>
         </figure>
-
-        <h2>What changed</h2>
-
-        <p>Transport V1 was QUIC with standard congestion control, and it measured the same as a stock QUIC client. Standard congestion control is built for bulk transfers. A robot's traffic is different: a burst of about 60 packets, four times a second, where a single lost packet holds up the whole observation.</p>
-
-        <p>Transport V2 changes three things.</p>
-
-        <ul>
-          <li><strong>Steady upload.</strong> Standard congestion control starts each burst cautiously and, after a loss, takes several round trips to open up again. Transport V2 sends each observation in one steady flight, paced at the rate the link has recently delivered. This accounts for most of the gain.</li>
-          <li><strong>Faster recovery from loss.</strong> Both ends stop waiting on long timeouts. The server asks for the missing part of an upload as soon as it stalls. The tail of a reply is re-sent early if it has not been acknowledged. After a Wi-Fi dropout, the first packet that gets through restarts everything at once.</li>
-          <li><strong>Smaller replies.</strong> Action chunks travel as compact binary, in the model's own number format.</li>
-        </ul>
-
-        <p>All of it is negotiated when a session opens. If either end doesn't support a change, the session runs without it.</p>
 
         <h2>Limits of these numbers</h2>
 
