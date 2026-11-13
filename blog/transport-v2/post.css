@@ -1,0 +1,11 @@
+.figure-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.article td:not(:first-child),
+.article th:not(:first-child) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}

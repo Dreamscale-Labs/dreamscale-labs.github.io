@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link rel="canonical" href="https://www.dreamscalelabs.com/blog/transport-v2/">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Our new robot-to-cloud transport cuts p99 network latency from 420 ms to 160 ms on home Wi-Fi, with no change to your code.">
+    <title>Transport V2 — Dreamscale Labs</title>
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="theme-color" content="#ffffff">
+    <meta property="og:site_name" content="Dreamscale Labs">
+    <meta property="og:title" content="Transport V2">
+    <meta property="og:description" content="Our new robot-to-cloud transport cuts p99 network latency from 420 ms to 160 ms on home Wi-Fi, with no change to your code.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://www.dreamscalelabs.com/blog/transport-v2/">
+    <meta property="og:image" content="https://www.dreamscalelabs.com/assets/social/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Dreamscale Labs: The real-time cloud for physical AI">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@dreamscalelabs">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link
+      rel="preload"
+      href="/assets/fonts/Mluvka-Regular-web.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    >
+    <link
+      rel="stylesheet"
+      href="/blog/why/article.css"
+    >
+    <link rel="stylesheet" href="/blog/site-layout.css?v=blue-cta-1">
+    <link rel="stylesheet" href="/blog/hud/hud.css">
+    <link rel="stylesheet" href="/blog/transport-v2/post.css">
+    <script defer src="/assets/analytics/posthog.js?v=1"></script>
+  </head>
+  <body>
+    <header class="site-header" aria-label="Primary navigation">
+      <a class="site-logo" href="/" aria-label="Dreamscale Labs home">
+        <img
+          src="/assets/landing/brand.svg"
+          alt="Dreamscale Labs"
+          width="188"
+          fetchpriority="high"
+        >
+      </a>
+      <nav>
+        <a class="nav-link" href="/blog/">Blog</a>
+        <a class="nav-link" href="https://app.dreamscalelabs.com/signin">Sign in</a>
+        <a class="demo-link" href="https://app.dreamscalelabs.com">Get started</a>
+      </nav>
+    </header>
+
+        <main class="article-shell" id="top">
+      <header class="article-hero">
+        <div class="article-title-block">
+          <h1>Transport V2</h1>
+          <p class="article-dek">Our new robot-to-cloud transport cuts p99 network latency from 420 ms to 160 ms on home Wi-Fi, with no change to your code.</p>
+          <p class="reading-meta"><time datetime="2026-11-12">November 12, 2026</time><span aria-hidden="true">·</span><span>5 min read</span></p>
+        </div>
+      </header>
+
+      <article class="article" id="article-introduction">
+        <p>A robot that runs its model in the cloud sends camera frames up and waits for the next chunk of actions to come back. Most of the time that round trip is quick. The problem is the rare slow one: when a reply is late, the robot has nothing new to execute, and it hesitates.</p>
+
+        <p>So the number that matters is not the median. It is the tail: how slow the slowest 1% and 0.1% of requests are, and how often the robot is left waiting. On real networks, and on Wi-Fi above all, that tail is set by how the transport behaves when packets are lost.</p>
+
+        <p>Transport V2 is our rebuilt robot-to-cloud transport, made to shorten that tail. On a home Wi-Fi link it cut p99 network time from 420 ms to 160 ms and p99.9 from 872 ms to 389 ms. The robot spent 87% less time waiting on late replies.</p>
+
+        <figure class="wide-figure">
+          <div class="figure-frame">
+            <img src="/assets/blog/transport-v2/fig-latency.svg" width="1200" height="596" alt="Bar chart of network time per request. Median: Transport V2 54 ms, Transport V1 61 ms, off-the-shelf WebRTC 104 ms. p99: 160, 420 and 504 ms. p99.9: 389, 872 and 992 ms." loading="lazy">
+          </div>
+          <figcaption>
+            <span class="figure-number">Fig. 01</span>
+            <span>Network time per request: the round trip without the model's own compute. Three-camera observations at 4 Hz over home Wi-Fi, four hours, about 55,000 requests per transport.</span>
+          </figcaption>
+        </figure>
+
+        <h2>What we measured</h2>
+
+        <p>We tested the way a robot is used. One robot client sat on home Wi-Fi and cable broadband. It sent three-camera observations of about 70 kB, four times a second, to a cloud host in US West, and waited for each reply before sending the next. The model was a stand-in with a realistic compute time of about 87 ms, so the differences come from the network path alone.</p>
+
+        <p>Networks change from minute to minute, so comparing one transport on Monday with another on Tuesday says little. Every transport here ran in the same hours, on the same link, taking turns at random offsets. Each saw the same network.</p>
+
+        <p>We compared three:</p>
+
+        <ul>
+          <li><strong>Transport V1:</strong> what we shipped until this month. QUIC straight to the GPU host, with standard congestion control.</li>
+          <li><strong>Transport V2:</strong> the same path with the changes described below.</li>
+          <li><strong>Off-the-shelf WebRTC:</strong> a managed real-time platform of the kind many robotics teams reach for first, sending the same data over its reliable data channel.</li>
+        </ul>
+
+        <h2>Results</h2>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th></th><th>Median</th><th>p99</th><th>p99.9</th><th>Time waiting</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Transport V2</strong></td><td><strong>54 ms</strong></td><td><strong>160 ms</strong></td><td><strong>389 ms</strong></td><td><strong>1.0%</strong></td></tr>
+              <tr><td>Transport V1</td><td>61 ms</td><td>420 ms</td><td>872 ms</td><td>7.7%</td></tr>
+              <tr><td>Off-the-shelf WebRTC</td><td>104 ms</td><td>504 ms</td><td>992 ms</td><td>9.0%</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Median, p99 and p99.9 are network time per request. “Time waiting” is the share of 250 ms control steps the robot spent waiting on a late reply.</p>
+
+        <p>The median barely moves, and that is expected: on a good round trip there is nothing to fix. The gain is all in the tail. Transport V2 was ahead of V1 in every hour of the run, and no request went unanswered on any transport.</p>
+        <p>The off-the-shelf WebRTC platform trailed both. Its median was about twice Transport V2's, and its tail was the longest of the three. Against it, Transport V2 had a p99 3.2× lower and 89% less time waiting.</p>
+
+        <figure class="wide-figure">
+          <div class="figure-frame">
+            <img src="/assets/blog/transport-v2/fig-tail.svg" width="1200" height="640" alt="Line chart of the share of requests slower than a given network time, on logarithmic axes. Transport V2's line sits well below the others from about 60 ms onward." loading="lazy">
+          </div>
+          <figcaption>
+            <span class="figure-number">Fig. 02</span>
+            <span>The whole distribution. For any network time on the horizontal axis, the line shows what share of requests were slower. Lower is better; the 1% line is p99.</span>
+          </figcaption>
+        </figure>
+
+        <h2>Twenty-four hours</h2>
+
+        <p>Four hours is one afternoon. Before that run we had tested a research build of Transport V2 against V1 for 24 hours on the same link and the same three-camera load. It was ahead in all 24 hours. Time waiting fell from 8.0% to 0.9%, and replies slower than 250 ms fell from 685 to 74 in every 10,000.</p>
+
+        <p>The gain is largest when the network is at its worst. In the roughest hour of that day, the robot on Transport V1 spent 46% of its time waiting. On Transport V2, in the same hour, it was about 1%.</p>
+
+        <figure class="wide-figure">
+          <div class="figure-frame">
+            <img src="/assets/blog/transport-v2/fig-hours.svg" width="1200" height="520" alt="Bar chart of the share of time spent waiting on a late reply in each of 24 hours. Transport V1 peaks at 46%, 37% and 25% in its worst hours; Transport V2 stays under 6% throughout." loading="lazy">
+          </div>
+          <figcaption>
+            <span class="figure-number">Fig. 03</span>
+            <span>Share of time the robot spent waiting on a late reply, hour by hour, over 24 hours on one home Wi-Fi link. The same link carried both transports in every hour.</span>
+          </figcaption>
+        </figure>
+
+        <h2>What changed</h2>
+
+        <p>Transport V1 was QUIC with standard congestion control, and it measured the same as a stock QUIC client. Standard congestion control is built for bulk transfers. A robot's traffic is different: a burst of about 60 packets, four times a second, where a single lost packet holds up the whole observation.</p>
+
+        <p>Transport V2 changes three things.</p>
+
+        <ul>
+          <li><strong>Steady upload.</strong> Standard congestion control starts each burst cautiously and, after a loss, takes several round trips to open up again. Transport V2 sends each observation in one steady flight, paced at the rate the link has recently delivered. This accounts for most of the gain.</li>
+          <li><strong>Faster recovery from loss.</strong> Both ends stop waiting on long timeouts. The server asks for the missing part of an upload as soon as it stalls. The tail of a reply is re-sent early if it has not been acknowledged. After a Wi-Fi dropout, the first packet that gets through restarts everything at once.</li>
+          <li><strong>Smaller replies.</strong> Action chunks travel as compact binary, in the model's own number format.</li>
+        </ul>
+
+        <p>All of it is negotiated when a session opens. If either end doesn't support a change, the session runs without it.</p>
+
+        <h2>Limits of these numbers</h2>
+
+        <ul>
+          <li>They come from one site: one home Wi-Fi network and one internet provider, to cloud hosts in US West.</li>
+          <li>The model was a stand-in with realistic compute time, and the camera frames were synthetic, sized like real ones.</li>
+          <li>The three-transport run lasted four hours. The 24-hour run used a research build; the production build later matched it in a separate 20-hour run.</li>
+          <li>On a quiet, wired network there is little tail to remove, and the difference is small.</li>
+          <li>Smaller observations gain less. With two cameras, Transport V2 cut time waiting by 44%.</li>
+        </ul>
+
+        <h2>Availability</h2>
+        <p>Transport V2 is on for every organization, for every model that connects over QUIC. There is nothing to configure. Update the SDK to get it:</p>
+
+        <p><code>pip install -U dreamscale</code></p>
+
+        <p class="post-links"><a href="https://docs.dreamscalelabs.com/">Docs</a><a href="https://app.dreamscalelabs.com">Get started</a></p>
+      </article>
+    </main>
+
+    <footer class="blog-footer">
+      <span>Dreamscale Labs © 2026</span>
+      <a href="#top">Back to top ↑</a>
+    </footer>
+    <div class="reading-progress" role="progressbar" aria-label="Article reading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+    <script src="/blog/why/reading-progress.js" defer></script>
+  </body>
+</html>
