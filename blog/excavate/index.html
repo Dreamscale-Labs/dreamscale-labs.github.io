@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link rel="canonical" href="https://www.dreamscalelabs.com/blog/excavate/">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="An experiment of how well state-of-the-art VLAs and WAMs can control an excavator.">
+    <title>Can it Excavate? — Dreamscale Labs</title>
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="theme-color" content="#ffffff">
+    <meta property="og:site_name" content="Dreamscale Labs">
+    <meta property="og:title" content="Can it Excavate?">
+    <meta property="og:description" content="An experiment of how well state-of-the-art VLAs and WAMs can control an excavator.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://www.dreamscalelabs.com/blog/excavate/">
+    <meta property="og:image" content="https://www.dreamscalelabs.com/assets/social/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Dreamscale Labs: The real-time cloud for physical AI">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@dreamscalelabs">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link
+      rel="preload"
+      href="/assets/fonts/Mluvka-Regular-web.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    >
+    <link
+      rel="stylesheet"
+      href="/blog/why/article.css"
+    >
+    <link rel="stylesheet" href="/blog/site-layout.css?v=blue-cta-1">
+    <link rel="stylesheet" href="/blog/hud/hud.css">
+    <link rel="stylesheet" href="/blog/excavate/excavate.css?v=1">
+    <script defer src="/assets/analytics/posthog.js?v=1"></script>
+  </head>
+  <body>
+    <header class="site-header" aria-label="Primary navigation">
+      <a class="site-logo" href="/" aria-label="Dreamscale Labs home">
+        <img
+          src="/assets/landing/brand.svg"
+          alt="Dreamscale Labs"
+          width="188"
+          fetchpriority="high"
+        >
+      </a>
+      <nav>
+        <a class="nav-link" href="/blog/">Blog</a>
+        <a class="nav-link" href="https://app.dreamscalelabs.com/signin">Sign in</a>
+        <a class="demo-link" href="https://app.dreamscalelabs.com">Get started</a>
+      </nav>
+    </header>
+
+    <main class="article-shell" id="top">
+      <header class="article-hero">
+        <div class="article-title-block">
+          <h1>Can it Excavate?</h1>
+          <p class="article-dek">An experiment of how well state-of-the-art VLAs and WAMs can control an excavator.</p>
+          <p class="reading-meta"><time datetime="2026-11-15">November 15, 2026</time><span aria-hidden="true">·</span><span>8 min read</span></p>
+        </div>
+        <video class="article-cover-video" src="/assets/blog/excavate/hero.mp4" poster="/assets/blog/excavate/hero.jpg" width="1280" height="720" muted loop playsinline preload="auto" data-autoplay aria-label="The Takeuchi TB20e mini-excavator lifting a lump of cardboard over a dumpster"></video>
+      </header>
+
+      <article class="article" id="article-introduction">
+        <h2>Overview</h2>
+
+        <p>At <a href="https://dreamscalelabs.com/">Dreamscale Labs</a>, we build cloud inference for robots. That means you can fine-tune and run various frontier robotics models over the cloud with real-time latency (and without expensive local GPUs).</p>
+
+        <p>We'd been testing diverse <a href="https://docs.dreamscalelabs.com/models">models</a> on diverse <a href="https://docs.dreamscalelabs.com/robots/yam">embodiments</a>, and had been looking for the next challenge to put the latest VLA/WAM models to the test.</p>
+
+        <p>That's when we met Lane from <a href="https://labs.actor/">Actor Labs</a>, whose company is deploying autonomy onto heavy machinery, e.g. excavators and wheel loaders. (See below for their π model autonomously dumping dirt into a truck.)</p>
+
+        <figure class="wide-figure">
+          <div class="figure-frame">
+            <video src="/assets/blog/excavate/actor-wheel-loader.mp4" poster="/assets/blog/excavate/actor-wheel-loader.jpg" width="1280" height="720" muted loop playsinline controls preload="none" data-autoplay aria-label="A wheel loader driven by Actor Labs' π model scooping dirt and dumping it into a truck"></video>
+          </div>
+          <figcaption>
+            <span class="figure-number">Fig. 01</span>
+            <span>Actor Labs' π model autonomously dumping dirt into a truck.</span>
+          </figcaption>
+        </figure>
+
+        <p>We thought it'd be an interesting and intellectually meaningful exercise to test out different latest models on an excavator they had laying around in the warehouse.</p>
+
+        <p>We compare 4 models (Physical Intelligence's <a href="https://www.pi.website/blog/pi05">π0.5</a>, NVIDIA's <a href="https://developer.nvidia.com/blog/develop-humanoid-robot-policies-end-to-end-with-nvidia-isaac-gr00t/">GR00T N1.7</a>, Black Forest Labs' <a href="https://bfl.ai/models/flux-3-action">Flux 3 Action</a>, and Runway's <a href="https://runway.com/research/praxis-1-video-pretraining-to-robot-control">Praxis-1</a>) on a single task: throw away a lump of cardboard trash into the dumpster.</p>
+
+        <p>We collect the data, fine-tune the models, and roll them out via Dreamscale's cloud inference to see how well each performed on controlling an excavator.</p>
+
+        <h2>The Excavator</h2>
+
+        <p>Enter the <a href="https://www.takeuchi-us.com/localus/equipment/electric-machines/tb20e">Takeuchi TB20e</a>: a 1930 kg (= 4254 lb) electric mini-excavator used on worksites for digging, lifting, and dumping. Actor had already tapped a Raspberry Pi 5 into the ECU's CAN buses to read and write joint commands to the excavator.</p>
+
+        <figure class="wide-figure">
+          <div class="figure-frame">
+            <img src="/assets/blog/excavate/excavator.webp" width="1600" height="900" alt="The Takeuchi TB20e mini-excavator with its side panel open, with someone at the controls" loading="lazy" decoding="async">
+          </div>
+          <figcaption>
+            <span class="figure-number">Fig. 02</span>
+            <span>The Takeuchi TB20e.</span>
+          </figcaption>
+        </figure>
+
+        <p>At the end of the day, an excavator is just a robot. It has inputs and outputs, and ways to control it to do meaningful stuff.</p>
+
+        <p>Inputs:</p>
+
+        <ul>
+          <li>2x forward-facing GMSL2 cameras attached to the roof of the excavator</li>
+          <li>1x scene Logitech C270 webcam</li>
+        </ul>
+
+        <p>Outputs (joystick controls):</p>
+
+        <ul>
+          <li>Swing</li>
+          <li>Boom</li>
+          <li>Arm</li>
+          <li>Bucket</li>
+          <li>Thumb</li>
+        </ul>
+
+        <p>It's important to note that there is no proprioceptive state. The excavator joints do not come with an encoder (<em>to be fair, they don't need one</em>). Therefore, we take the previous tick's joystick commands as the current state.</p>
+
+        <h2>Data Collection</h2>
+
+        <p>To start, we collected 50 episodes of data.</p>
+
+        <p>Here's Antoine, our CTO (who has never driven an excavator in his life) collect an episode. This took 70 seconds, but towards the end of data collection, he had improved down to 40 seconds.</p>
+
+        <figure class="wide-figure">
+          <div class="figure-frame">
+            <video src="/assets/blog/excavate/data-collection.mp4" poster="/assets/blog/excavate/data-collection.jpg" width="1280" height="720" muted loop playsinline controls preload="none" data-autoplay aria-label="Antoine driving the excavator to pick up the cardboard and drop it into the dumpster"></video>
+          </div>
+          <figcaption>
+            <span class="figure-number">Fig. 03</span>
+            <span>Antoine collecting one of the 50 episodes.</span>
+          </figcaption>
+        </figure>
+
+        <p>What we varied per run:</p>
+
+        <ul>
+          <li>Different positions of the cardboard trash</li>
+          <li>Different lighting conditions (this was inadvertent, but the sun was setting during data collection)</li>
+          <li>Different pieces of cardboard trash (40 episodes on one, 10 episodes on another)</li>
+        </ul>
+
+        <p>What we kept the same:</p>
+
+        <ul>
+          <li>Starting and ending pose (home)</li>
+          <li>Same dumping strategy</li>
+          <li>Same dumpster position</li>
+        </ul>
+
+        <p>Once we were done, we uploaded the dataset to Hugging Face in LeRobot v3 format.</p>
+
+        <p><em>Note: the actual cameras recorded at a very high resolution (1920x1080), but the models don't need to see fine details anyway, so we downsampled to 224x224 for training. Also because we were bottlenecked by upload speed.</em></p>
+
+        <h2>Training</h2>
+
+        <p>Once the dataset was in HF, we imported it into Dreamscale, then kicked off serverless fine-tuning jobs using Dreamscale Training. It comes pre-configured with the recommended recipe for each model based on the providers' suggestions, and our prior experiences.</p>
+
+        <figure class="wide-figure">
+          <div class="figure-frame">
+            <img src="/assets/blog/excavate/training.webp" width="1440" height="469" alt="The Dreamscale Training page listing the finished GR00T N1.7, Flux 3 Action and Praxis-1 fine-tuning runs" loading="lazy" decoding="async">
+          </div>
+          <figcaption>
+            <span class="figure-number">Fig. 04</span>
+            <span>Fine-tuning runs on Dreamscale Training.</span>
+          </figcaption>
+        </figure>
+
+        <p>Once training finished, we deployed it on Dreamscale's serving engine, which automatically applied test-time optimizations to speed up inference.</p>
+
+        <figure class="wide-figure">
+          <div class="figure-frame">
+            <img src="/assets/blog/excavate/deployment.webp" width="1440" height="944" alt="A finished Flux 3 Action training run with its loss curve and deployed checkpoints" loading="lazy" decoding="async">
+          </div>
+          <figcaption>
+            <span class="figure-number">Fig. 05</span>
+            <span>A finished training run and its deployed checkpoints.</span>
+          </figcaption>
+        </figure>
+
+        <h2>The Moment of Truth</h2>
+
+        <p>While we were waiting for training to complete, it had become nighttime, so we had to bring out floodlights. This was going to be a real test of scene generalization (none of the dataset included night lighting), and we were curious to see how well the models would perform.</p>
+
+        <figure class="wide-figure">
+          <div class="figure-frame">
+            <img src="/assets/blog/excavate/floodlights.webp" width="1600" height="900" alt="The excavator and dumpster lit by floodlights at night" loading="lazy" decoding="async">
+          </div>
+          <figcaption>
+            <span class="figure-number">Fig. 06</span>
+            <span>Floodlights for the night-time rollouts.</span>
+          </figcaption>
+        </figure>
+
+        <p>Inference was entirely in the cloud via the Dreamscale platform. After all, a typical excavator does not come with an NVIDIA GPU (though this one had a Thor attached which we didn't use).</p>
+
+        <p>Was it going to be fast enough? The answer was yes: for π0.5 at 15 Hz (tick size = 66 ms), we hit median &lt;133 ms obs-to-action latency over satellite internet, with almost all chunks staying under 3 control ticks of inference.</p>
+
+        <figure class="wide-figure">
+          <div class="figure-frame">
+            <img src="/assets/blog/excavate/latency.webp" width="1440" height="490" alt="π0.5 latency in control ticks over a 75-second rollout: mostly 2 to 3 ticks, with one spike to 6" loading="lazy" decoding="async">
+          </div>
+          <figcaption>
+            <span class="figure-number">Fig. 07</span>
+            <span>π0.5 obs-to-action latency in control ticks (66 ms each) over one rollout.</span>
+          </figcaption>
+        </figure>
+
+        <h2>Model Comparison</h2>
+
+        <h3>Can π0.5 excavate?</h3>
+
+        <figure class="bleed-figure">
+          <div class="figure-frame">
+            <video src="/assets/blog/excavate/pi05.mp4" poster="/assets/blog/excavate/pi05.jpg" width="1600" height="352" muted loop playsinline controls preload="none" data-autoplay aria-label="π0.5 rollout seen from the two roof cameras and the scene camera: the excavator picks up the cardboard and drops it in the dumpster"></video>
+          </div>
+          <figcaption>
+            <span class="figure-number">Fig. 08</span>
+            <span>π0.5, seen from the two roof cameras and the scene camera.</span>
+          </figcaption>
+        </figure>
+
+        <p class="verdict verdict--yes">Yes!</p>
+
+        <p>It manages to successfully pick up the cardboard and place it in the dumpster just over half the time. We had even trained it on a preliminary 30-episode dataset, and it still managed to succeed just over a third of the time. Keep in mind that the model has never seen this dark lighting condition, yet it still succeeded!</p>
+
+        <h3>Can GR00T N1.7 excavate?</h3>
+
+        <figure class="bleed-figure">
+          <div class="figure-frame">
+            <video src="/assets/blog/excavate/gr00t-n17.mp4" poster="/assets/blog/excavate/gr00t-n17.jpg" width="1600" height="352" muted loop playsinline controls preload="none" data-autoplay aria-label="GR00T N1.7 rollout seen from the two roof cameras and the scene camera: the excavator misses the cardboard"></video>
+          </div>
+          <figcaption>
+            <span class="figure-number">Fig. 09</span>
+            <span>GR00T N1.7, seen from the two roof cameras and the scene camera.</span>
+          </figcaption>
+        </figure>
+
+        <p class="verdict verdict--no">No.</p>
+
+        <p>We found that GR00T misses the first grasp due to imprecise horizontal swing of the excavator base. It still attempts to close the grip (albeit in mid-air) but doesn't correct itself to swing back towards the correct position. This might be because the dataset does not contain any leftward motion (when not gripping the cardboard).</p>
+
+        <h3>Can Flux 3 Action excavate?</h3>
+
+        <figure class="bleed-figure">
+          <div class="figure-frame">
+            <video src="/assets/blog/excavate/flux-3-action.mp4" poster="/assets/blog/excavate/flux-3-action.jpg" width="1600" height="352" muted loop playsinline controls preload="none" data-autoplay aria-label="Flux 3 Action rollout seen from the two roof cameras and the scene camera: the excavator swings to the cardboard but never lowers the arm enough"></video>
+          </div>
+          <figcaption>
+            <span class="figure-number">Fig. 10</span>
+            <span>Flux 3 Action, seen from the two roof cameras and the scene camera.</span>
+          </figcaption>
+        </figure>
+
+        <p class="verdict verdict--no">No.</p>
+
+        <p>It swung correctly, but never managed to dip the arm enough to pick up the trash. Why might this be? We investigated the decoded future video latents of the model and saw that F3A does in fact predict the arm moving downwards, but the motion difference is so small that the action outputs are only 10–20% of full throttle.</p>
+
+        <p>The excavator doesn't respond to controls below a certain threshold of power, and therefore the model, despite wanting to move the arm slightly lower, could not do so. It's interesting to note that during data collection, the arm was operated in bursts of mostly 100% throttles, and the model has learnt to smooth out actions over a longer horizon.</p>
+
+        <figure class="wide-figure">
+          <div class="figure-frame">
+            <video src="/assets/blog/excavate/flux-3-action-predicted.mp4" poster="/assets/blog/excavate/flux-3-action-predicted.jpg" width="768" height="512" muted loop playsinline controls preload="none" data-autoplay aria-label="Flux 3 Action's camera input on top and its decoded prediction of the future frames below"></video>
+          </div>
+          <figcaption>
+            <span class="figure-number">Fig. 11</span>
+            <span>What Flux 3 Action saw (top) and the future it predicted, decoded from its video latents (bottom).</span>
+          </figcaption>
+        </figure>
+
+        <h3>Can Praxis-1 excavate?</h3>
+
+        <figure class="bleed-figure">
+          <div class="figure-frame">
+            <video src="/assets/blog/excavate/praxis-1.mp4" poster="/assets/blog/excavate/praxis-1.jpg" width="1600" height="352" muted loop playsinline controls preload="none" data-autoplay aria-label="Praxis-1 rollout seen from the two roof cameras and the scene camera: the excavator swings to the cardboard but never lowers the arm enough"></video>
+          </div>
+          <figcaption>
+            <span class="figure-number">Fig. 12</span>
+            <span>Praxis-1, seen from the two roof cameras and the scene camera.</span>
+          </figcaption>
+        </figure>
+
+        <p class="verdict verdict--no">No.</p>
+
+        <p>Similar to Flux 3 Action, it swings to the correct position, but doesn't dip far enough to grasp the cardboard. Decoding the future latents here, we notice a similar pattern: the slight dipping motion doesn't meet the threshold for actuation. An interesting observation is how the arm appears to disintegrate further into the video prediction horizon (more than F3A).</p>
+
+        <figure class="wide-figure">
+          <div class="figure-frame">
+            <video src="/assets/blog/excavate/praxis-1-predicted.mp4" poster="/assets/blog/excavate/praxis-1-predicted.jpg" width="1248" height="448" muted loop playsinline controls preload="none" data-autoplay aria-label="Praxis-1's camera input on top and its decoded prediction of the future frames below"></video>
+          </div>
+          <figcaption>
+            <span class="figure-number">Fig. 13</span>
+            <span>What Praxis-1 saw (top) and the future it predicted, decoded from its video latents (bottom).</span>
+          </figcaption>
+        </figure>
+
+        <h2>Common Observed Failures</h2>
+
+        <p>We list some common failures observed across the models.</p>
+
+        <p>The first and most prevalent is failing to grip the cardboard. In the model's defense, even for a human sitting in the operator's seat it's hard to estimate the correct depth and how far out the arm needs to extend. And while swinging, the arm can obscure the view of the cardboard.</p>
+
+        <figure class="wide-figure">
+          <div class="figure-frame">
+            <video src="/assets/blog/excavate/fail-grip.mp4" poster="/assets/blog/excavate/fail-grip.jpg" width="1280" height="720" muted loop playsinline controls preload="none" data-autoplay aria-label="The excavator closing its bucket and thumb short of the cardboard"></video>
+          </div>
+          <figcaption>
+            <span class="figure-number">Fig. 14</span>
+            <span>Failing to grip the cardboard.</span>
+          </figcaption>
+        </figure>
+
+        <p>Another interesting behavior is failing to release when hovering over the dumpster. We found that the models want to keep extending the arm upwards (even though it is fully extended). We suspect that this is because a lot of our dataset episodes contained maximally extended arm poses before the grip got released.</p>
+
+        <figure class="wide-figure">
+          <div class="figure-frame">
+            <video src="/assets/blog/excavate/fail-release.mp4" poster="/assets/blog/excavate/fail-release.jpg" width="1280" height="720" muted loop playsinline controls preload="none" data-autoplay aria-label="The excavator holding the cardboard over the dumpster without letting go"></video>
+          </div>
+          <figcaption>
+            <span class="figure-number">Fig. 15</span>
+            <span>Failing to release over the dumpster.</span>
+          </figcaption>
+        </figure>
+
+        <h2>Limitations</h2>
+
+        <p>This was a half-day project, and therefore there are lots of limitations due to time constraint:</p>
+
+        <ul>
+          <li>We only collected 50 episodes of data</li>
+          <li>We only trained it for max a few hours</li>
+          <li>We would've loved to test ablations with different cardboard boxes, different dumpster positions and including/excluding the scene cam</li>
+          <li>We also would've loved to test other latest models, e.g. RobbyAnt's <a href="https://technology.robbyant.com/lingbot-va">Lingbot-VA</a>, NVIDIA's <a href="https://nvlabs.github.io/LongLive/Long-WAM/">Long-WAM</a>, Verne's <a href="https://vernerobotics.com/research/verne-v0-5">V0.5</a>, Perceptron's <a href="https://www.perceptron.inc/blog/introducing-isaac-0-5">Isaac 0.5</a> etc.</li>
+        </ul>
+
+        <p>A big disclaimer is that the results here are not a full proper comparative evaluation across models and should not be taken as such. Treat it as an interesting experiment of tinkering with robot models on an unfamiliar embodiment.</p>
+
+        <h2>Conclusion &amp; Takeaways</h2>
+
+        <ul>
+          <li>An excavator is just a robot: plug in the right inputs and outputs, and you can train a robot model to control it</li>
+          <li>It's possible to control robots entirely via cloud inference</li>
+          <li>Decoding future video state is useful for debugging WAMs</li>
+          <li>π0.5 released in April 2025 (1.5 years ago) and it's still one of the best learners for fine-tuning</li>
+        </ul>
+
+        <p>A human (Antoine) was able to excavate after minimal training (verbal instructions and a few minutes of self-play) and generalized extremely well. Task completion time improved 2x over time (80 seconds → 40 seconds). Robot models still have a fair way to go to achieve such levels of learning velocity and generalization.</p>
+
+        <p>When we think of robotics, we immediately think of humanoids or bimanual arms. We hope our blog inspires more experimentation around robot models for different embodiments. On this theme, we have more interesting use cases of Dreamscale coming soon! (hint: <em>vroom vroom</em>)</p>
+
+        <aside class="end-note">
+          <p>If you're a model company who thinks your model can excavate better than the rest (or think we could've done a better job at fine-tuning), or if you're a deployment company who has real-world tasks that you want to pit the latest and greatest models against, please reach out at <a href="mailto:founders@dreamscalelabs.com">founders@dreamscalelabs.com</a>.</p>
+          <p>Or if you're just curious about our platform, you can sign in today at <a href="https://app.dreamscalelabs.com/">app.dreamscalelabs.com</a> with some free starter credits.</p>
+        </aside>
+
+        <p><em>We thank Lane at Actor Labs for teaching us how to drive an excavator and fixing electronics that broke along the way.</em></p>
+
+        <figure class="wide-figure">
+          <div class="figure-frame">
+            <video src="/assets/blog/excavate/back-home.mp4" poster="/assets/blog/excavate/back-home.jpg" width="1280" height="720" muted loop playsinline controls preload="none" data-autoplay aria-label="The excavator driving back home"></video>
+          </div>
+        </figure>
+      </article>
+    </main>
+
+    <footer class="blog-footer">
+      <span>Dreamscale Labs © 2026</span>
+      <a href="#top">Back to top ↑</a>
+    </footer>
+    <div class="reading-progress" role="progressbar" aria-label="Article reading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+    <script src="/blog/why/reading-progress.js" defer></script>
+    <script src="/blog/excavate/autoplay.js?v=1" defer></script>
+  </body>
+</html>
