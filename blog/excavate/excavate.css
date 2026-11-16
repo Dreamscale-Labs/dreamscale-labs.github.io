@@ -16,7 +16,8 @@
 .article .bleed-figure {
   position: relative;
   left: 50%;
-  width: min(100vw - 2.5rem, 74rem);
+  /* The blog shell's content width: 1120px less its 36px side padding. */
+  width: min(100vw - 72px, 1048px);
   transform: translateX(-50%);
 }
 
@@ -51,11 +52,13 @@
   margin-top: 1rem;
 }
 
-@media (max-width: 510px) {
+@media (max-width: 700px) {
   .article .bleed-figure {
-    width: calc(100vw - 2rem);
+    width: calc(100vw - 44px);
   }
+}
 
+@media (max-width: 510px) {
   /* At phone width a 4.5:1 strip is too short to read, so it scrolls sideways instead. */
   .bleed-figure .figure-frame {
     overflow-x: auto;
@@ -65,5 +68,21 @@
   .article .bleed-figure video {
     width: 54rem;
     max-width: none;
+  }
+}
+
+/* Beside the sidebar table of contents, wide rollouts extend right only, clear of the sidebar. */
+@media (min-width: 1001px) {
+  .article-layout .article .bleed-figure {
+    left: 0;
+    /* The 680px column, the 24px gap and the right-hand grid column: (shell - 728px) / 2. */
+    width: calc(340px + min(100vw - 72px, 1048px) / 2);
+    transform: none;
+  }
+
+  .article-layout .article .bleed-figure figcaption {
+    width: auto;
+    max-width: 680px;
+    margin-left: 0;
   }
 }
