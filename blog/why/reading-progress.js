@@ -9,7 +9,8 @@ function setTocMode() { if (toc) toc.open = !compact.matches; }
 compact.addEventListener('change', setTocMode);
 setTocMode();
 toc?.querySelector('summary').addEventListener('click', event => {
-  if (!compact.matches) event.preventDefault();
+  // A TOC marked data-collapsible can also be closed beside the article.
+  if (!compact.matches && !('collapsible' in toc.dataset)) event.preventDefault();
 });
 tocLinks.forEach((link, index) => link.addEventListener('click', () => {
   if (compact.matches) toc.open = false;

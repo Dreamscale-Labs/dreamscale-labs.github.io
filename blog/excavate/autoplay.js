@@ -44,3 +44,18 @@ if ('IntersectionObserver' in window) {
 } else {
   videos.forEach(play);
 }
+
+// Open the model subsections in the table of contents while Model comparison or
+// one of its subsections is the section being read (reading-progress.js marks it).
+const tocGroup = document.querySelector('.article-toc .toc-group');
+if (tocGroup) {
+  const parentLink = tocGroup.previousElementSibling;
+  const syncGroup = () => {
+    const subActive = tocGroup.querySelector('[aria-current]');
+    tocGroup.classList.toggle('is-open', Boolean(subActive || parentLink.hasAttribute('aria-current')));
+    if (subActive) parentLink.setAttribute('data-parent-current', '');
+    else parentLink.removeAttribute('data-parent-current');
+  };
+  new MutationObserver(syncGroup).observe(tocGroup.parentElement, { subtree: true, attributeFilter: ['aria-current'] });
+  syncGroup();
+}
