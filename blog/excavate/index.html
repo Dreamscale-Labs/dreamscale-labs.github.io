@@ -43,7 +43,7 @@
     >
     <link rel="stylesheet" href="/blog/site-layout.css?v=blue-cta-1">
     <link rel="stylesheet" href="/blog/hud/hud.css">
-    <link rel="stylesheet" href="/blog/excavate/excavate.css?v=3">
+    <link rel="stylesheet" href="/blog/excavate/excavate.css?v=5">
     <script defer src="/assets/analytics/posthog.js?v=1"></script>
   </head>
   <body>
@@ -75,7 +75,7 @@
 
       <div class="article-layout">
         <aside class="toc-sidebar">
-          <details class="article-toc" open>
+          <details class="article-toc" data-collapsible open>
             <summary>On this page</summary>
             <nav aria-label="Table of contents">
               <a href="#overview">Overview</a>
@@ -84,6 +84,12 @@
               <a href="#training">Training</a>
               <a href="#moment-of-truth">The moment of truth</a>
               <a href="#model-comparison">Model comparison</a>
+              <div class="toc-group">
+                <a class="toc-sub" href="#can-pi05">π0.5</a>
+                <a class="toc-sub" href="#can-gr00t">GR00T N1.7</a>
+                <a class="toc-sub" href="#can-flux">Flux 3 Action</a>
+                <a class="toc-sub" href="#can-praxis">Praxis-1</a>
+              </div>
               <a href="#failures">Common failures</a>
               <a href="#limitations">Limitations</a>
               <a href="#conclusion">Conclusion &amp; takeaways</a>
@@ -242,7 +248,7 @@
 
         <h2 id="model-comparison" tabindex="-1">Model Comparison</h2>
 
-        <h3>Can π0.5 excavate?</h3>
+        <h3 id="can-pi05" tabindex="-1">Can π0.5 excavate?</h3>
 
         <figure class="bleed-figure">
           <div class="figure-frame">
@@ -258,7 +264,7 @@
 
         <p>It manages to successfully pick up the cardboard and place it in the dumpster just over half the time. We had even trained it on a preliminary 30-episode dataset, and it still managed to succeed just over a third of the time. Keep in mind that the model has never seen this dark lighting condition, yet it still succeeded!</p>
 
-        <h3>Can GR00T N1.7 excavate?</h3>
+        <h3 id="can-gr00t" tabindex="-1">Can GR00T N1.7 excavate?</h3>
 
         <figure class="bleed-figure">
           <div class="figure-frame">
@@ -274,7 +280,7 @@
 
         <p>We found that GR00T misses the first grasp due to imprecise horizontal swing of the excavator base. It still attempts to close the grip (albeit in mid-air) but doesn't correct itself to swing back towards the correct position. This might be because the dataset does not contain any leftward motion (when not gripping the cardboard).</p>
 
-        <h3>Can Flux 3 Action excavate?</h3>
+        <h3 id="can-flux" tabindex="-1">Can Flux 3 Action excavate?</h3>
 
         <figure class="bleed-figure">
           <div class="figure-frame">
@@ -302,7 +308,7 @@
           </figcaption>
         </figure>
 
-        <h3>Can Praxis-1 excavate?</h3>
+        <h3 id="can-praxis" tabindex="-1">Can Praxis-1 excavate?</h3>
 
         <figure class="bleed-figure">
           <div class="figure-frame">
@@ -403,7 +409,7 @@
       <a href="#top">Back to top ↑</a>
     </footer>
     <div class="reading-progress" role="progressbar" aria-label="Article reading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
-    <script src="/blog/why/reading-progress.js" defer></script>
-    <script src="/blog/excavate/autoplay.js?v=1" defer></script>
+    <script src="/blog/why/reading-progress.js?v=2" defer></script>
+    <script src="/blog/excavate/autoplay.js?v=2" defer></script>
   </body>
 </html>

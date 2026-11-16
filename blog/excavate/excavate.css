@@ -86,3 +86,58 @@
     margin-left: 0;
   }
 }
+
+/* Table of contents: the four model subsections nest under Model comparison and open while it is being read. */
+.article-toc .toc-group {
+  display: none;
+}
+
+.article-toc .toc-group.is-open {
+  display: grid;
+}
+
+.article-toc nav a.toc-sub {
+  padding-top: 6px;
+  padding-bottom: 6px;
+  padding-left: 27px;
+  font-size: 11.5px;
+}
+
+.article h3[id] {
+  scroll-margin-top: 32px;
+}
+
+.article h3:focus {
+  outline: none;
+}
+
+/* The sidebar can be closed beside the article too, not only above it. */
+.article-toc[data-collapsible] summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.article-toc[data-collapsible] summary::after {
+  content: '+';
+}
+
+.article-toc[data-collapsible][open] summary::after {
+  content: '−';
+}
+
+.article-toc[data-collapsible]:not([open]) summary {
+  margin-bottom: 0;
+}
+
+.article-toc nav a[data-parent-current] {
+  color: #365845;
+}
+
+/* Above the article the list is opened before Model comparison is reached, so the subsections always show. */
+@media (max-width: 1000px) {
+  .article-toc .toc-group {
+    display: grid;
+  }
+}
