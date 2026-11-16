@@ -1,0 +1,69 @@
+.article-cover-video {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 3rem;
+  background: #000000;
+}
+
+.figure-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Three-camera rollouts are very wide (4.5:1), so they break out of the text column. */
+.article .bleed-figure {
+  position: relative;
+  left: 50%;
+  width: min(100vw - 2.5rem, 74rem);
+  transform: translateX(-50%);
+}
+
+.article .bleed-figure figcaption {
+  width: min(100%, 45rem);
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.verdict {
+  display: inline-block;
+  margin: 0 0 1.4rem;
+  padding: 0.1rem 0.85rem 0.15rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-family: var(--title-font);
+  font-size: 0.9rem;
+  letter-spacing: 0.06em;
+  line-height: 1.8;
+  text-transform: uppercase;
+}
+
+.article .verdict--yes {
+  color: #0047ab;
+}
+
+.article .verdict--no {
+  color: var(--muted);
+}
+
+.article .end-note p + p {
+  margin-top: 1rem;
+}
+
+@media (max-width: 510px) {
+  .article .bleed-figure {
+    width: calc(100vw - 2rem);
+  }
+
+  /* At phone width a 4.5:1 strip is too short to read, so it scrolls sideways instead. */
+  .bleed-figure .figure-frame {
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+
+  .article .bleed-figure video {
+    width: 54rem;
+    max-width: none;
+  }
+}
