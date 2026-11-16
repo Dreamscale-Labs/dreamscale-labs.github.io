@@ -43,7 +43,7 @@
     >
     <link rel="stylesheet" href="/blog/site-layout.css?v=blue-cta-1">
     <link rel="stylesheet" href="/blog/hud/hud.css">
-    <link rel="stylesheet" href="/blog/excavate/excavate.css?v=1">
+    <link rel="stylesheet" href="/blog/excavate/excavate.css?v=3">
     <script defer src="/assets/analytics/posthog.js?v=1"></script>
   </head>
   <body>
@@ -73,8 +73,25 @@
         <video class="article-cover-video" src="/assets/blog/excavate/hero.mp4" poster="/assets/blog/excavate/hero.jpg" width="1280" height="720" muted loop playsinline preload="auto" data-autoplay aria-label="The Takeuchi TB20e mini-excavator lifting a lump of cardboard over a dumpster"></video>
       </header>
 
+      <div class="article-layout">
+        <aside class="toc-sidebar">
+          <details class="article-toc" open>
+            <summary>On this page</summary>
+            <nav aria-label="Table of contents">
+              <a href="#overview">Overview</a>
+              <a href="#the-excavator">The excavator</a>
+              <a href="#data-collection">Data collection</a>
+              <a href="#training">Training</a>
+              <a href="#moment-of-truth">The moment of truth</a>
+              <a href="#model-comparison">Model comparison</a>
+              <a href="#failures">Common failures</a>
+              <a href="#limitations">Limitations</a>
+              <a href="#conclusion">Conclusion &amp; takeaways</a>
+            </nav>
+          </details>
+        </aside>
       <article class="article" id="article-introduction">
-        <h2>Overview</h2>
+        <h2 id="overview" tabindex="-1">Overview</h2>
 
         <p>At <a href="https://dreamscalelabs.com/">Dreamscale Labs</a>, we build cloud inference for robots. That means you can fine-tune and run various frontier robotics models over the cloud with real-time latency (and without expensive local GPUs).</p>
 
@@ -98,7 +115,7 @@
 
         <p>We collect the data, fine-tune the models, and roll them out via Dreamscale's cloud inference to see how well each performed on controlling an excavator.</p>
 
-        <h2>The Excavator</h2>
+        <h2 id="the-excavator" tabindex="-1">The Excavator</h2>
 
         <p>Enter the <a href="https://www.takeuchi-us.com/localus/equipment/electric-machines/tb20e">Takeuchi TB20e</a>: a 1930 kg (= 4254 lb) electric mini-excavator used on worksites for digging, lifting, and dumping. Actor had already tapped a Raspberry Pi 5 into the ECU's CAN buses to read and write joint commands to the excavator.</p>
 
@@ -133,7 +150,7 @@
 
         <p>It's important to note that there is no proprioceptive state. The excavator joints do not come with an encoder (<em>to be fair, they don't need one</em>). Therefore, we take the previous tick's joystick commands as the current state.</p>
 
-        <h2>Data Collection</h2>
+        <h2 id="data-collection" tabindex="-1">Data Collection</h2>
 
         <p>To start, we collected 50 episodes of data.</p>
 
@@ -169,7 +186,7 @@
 
         <p><em>Note: the actual cameras recorded at a very high resolution (1920x1080), but the models don't need to see fine details anyway, so we downsampled to 224x224 for training. Also because we were bottlenecked by upload speed.</em></p>
 
-        <h2>Training</h2>
+        <h2 id="training" tabindex="-1">Training</h2>
 
         <p>Once the dataset was in HF, we imported it into Dreamscale, then kicked off serverless fine-tuning jobs using Dreamscale Training. It comes pre-configured with the recommended recipe for each model based on the providers' suggestions, and our prior experiences.</p>
 
@@ -195,7 +212,7 @@
           </figcaption>
         </figure>
 
-        <h2>The Moment of Truth</h2>
+        <h2 id="moment-of-truth" tabindex="-1">The Moment of Truth</h2>
 
         <p>While we were waiting for training to complete, it had become nighttime, so we had to bring out floodlights. This was going to be a real test of scene generalization (none of the dataset included night lighting), and we were curious to see how well the models would perform.</p>
 
@@ -223,7 +240,7 @@
           </figcaption>
         </figure>
 
-        <h2>Model Comparison</h2>
+        <h2 id="model-comparison" tabindex="-1">Model Comparison</h2>
 
         <h3>Can π0.5 excavate?</h3>
 
@@ -311,7 +328,7 @@
           </figcaption>
         </figure>
 
-        <h2>Common Observed Failures</h2>
+        <h2 id="failures" tabindex="-1">Common Observed Failures</h2>
 
         <p>We list some common failures observed across the models.</p>
 
@@ -339,7 +356,7 @@
           </figcaption>
         </figure>
 
-        <h2>Limitations</h2>
+        <h2 id="limitations" tabindex="-1">Limitations</h2>
 
         <p>This was a half-day project, and therefore there are lots of limitations due to time constraint:</p>
 
@@ -352,7 +369,7 @@
 
         <p>A big disclaimer is that the results here are not a full proper comparative evaluation across models and should not be taken as such. Treat it as an interesting experiment of tinkering with robot models on an unfamiliar embodiment.</p>
 
-        <h2>Conclusion &amp; Takeaways</h2>
+        <h2 id="conclusion" tabindex="-1">Conclusion &amp; Takeaways</h2>
 
         <ul>
           <li>An excavator is just a robot: plug in the right inputs and outputs, and you can train a robot model to control it</li>
@@ -378,6 +395,7 @@
           </div>
         </figure>
       </article>
+      </div>
     </main>
 
     <footer class="blog-footer">
