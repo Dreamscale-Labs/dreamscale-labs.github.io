@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <link rel="canonical" href="https://www.dreamscalelabs.com/blog/transport-v2/">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Our new robot-to-cloud transport cuts p99 network latency from 420 ms to 160 ms on home Wi-Fi, with no change to your code.">
+    <meta name="description" content="On a home Wi-Fi link, Transport V2 reduced p99 network latency from 420 ms to 160 ms for a robot running inference in the cloud.">
     <title>Transport V2 — Dreamscale Labs</title>
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -15,7 +15,7 @@
     <meta name="theme-color" content="#ffffff">
     <meta property="og:site_name" content="Dreamscale Labs">
     <meta property="og:title" content="Transport V2">
-    <meta property="og:description" content="Our new robot-to-cloud transport cuts p99 network latency from 420 ms to 160 ms on home Wi-Fi, with no change to your code.">
+    <meta property="og:description" content="On a home Wi-Fi link, Transport V2 reduced p99 network latency from 420 ms to 160 ms for a robot running inference in the cloud.">
     <meta property="og:type" content="article">
     <meta property="og:url" content="https://www.dreamscalelabs.com/blog/transport-v2/">
     <meta property="og:image" content="https://www.dreamscalelabs.com/assets/social/og-image.png">
@@ -67,17 +67,17 @@
       <header class="article-hero">
         <div class="article-title-block">
           <h1>Transport V2</h1>
-          <p class="article-dek">Our new robot-to-cloud transport cuts p99 network latency from 420 ms to 160 ms on home Wi-Fi, with no change to your code.</p>
+          <p class="article-dek">On a home Wi-Fi link, Transport V2 reduced p99 network latency from 420 ms to 160 ms for a robot running inference in the cloud.</p>
           <p class="reading-meta"><time datetime="2026-11-12">November 12, 2026</time><span aria-hidden="true">·</span><span>5 min read</span></p>
         </div>
       </header>
 
       <article class="article" id="article-introduction">
-        <p>A robot that runs its model in the cloud sends camera frames up and waits for the next chunk of actions to come back. Most of the time that round trip is quick. The problem is the rare slow one: when a reply is late, the robot has nothing new to execute, and it hesitates.</p>
+        <p>Consider a robot that sends camera frames to a cloud model four times a second. Every 250 ms it needs a new chunk of actions. If the model takes 87 ms to compute a reply, that leaves about 163 ms to get the frames to the GPU and the actions back to the robot. What happens when Wi-Fi drops a packet?</p>
 
-        <p>So the number that matters is not the median. It is the tail: how slow the slowest 1% and 0.1% of requests are, and how often the robot is left waiting. On real networks, and on Wi-Fi above all, that tail is set by how the transport behaves when packets are lost.</p>
+        <p>In <a href="/blog/why/">our case for off-board inference</a>, we argued that network variability is an engineering problem we can make progress on. Packet loss is one place to start. A transport can deliver every reply and still leave the robot hesitating while it waits for the next action. How quickly the transport recovers matters most on the slowest round trips.</p>
 
-        <p>Transport V2 is our rebuilt robot-to-cloud transport, made to shorten that tail. On a home Wi-Fi link it cut p99 network time from 420 ms to 160 ms and p99.9 from 872 ms to 389 ms. The robot spent 87% less time waiting on late replies.</p>
+        <p>We rebuilt Dreamscale’s robot-to-cloud transport to recover faster from packet loss. In a four-hour test on home Wi-Fi, the median request saved 7 ms of network time. At p99, network time fell from 420 ms to 160 ms, just inside that 163 ms budget. The robot spent 87% less time waiting for actions.</p>
 
         <figure class="wide-figure">
           <div class="figure-frame">
@@ -85,25 +85,25 @@
           </div>
           <figcaption>
             <span class="figure-number">Fig. 01</span>
-            <span>Network time per request: the round trip without the model's own compute. Three-camera observations at 4 Hz over home Wi-Fi, four hours, about 55,000 requests per transport.</span>
+            <span>Round-trip latency after subtracting model compute time. Each transport handled roughly 55,000 three-camera observations over four hours on home Wi-Fi, with a target rate of 4 Hz.</span>
           </figcaption>
         </figure>
 
-        <h2>What we measured</h2>
+        <h2>Measuring a 4 Hz control loop</h2>
 
-        <p>We tested the way a robot is used. One robot client sat on home Wi-Fi and cable broadband. It sent three-camera observations of about 70 kB, four times a second, to a cloud host in US West, and waited for each reply before sending the next. The model was a stand-in with a realistic compute time of about 87 ms, so the differences come from the network path alone.</p>
+        <p>We connected one robot client to a GPU host in US West over home Wi-Fi and cable broadband. Each observation contained three synthetic camera frames sized to match real inputs, about 70 kB in total. The client targeted four observations per second and waited for each reply before sending the next. A stand-in for the model reproduced a compute time of about 87 ms so we could compare transports under the same inference workload.</p>
 
-        <p>Networks change from minute to minute, so comparing one transport on Monday with another on Tuesday says little. Every transport here ran in the same hours, on the same link, taking turns at random offsets. Each saw the same network.</p>
-
-        <p>We compared three:</p>
+        <p>A home network can change appreciably in an hour. To keep a quiet stretch of Wi-Fi from favoring one transport, we interleaved requests at random offsets. All three transports used the same link during the same four hours.</p>
 
         <ul>
-          <li><strong>Transport V1:</strong> what we shipped until this month. QUIC straight to the GPU host, with standard congestion control.</li>
-          <li><strong>Transport V2:</strong> the same path, with the transport rebuilt to recover from loss faster.</li>
-          <li><strong>Off-the-shelf WebRTC:</strong> a managed real-time platform of the kind many robotics teams reach for first, sending the same data over its reliable data channel.</li>
+          <li><strong>Transport V1</strong> was our production transport until this month. It used QUIC with standard congestion control to connect directly to the GPU host.</li>
+          <li><strong>Transport V2</strong> uses the same direct QUIC path with faster recovery from packet loss.</li>
+          <li><strong>Off-the-shelf WebRTC</strong> carried the same observations and replies over the reliable data channel of a managed real-time platform.</li>
         </ul>
 
-        <h2>Results</h2>
+        <h2>How often did the robot have to wait?</h2>
+
+        <p>We measured latency from two perspectives. For each request, we subtracted model compute time from the round trip to get network time. The median, p99 and p99.9 describe a typical request and the thresholds for the slowest 1% and 0.1% of requests. For the robot, we counted the fraction of 250 ms control steps it spent waiting for a late reply.</p>
 
         <div class="table-wrap">
           <table>
@@ -118,10 +118,9 @@
           </table>
         </div>
 
-        <p>Median, p99 and p99.9 are network time per request. “Time waiting” is the share of 250 ms control steps the robot spent waiting on a late reply.</p>
+        <p>Every transport answered every request. The difference was when the answers arrived. On V1 the robot spent 7.7% of its control steps waiting. On V2 that fell to 1.0%, with less waiting in each of the four hours. The largest latency improvement came at the far end of the distribution. At p99.9, network time fell from 872 ms to 389 ms.</p>
 
-        <p>The median barely moves, and that is expected: on a good round trip there is nothing to fix. The gain is all in the tail. Transport V2 was ahead of V1 in every hour of the run, and no request went unanswered on any transport.</p>
-        <p>The off-the-shelf WebRTC platform trailed both. Its median was about twice Transport V2's, and its tail was the longest of the three. Against it, Transport V2 had a p99 3.2× lower and 89% less time waiting.</p>
+        <p>The managed WebRTC service had the longest tail of the three. Its median network time was about twice V2’s (104 ms versus 54 ms), and its p99 was about 3.2 times V2’s (504 ms versus 160 ms). Moving from that service to V2 reduced time waiting by 89%.</p>
 
         <figure class="wide-figure">
           <div class="figure-frame">
@@ -129,15 +128,15 @@
           </div>
           <figcaption>
             <span class="figure-number">Fig. 02</span>
-            <span>The whole distribution. For any network time on the horizontal axis, the line shows what share of requests were slower. Lower is better; the 1% line is p99.</span>
+            <span>Each curve shows the fraction of requests that exceeded a given network time. To read p99, start at 1% on the vertical axis and follow it across to each curve. Farther left means a faster p99.</span>
           </figcaption>
         </figure>
 
-        <h2>Twenty-four hours</h2>
+        <h2>What changes over a full day?</h2>
 
-        <p>Four hours is one afternoon. Before that run we had tested a research build of Transport V2 against V1 for 24 hours on the same link and the same three-camera load. It was ahead in all 24 hours. Time waiting fell from 8.0% to 0.9%, and replies slower than 250 ms fell from 685 to 74 in every 10,000.</p>
+        <p>Before the three-way comparison, we ran V1 and a research build of V2 for 24 hours on the same link with the same three-camera workload. V2 spent less time waiting in every hour. Across the day, the share of control steps spent waiting fell from 8.0% to 0.9%. For every 10,000 replies, 685 took longer than 250 ms with V1, compared with 74 with V2.</p>
 
-        <p>The gain is largest when the network is at its worst. In the roughest hour of that day, the robot on Transport V1 spent 46% of its time waiting. On Transport V2, in the same hour, it was about 1%.</p>
+        <p>The gap widened as the link got worse. In V1’s worst hour the robot spent 46% of its time waiting for the next action chunk. On the same link during the same hour, that figure was about 1% for V2.</p>
 
         <figure class="wide-figure">
           <div class="figure-frame">
@@ -145,22 +144,18 @@
           </div>
           <figcaption>
             <span class="figure-number">Fig. 03</span>
-            <span>Share of time the robot spent waiting on a late reply, hour by hour, over 24 hours on one home Wi-Fi link. The same link carried both transports in every hour.</span>
+            <span>Each pair of bars covers one hour on the same home Wi-Fi link. Bar height gives the share of control steps the robot spent waiting for a reply.</span>
           </figcaption>
         </figure>
 
-        <h2>Limits of these numbers</h2>
+        <h2>Where the results apply</h2>
 
-        <ul>
-          <li>They come from one site: one home Wi-Fi network and one internet provider, to cloud hosts in US West.</li>
-          <li>The model was a stand-in with realistic compute time, and the camera frames were synthetic, sized like real ones.</li>
-          <li>The three-transport run lasted four hours. The 24-hour run used a research build; the production build later matched it in a separate 20-hour run.</li>
-          <li>On a quiet, wired network there is little tail to remove, and the difference is small.</li>
-          <li>Smaller observations gain less. With two cameras, Transport V2 cut time waiting by 44%.</li>
-        </ul>
+        <p>These measurements cover one home Wi-Fi network, one internet provider and cloud hosts in US West. We used synthetic frames and simulated model compute throughout. The production build matched the research build in a separate 20-hour run. The comparison with WebRTC covers only the four-hour test on the managed service we used.</p>
 
-        <h2>Availability</h2>
-        <p>Transport V2 is on for every organization, for every model that connects over QUIC. There is nothing to configure. Update the SDK to get it:</p>
+        <p>Both the link and the observation size affect how much V2 helps. On a quiet wired network, slow round trips are rare and the difference between transports is small. Smaller observations also leave less room for improvement. With two cameras, V2 reduced time waiting by 44%.</p>
+
+        <h2>Using Transport V2</h2>
+        <p>Transport V2 is enabled for every organization and every model that connects over QUIC. To use it with your existing code and configuration, update the SDK.</p>
 
         <p><code>pip install -U dreamscale</code></p>
 
