@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link rel="canonical" href="https://www.dreamscalelabs.com/blog/serving-256-robots/">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="How one 8×H100 node serves a robot foundation model, π0.5, to 256 robots with 99% of requests answered within 50 ms: disaggregation, step-level batching, FP8 and multi-LoRA serving.">
+    <title>Serving 256 robots from a single node — Dreamscale Labs</title>
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="theme-color" content="#ffffff">
+    <meta property="og:site_name" content="Dreamscale Labs">
+    <meta property="og:title" content="Serving 256 robots from a single node">
+    <meta property="og:description" content="How one 8×H100 node serves a robot foundation model, π0.5, to 256 robots with 99% of requests answered within 50 ms: disaggregation, step-level batching, FP8 and multi-LoRA serving.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://www.dreamscalelabs.com/blog/serving-256-robots/">
+    <meta property="og:image" content="https://www.dreamscalelabs.com/assets/social/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Dreamscale Labs: The real-time cloud for physical AI">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://www.dreamscalelabs.com/assets/social/og-image.png">
+    <meta name="twitter:site" content="@dreamscalelabs">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link
+      rel="preload"
+      href="/assets/fonts/Mluvka-Regular-web.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    >
+    <link
+      rel="stylesheet"
+      href="/blog/why/article.css?v=d535e1c5e439"
+    >
+    <link rel="stylesheet" href="/blog/site-layout.css?v=15c5caee4ec8">
+    <link rel="stylesheet" href="/blog/serving-256-robots/post.css?v=d8dd1f73f619">
+    <script defer src="/assets/analytics/posthog.js?v=1"></script>
+  </head>
+  <body>
+    <header class="site-header" aria-label="Primary navigation">
+      <a class="site-logo" href="/" aria-label="Dreamscale Labs home">
+        <img
+          src="/assets/landing/brand.svg"
+          alt="Dreamscale Labs"
+          width="188"
+          fetchpriority="high"
+        >
+      </a>
+      <nav>
+        <a class="nav-link" href="/blog/">Blog</a>
+        <a class="nav-link" href="https://app.dreamscalelabs.com/signin">Sign in</a>
+        <a class="demo-link" href="https://app.dreamscalelabs.com">Get started</a>
+      </nav>
+    </header>
+
+    <main class="article-shell" id="top">
+      <header class="article-hero">
+        <div class="article-title-block">
+          <h1>Serving 256 robots from a single node</h1>
+          <p class="article-dek">Cloud inference for robots only makes economic sense if each GPU serves many robots. We describe how one 8×H100 node serves the π0.5 model to 256 robots, with 99% of requests answered within 50 ms.</p>
+          <p class="byline">Antoine Nguyen</p>
+          <p class="reading-meta"><time datetime="2026-11-17">November 17, 2026</time><span aria-hidden="true">·</span><span>13 min read</span></p>
+        </div>
+        <figure class="hero-figure" id="hero-figure">
+          <canvas aria-label="An animated grid of robots, one dot each, lighting up as their requests are queued, prefilled and denoised."></canvas>
+        </figure>
+      </header>
+
+      <div class="article-layout">
+        <aside class="toc-sidebar">
+          <details class="article-toc" open>
+            <summary>On this page</summary>
+            <nav aria-label="Table of contents">
+              <a href="#article-introduction">Introduction</a>
+              <a href="#call">What a VLA call computes</a>
+              <a href="#batching">Batching Requests</a>
+              <a href="#split">Disaggregating the call.</a>
+              <a href="#steps">Batching robots that are on different denoising steps</a>
+              <a href="#queue">Why the queue does not blow up at 98% utilisation</a>
+              <a href="#cheaper">Making each robot cheaper with limited quantisation</a>
+              <a href="#invariance">Achieving batch invariance</a>
+              <a href="#multi-lora">Serving many LoRA fine-tunes in the same batch</a>
+              <a href="#limits">Limitations</a>
+              <a href="#next">What this means for the cost of serving a fleet</a>
+              <a href="#notes">Notes</a>
+            </nav>
+          </details>
+        </aside>
+
+      <article class="article" id="article-introduction" tabindex="-1">
+        <p>It is almost trivial to make a robot foundation model faster in the cloud. A data-centre GPU turns an observation into an action several times faster than the computer on board a robot. The hard part is running inference at scale. Cloud inference only makes economic sense if the cost of each GPU is amortized across many robots, which means batching their requests the way any inference server does.</p>
+
+        <p>Batching robot inference, however, is not so simple. Throughput has to be high for the unit economics to work, and in LLM serving higher throughput usually costs latency. Robots need actions computed from fresh observations to operate in the real world, so they tolerate very little latency. Each robot also sends several requests a second, so a poorly managed request queue either leaves GPUs underused or lets queueing time blow out. Fleets also run many fine-tunes of a model, and those have to share batches as well.</p>
+
+        <p>The work inside a request is also unlike a language model's. A call to a vision-language-action model (VLA) such as π0.5, as we serve it, generates no tokens through the VLM: it is one prefill pass of a large model over about 850 image and text tokens, then ten passes of a smaller action expert that turn noise into 30 actions. Continuous batching and prefill/decode disaggregation still apply, but they have to be rebuilt around that shape.</p>
+
+        <p>We studied this with π0.5 on one node of eight H100 GPUs. The budget we set was 99% of requests answered within 50 ms of reaching the node. Our fastest single-robot engine runs a call in 14.8 ms,<sup><a href="#fn1" id="ref1">1</a></sup> so at four requests a second per robot, a copy of the model on every GPU on the node can serve at most about 135 robots. In practice it served 128 under the deadline. The node described in this post serves 256, with a 99th-percentile latency (p99) of 46.7 to 49.8 ms across three machines, through three key tactics:</p>
+
+        <ul>
+          <li>Disaggregate the call: seven GPUs process images and prompts, and the eighth runs every robot's denoising steps.</li>
+          <li>Step-wise batching the denoising steps across robots (instead of request wise).</li>
+          <li>Quantisation in select areas, and custom kernels.</li>
+        </ul>
+
+        <p>We also achieve up to 157 robots with up to 24 unique LoRA adapters applied. So multiple fine tunes, let’s say for customers that want to fine tune models for their task can share the same node. We find that multi-LoRA serving is more sensitive to precision changes, so we do not apply FP8.</p>
+
+        <div class="table-wrap">
+          <table class="results">
+            <thead><tr><th>Configuration</th><th>Robots</th><th>Robots per GPU</th></tr></thead>
+            <tbody>
+              <tr><td>A full copy of the model on every GPU</td><td>128</td><td>16</td></tr>
+              <tr><td>Call disaggregated, denoising steps batched across robots</td><td>220</td><td>27.5</td></tr>
+              <tr><td>The same, with FP8 in ten layers</td><td>240</td><td>30</td></tr>
+              <tr><td>Custom Kernels</td><td>256</td><td>32</td></tr>
+              <tr><td>Robots on 24 LoRA fine-tunes, no FP8</td><td>157</td><td>19.6</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <aside class="setup" aria-label="How we measured">
+          <h3>What we measured</h3>
+          <dl>
+            <dt>Hardware</dt><dd>One node with 8 H100 SXM GPUs connected by NVLink.</dd>
+            <dt>Model</dt><dd>π0.5 fine-tuned for a bimanual YAM arm: 3 cameras, prompts of up to 80 tokens, 30 actions per chunk, 10 denoising steps.</dd>
+            <dt>Latency</dt><dd>From a request's arrival at the node to its actions being ready there. The network round trip is not included.</dd>
+            <dt>Budget</dt><dd>99% of requests within 50 ms.</dd>
+            <dt>Accuracy</dt><dd>Every change that alters the model's outputs had to pass a 768-case test against openpi's reference implementation, described with FP8 below.</dd>
+          </dl>
+        </aside>
+
+        <h2 id="call" tabindex="-1">What a VLA call computes</h2>
+
+        <p>A π0.5 call has two parts. The first processes the input. A vision encoder, SigLIP, turns three camera images into tokens, and the Gemma-2B language model runs once over those tokens and the text prompt, 848 positions in all. Its output is a KV cache, and the pass that produces it is what they call the prefill.</p>
+
+        <p>This is a compute bound process.</p>
+
+        <p>The second part produces the actions. It starts from 30 actions of random noise. A smaller transformer with 300M parameters, the action expert, attends to the noisy actions and to the keys and values from the prefill, and predicts how to move the actions toward a clean chunk. It does this ten times, and we call these the denoising steps.</p>
+
+        <p>Given the size and dimensions that the action expert operates over, it is neither compute nor memory bound but rather latency bound.</p>
+
+        <p>For one robot on an H100 with our inference engine, the prefill takes about 8 ms and the ten denoising steps about 6.</p>
+
+        <h2 id="batching" tabindex="-1">Batching Requests</h2>
+
+        <p>Batching allows us to attain higher throughput though often at the cost of added inference latency. Robot models not only cannot afford that added latency, but increasing the time each batch takes to process, even if it can process more requests at once, means a request that arrives just after an inference call starts has to wait for the previous call to finish, and the next one it rides. This is queuing latency.</p>
+
+        <p>Maximising throughput while minimising both forms of raised latency is therefore an interesting challenge.</p>
+
+        <p>Now, a batch makes each robot cheaper only if the GPU has fixed costs to share or idle capacity to fill. If the GPU is already saturated, naive batching may earn very little or even hurt in our case.</p>
+
+        <p>The prefill has little of either fixed costs to share or idle capacity, because it is already limited by arithmetic bandwidth at batch 1. Most of its time goes to large matrix multiplications, which with one robot's 848 rows already run at roughly 70% of the H100's nominal peak, so a second robot's rows take almost as long again. The prefill costs 8.2 ms of GPU time per robot alone and 6.8 ms per robot in a call of three, and larger calls gain nothing more.</p>
+
+        <p>The denoising step is limited by fixed costs. It pushes only 30 rows through the action expert, and reading the expert's weights at the H100's full memory bandwidth would take about a fifth of a 1.07 ms step. The rest is overhead: a step is a chain of more than a hundred small GPU programs, called kernels, each waiting for the output of the one before, and a matrix multiplication this small takes a few microseconds however few rows it is given.</p>
+
+        <p>Batching shares those fixed costs across robots. With 32 robots' rows in the chain a step takes 2.00 ms, less than twice as long for 32 times the work. A robot's ten steps cost 10.7 ms of GPU time alone and 0.63 ms in a batch of 32. (The single-robot engine takes 6.3 ms, using Hazy Research's megakernel design, but cannot batch.)</p>
+
+        <figure class="wide-figure" id="fig-batching">
+          <div class="figure-frame">
+            <svg role="img" aria-label="GPU milliseconds per robot against robots per batch, for the prefill and the denoising steps"></svg>
+            <p class="fig-readout">Move along the chart to compare the two parts at any batch size.</p>
+          </div>
+          <figcaption>
+            <span class="figure-number">Fig. 01</span>
+            <span>GPU time per robot as robots share a batch, on one H100. From 1 to 32 robots the ten denoising steps get 17× cheaper per robot. The prefill gains 19% by three robots per call and nothing after. The prefill points were measured with the FP8 layers described below, so they sit slightly under the BF16 figures in the text.</span>
+          </figcaption>
+        </figure>
+
+        <p>Naive batching on a single node, that is, just increasing batch for each GPU is thus an inefficient use of resources as for the prefill phase the GPU is pinned, and at action denoising it is underutilised.</p>
+
+        <p>The two parts therefore need opposite arrangements, and thus naive batching on a single node, that is, just increasing the batch for each GPU is an inefficient use of resources.</p>
+
+        <p>Rather, it is better to have one batch as wide as possible for the denoising steps (and more can fit on fewer GPUs), and small calls on as many GPUs as possible for the prefill.</p>
+
+        <h2 id="split" tabindex="-1">Disaggregating the call.</h2>
+
+        <p>Naive batching as above is inefficient, but not only does it poorly scale, it bars us from tricks that allow us to achieve significantly lower queueing latency.</p>
+
+        <p>We run the prefill on seven GPUs and the denoising steps for all robots on the eighth, which we call the denoising GPU. A robot request’s KV cache from the prefill GPUs is copied to the denoising GPU over NVLink in 82 µs. The split is seven prefill GPUs and one denoising GPU because prefill capacity runs out first. Language-model serving calls this arrangement prefill/decode disaggregation (DistServe, Splitwise).</p>
+
+        <figure class="wide-figure" id="fig-split">
+          <div class="figure-frame">
+            <svg class="split-wide" role="img" viewBox="0 0 680 340" aria-label="Robots send requests to a scheduler. The scheduler feeds seven prefill GPUs, each running calls of up to three robots. Each prefill GPU sends its KV cache to one denoising GPU, which runs every robot's denoising steps in lanes and returns actions to the robots."><defs><marker id="fig02-arrow-w" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#3d8a5f"/></marker></defs><text x="10" y="76" font-size="12" fill="#212121" text-anchor="start">Robots</text><circle cx="14" cy="92" r="2.4" fill="#b3b9c1"/><circle cx="25" cy="92" r="2.4" fill="#b3b9c1"/><circle cx="36" cy="92" r="2.4" fill="#b3b9c1"/><circle cx="47" cy="92" r="2.4" fill="#b3b9c1"/><circle cx="58" cy="92" r="2.4" fill="#b3b9c1"/><circle cx="69" cy="92" r="2.4" fill="#b3b9c1"/><circle cx="80" cy="92" r="2.4" fill="#b3b9c1"/><circle cx="91" cy="92" r="2.4" fill="#b3b9c1"/><circle cx="14" cy="103" r="2.4" fill="#b3b9c1"/><circle cx="25" cy="103" r="2.4" fill="#b3b9c1"/><circle cx="36" cy="103" r="2.4" fill="#b3b9c1"/><circle cx="47" cy="103" r="2.4" fill="#b3b9c1"/><circle cx="58" cy="103" r="2.4" fill="#b3b9c1"/><circle cx="69" cy="103" r="2.4" fill="#b3b9c1"/><circle cx="80" cy="103" r="2.4" fill="#b3b9c1"/><circle cx="91" cy="103" r="2.4" fill="#b3b9c1"/><circle cx="14" cy="114" r="2.4" fill="#b3b9c1"/><circle cx="25" cy="114" r="2.4" fill="#b3b9c1"/><circle cx="36" cy="114" r="2.4" fill="#b3b9c1"/><circle cx="47" cy="114" r="2.4" fill="#b3b9c1"/><circle cx="58" cy="114" r="2.4" fill="#b3b9c1"/><circle cx="69" cy="114" r="2.4" fill="#b3b9c1"/><circle cx="80" cy="114" r="2.4" fill="#b3b9c1"/><circle cx="91" cy="114" r="2.4" fill="#b3b9c1"/><circle cx="14" cy="125" r="2.4" fill="#b3b9c1"/><circle cx="25" cy="125" r="2.4" fill="#b3b9c1"/><circle cx="36" cy="125" r="2.4" fill="#b3b9c1"/><circle cx="47" cy="125" r="2.4" fill="#b3b9c1"/><circle cx="58" cy="125" r="2.4" fill="#b3b9c1"/><circle cx="69" cy="125" r="2.4" fill="#b3b9c1"/><circle cx="80" cy="125" r="2.4" fill="#b3b9c1"/><circle cx="91" cy="125" r="2.4" fill="#b3b9c1"/><circle cx="14" cy="136" r="2.4" fill="#b3b9c1"/><circle cx="25" cy="136" r="2.4" fill="#b3b9c1"/><circle cx="36" cy="136" r="2.4" fill="#b3b9c1"/><circle cx="47" cy="136" r="2.4" fill="#b3b9c1"/><circle cx="58" cy="136" r="2.4" fill="#b3b9c1"/><circle cx="69" cy="136" r="2.4" fill="#b3b9c1"/><circle cx="80" cy="136" r="2.4" fill="#b3b9c1"/><circle cx="91" cy="136" r="2.4" fill="#b3b9c1"/><circle cx="14" cy="147" r="2.4" fill="#b3b9c1"/><circle cx="25" cy="147" r="2.4" fill="#b3b9c1"/><circle cx="36" cy="147" r="2.4" fill="#b3b9c1"/><circle cx="47" cy="147" r="2.4" fill="#b3b9c1"/><circle cx="58" cy="147" r="2.4" fill="#b3b9c1"/><circle cx="69" cy="147" r="2.4" fill="#b3b9c1"/><circle cx="80" cy="147" r="2.4" fill="#b3b9c1"/><circle cx="91" cy="147" r="2.4" fill="#b3b9c1"/><circle cx="14" cy="158" r="2.4" fill="#b3b9c1"/><circle cx="25" cy="158" r="2.4" fill="#b3b9c1"/><circle cx="36" cy="158" r="2.4" fill="#b3b9c1"/><circle cx="47" cy="158" r="2.4" fill="#b3b9c1"/><circle cx="58" cy="158" r="2.4" fill="#b3b9c1"/><circle cx="69" cy="158" r="2.4" fill="#b3b9c1"/><circle cx="80" cy="158" r="2.4" fill="#b3b9c1"/><circle cx="91" cy="158" r="2.4" fill="#b3b9c1"/><circle cx="14" cy="169" r="2.4" fill="#b3b9c1"/><circle cx="25" cy="169" r="2.4" fill="#b3b9c1"/><circle cx="36" cy="169" r="2.4" fill="#b3b9c1"/><circle cx="47" cy="169" r="2.4" fill="#b3b9c1"/><circle cx="58" cy="169" r="2.4" fill="#b3b9c1"/><circle cx="69" cy="169" r="2.4" fill="#b3b9c1"/><circle cx="80" cy="169" r="2.4" fill="#b3b9c1"/><circle cx="91" cy="169" r="2.4" fill="#b3b9c1"/><circle cx="14" cy="180" r="2.4" fill="#b3b9c1"/><circle cx="25" cy="180" r="2.4" fill="#b3b9c1"/><circle cx="36" cy="180" r="2.4" fill="#b3b9c1"/><circle cx="47" cy="180" r="2.4" fill="#b3b9c1"/><circle cx="58" cy="180" r="2.4" fill="#b3b9c1"/><circle cx="69" cy="180" r="2.4" fill="#b3b9c1"/><circle cx="80" cy="180" r="2.4" fill="#b3b9c1"/><circle cx="91" cy="180" r="2.4" fill="#b3b9c1"/><circle cx="14" cy="191" r="2.4" fill="#b3b9c1"/><circle cx="25" cy="191" r="2.4" fill="#b3b9c1"/><circle cx="36" cy="191" r="2.4" fill="#b3b9c1"/><circle cx="47" cy="191" r="2.4" fill="#b3b9c1"/><circle cx="58" cy="191" r="2.4" fill="#b3b9c1"/><circle cx="69" cy="191" r="2.4" fill="#b3b9c1"/><circle cx="80" cy="191" r="2.4" fill="#b3b9c1"/><circle cx="91" cy="191" r="2.4" fill="#b3b9c1"/><circle cx="14" cy="202" r="2.4" fill="#b3b9c1"/><circle cx="25" cy="202" r="2.4" fill="#b3b9c1"/><circle cx="36" cy="202" r="2.4" fill="#b3b9c1"/><circle cx="47" cy="202" r="2.4" fill="#b3b9c1"/><circle cx="58" cy="202" r="2.4" fill="#b3b9c1"/><circle cx="69" cy="202" r="2.4" fill="#b3b9c1"/><circle cx="80" cy="202" r="2.4" fill="#b3b9c1"/><circle cx="91" cy="202" r="2.4" fill="#b3b9c1"/><circle cx="14" cy="213" r="2.4" fill="#b3b9c1"/><circle cx="25" cy="213" r="2.4" fill="#b3b9c1"/><circle cx="36" cy="213" r="2.4" fill="#b3b9c1"/><circle cx="47" cy="213" r="2.4" fill="#b3b9c1"/><circle cx="58" cy="213" r="2.4" fill="#b3b9c1"/><circle cx="69" cy="213" r="2.4" fill="#b3b9c1"/><circle cx="80" cy="213" r="2.4" fill="#b3b9c1"/><circle cx="91" cy="213" r="2.4" fill="#b3b9c1"/><path d="M98 154 C106 154 106 154 114 154" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><rect x="114" y="142" width="72" height="24" rx="12" fill="#f1f3f6" stroke="#dde1e6"/><text x="150" y="158" font-size="11" fill="#212121" text-anchor="middle">Scheduler</text><path d="M186 154 C215 154 215 28 244 28" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><path d="M384 28 C425 28 425 154 466 154" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><path d="M186 154 C215 154 215 70 244 70" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><path d="M384 70 C425 70 425 154 466 154" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><path d="M186 154 C215 154 215 112 244 112" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><path d="M384 112 C425 112 425 154 466 154" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><path d="M186 154 C215 154 215 154 244 154" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><path d="M384 154 C425 154 425 154 466 154" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><path d="M186 154 C215 154 215 196 244 196" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><path d="M384 196 C425 196 425 154 466 154" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><path d="M186 154 C215 154 215 238 244 238" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><path d="M384 238 C425 238 425 154 466 154" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><path d="M186 154 C215 154 215 280 244 280" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><path d="M384 280 C425 280 425 154 466 154" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><rect x="244" y="10" width="140" height="36" rx="6" fill="#eef2fa" stroke="#c9d3e8"/><text x="251" y="22" font-size="9.5" fill="#686868" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">GPU 0</text><text x="285" y="22" font-size="9.5" fill="#2a5fc9" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">· prefill</text><rect x="251" y="27" width="126" height="3.6" rx="1.8" fill="#dbe3f2"/><rect x="251" y="27" width="58" height="3.6" rx="1.8" fill="#2a5fc9"/><rect x="251" y="33" width="126" height="3.6" rx="1.8" fill="#dbe3f2"/><rect x="251" y="33" width="58" height="3.6" rx="1.8" fill="#2a5fc9"/><rect x="251" y="39" width="126" height="3.6" rx="1.8" fill="#dbe3f2"/><rect x="251" y="39" width="58" height="3.6" rx="1.8" fill="#2a5fc9"/><rect x="244" y="52" width="140" height="36" rx="6" fill="#eef2fa" stroke="#c9d3e8"/><text x="251" y="64" font-size="9.5" fill="#686868" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">GPU 1</text><text x="285" y="64" font-size="9.5" fill="#2a5fc9" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">· prefill</text><rect x="251" y="69" width="126" height="3.6" rx="1.8" fill="#dbe3f2"/><rect x="251" y="69" width="103.3" height="3.6" rx="1.8" fill="#2a5fc9"/><rect x="251" y="75" width="126" height="3.6" rx="1.8" fill="#dbe3f2"/><rect x="251" y="81" width="126" height="3.6" rx="1.8" fill="#dbe3f2"/><rect x="244" y="94" width="140" height="36" rx="6" fill="#eef2fa" stroke="#c9d3e8"/><text x="251" y="106" font-size="9.5" fill="#686868" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">GPU 2</text><text x="285" y="106" font-size="9.5" fill="#2a5fc9" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">· prefill</text><rect x="251" y="111" width="126" height="3.6" rx="1.8" fill="#dbe3f2"/><rect x="251" y="111" width="37.8" height="3.6" rx="1.8" fill="#2a5fc9"/><rect x="251" y="117" width="126" height="3.6" rx="1.8" fill="#dbe3f2"/><rect x="251" y="117" width="37.8" height="3.6" rx="1.8" fill="#2a5fc9"/><rect x="251" y="123" width="126" height="3.6" rx="1.8" fill="#dbe3f2"/><rect x="244" y="136" width="140" height="36" rx="6" fill="#eef2fa" stroke="#c9d3e8"/><text x="251" y="148" font-size="9.5" fill="#686868" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">GPU 3</text><text x="285" y="148" font-size="9.5" fill="#2a5fc9" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">· prefill</text><rect x="251" y="153" width="126" height="3.6" rx="1.8" fill="#dbe3f2"/><rect x="251" y="153" width="89.5" height="3.6" rx="1.8" fill="#2a5fc9"/><rect x="251" y="159" width="126" height="3.6" rx="1.8" fill="#dbe3f2"/><rect x="251" y="159" width="89.5" height="3.6" rx="1.8" fill="#2a5fc9"/><rect x="251" y="165" width="126" height="3.6" rx="1.8" fill="#dbe3f2"/><rect x="251" y="165" width="89.5" height="3.6" rx="1.8" fill="#2a5fc9"/><rect x="244" y="178" width="140" height="36" rx="6" fill="#eef2fa" stroke="#c9d3e8"/><text x="251" y="190" font-size="9.5" fill="#686868" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">GPU 4</text><text x="285" y="190" font-size="9.5" fill="#2a5fc9" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">· prefill</text><rect x="251" y="195" width="126" height="3.6" rx="1.8" fill="#dbe3f2"/><rect x="251" y="195" width="69.3" height="3.6" rx="1.8" fill="#2a5fc9"/><rect x="251" y="201" width="126" height="3.6" rx="1.8" fill="#dbe3f2"/><rect x="251" y="201" width="69.3" height="3.6" rx="1.8" fill="#2a5fc9"/><rect x="251" y="207" width="126" height="3.6" rx="1.8" fill="#dbe3f2"/><rect x="244" y="220" width="140" height="36" rx="6" fill="#eef2fa" stroke="#c9d3e8"/><text x="251" y="232" font-size="9.5" fill="#686868" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">GPU 5</text><text x="285" y="232" font-size="9.5" fill="#2a5fc9" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">· prefill</text><rect x="251" y="237" width="126" height="3.6" rx="1.8" fill="#dbe3f2"/><rect x="251" y="237" width="115.9" height="3.6" rx="1.8" fill="#2a5fc9"/><rect x="251" y="243" width="126" height="3.6" rx="1.8" fill="#dbe3f2"/><rect x="251" y="243" width="115.9" height="3.6" rx="1.8" fill="#2a5fc9"/><rect x="251" y="249" width="126" height="3.6" rx="1.8" fill="#dbe3f2"/><rect x="251" y="249" width="115.9" height="3.6" rx="1.8" fill="#2a5fc9"/><rect x="244" y="262" width="140" height="36" rx="6" fill="#eef2fa" stroke="#c9d3e8"/><text x="251" y="274" font-size="9.5" fill="#686868" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">GPU 6</text><text x="285" y="274" font-size="9.5" fill="#2a5fc9" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">· prefill</text><rect x="251" y="279" width="126" height="3.6" rx="1.8" fill="#dbe3f2"/><rect x="251" y="279" width="22.7" height="3.6" rx="1.8" fill="#2a5fc9"/><rect x="251" y="285" width="126" height="3.6" rx="1.8" fill="#dbe3f2"/><rect x="251" y="291" width="126" height="3.6" rx="1.8" fill="#dbe3f2"/><rect x="466" y="60" width="204" height="188" rx="7" fill="#eef2fa" stroke="#c9d3e8"/><text x="474" y="75" font-size="10" fill="#686868" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">GPU 7</text><text x="510" y="75" font-size="10" fill="#3d8a5f" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">· denoising</text><rect x="474" y="84" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="478.4" y="114" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="478.4" y="111" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="478.4" y="108" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="478.4" y="105" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="478.4" y="102" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="478.4" y="99" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="478.4" y="96" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="478.4" y="93" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="478.4" y="90" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="498" y="84" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="502.4" y="114" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="502.4" y="111" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="502.4" y="108" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="502.4" y="105" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="502.4" y="102" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="502.4" y="99" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="502.4" y="96" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="522" y="84" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="526.4" y="114" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="526.4" y="111" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="526.4" y="108" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="526.4" y="105" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="526.4" y="102" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="526.4" y="99" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="526.4" y="96" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="526.4" y="93" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="546" y="84" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="550.4" y="114" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="550.4" y="111" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="550.4" y="108" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="550.4" y="105" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="570" y="84" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="574.4" y="114" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="574.4" y="111" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="594" y="84" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="598.4" y="114" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="598.4" y="111" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="598.4" y="108" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="598.4" y="105" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="598.4" y="102" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="598.4" y="99" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="618" y="84" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="622.4" y="114" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="622.4" y="111" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="622.4" y="108" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="622.4" y="105" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="622.4" y="102" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="622.4" y="99" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="622.4" y="96" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="622.4" y="93" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="622.4" y="90" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="642" y="84" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="646.4" y="114" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="646.4" y="111" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="646.4" y="108" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="474" y="124" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="478.4" y="154" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="478.4" y="151" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="478.4" y="148" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="478.4" y="145" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="478.4" y="142" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="498" y="124" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="502.4" y="154" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="522" y="124" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="526.4" y="154" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="526.4" y="151" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="526.4" y="148" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="526.4" y="145" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="526.4" y="142" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="526.4" y="139" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="526.4" y="136" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="546" y="124" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="550.4" y="154" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="550.4" y="151" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="550.4" y="148" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="570" y="124" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="574.4" y="154" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="574.4" y="151" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="574.4" y="148" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="574.4" y="145" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="574.4" y="142" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="574.4" y="139" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="594" y="124" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="598.4" y="154" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="598.4" y="151" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="618" y="124" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="622.4" y="154" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="622.4" y="151" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="622.4" y="148" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="622.4" y="145" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="622.4" y="142" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="622.4" y="139" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="622.4" y="136" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="622.4" y="133" width="11.2" height="2.1" rx="0.4" fill="#3d8a5f"/><rect x="642" y="124" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="474" y="164" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="498" y="164" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="522" y="164" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="546" y="164" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="570" y="164" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="594" y="164" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="618" y="164" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="642" y="164" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="474" y="204" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="498" y="204" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="522" y="204" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="546" y="204" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="570" y="204" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="594" y="204" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="618" y="204" width="20" height="36" rx="4" fill="#dbe3f2"/><rect x="642" y="204" width="20" height="36" rx="4" fill="#dbe3f2"/><text x="466" y="30" font-size="11" fill="#686868" text-anchor="start">KV cache over NVLink,</text><text x="466" y="44" font-size="11" fill="#686868" text-anchor="start">82 µs per robot</text><path d="M568.0 248 C568.0 334 54 334 54 221" stroke="#3d8a5f" stroke-width="1.3" fill="none" stroke-dasharray="4 3" marker-end="url(#fig02-arrow-w)"/><text x="300" y="330" font-size="11" fill="#686868" text-anchor="middle">actions return to the robots</text></svg>
+            <svg class="split-tall" role="img" viewBox="0 0 360 486" aria-label="Robots send requests to a scheduler. The scheduler feeds seven prefill GPUs, each running calls of up to three robots. Each prefill GPU sends its KV cache to one denoising GPU, which runs every robot's denoising steps in lanes and returns actions to the robots."><defs><marker id="fig02-arrow-t" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#3d8a5f"/></marker></defs><text x="18" y="15" font-size="12" fill="#212121" text-anchor="start">Robots</text><circle cx="80" cy="24" r="2.3" fill="#b3b9c1"/><circle cx="91" cy="24" r="2.3" fill="#b3b9c1"/><circle cx="102" cy="24" r="2.3" fill="#b3b9c1"/><circle cx="113" cy="24" r="2.3" fill="#b3b9c1"/><circle cx="124" cy="24" r="2.3" fill="#b3b9c1"/><circle cx="135" cy="24" r="2.3" fill="#b3b9c1"/><circle cx="146" cy="24" r="2.3" fill="#b3b9c1"/><circle cx="157" cy="24" r="2.3" fill="#b3b9c1"/><circle cx="168" cy="24" r="2.3" fill="#b3b9c1"/><circle cx="179" cy="24" r="2.3" fill="#b3b9c1"/><circle cx="190" cy="24" r="2.3" fill="#b3b9c1"/><circle cx="201" cy="24" r="2.3" fill="#b3b9c1"/><circle cx="212" cy="24" r="2.3" fill="#b3b9c1"/><circle cx="223" cy="24" r="2.3" fill="#b3b9c1"/><circle cx="234" cy="24" r="2.3" fill="#b3b9c1"/><circle cx="245" cy="24" r="2.3" fill="#b3b9c1"/><circle cx="256" cy="24" r="2.3" fill="#b3b9c1"/><circle cx="267" cy="24" r="2.3" fill="#b3b9c1"/><circle cx="278" cy="24" r="2.3" fill="#b3b9c1"/><circle cx="289" cy="24" r="2.3" fill="#b3b9c1"/><circle cx="80" cy="35" r="2.3" fill="#b3b9c1"/><circle cx="91" cy="35" r="2.3" fill="#b3b9c1"/><circle cx="102" cy="35" r="2.3" fill="#b3b9c1"/><circle cx="113" cy="35" r="2.3" fill="#b3b9c1"/><circle cx="124" cy="35" r="2.3" fill="#b3b9c1"/><circle cx="135" cy="35" r="2.3" fill="#b3b9c1"/><circle cx="146" cy="35" r="2.3" fill="#b3b9c1"/><circle cx="157" cy="35" r="2.3" fill="#b3b9c1"/><circle cx="168" cy="35" r="2.3" fill="#b3b9c1"/><circle cx="179" cy="35" r="2.3" fill="#b3b9c1"/><circle cx="190" cy="35" r="2.3" fill="#b3b9c1"/><circle cx="201" cy="35" r="2.3" fill="#b3b9c1"/><circle cx="212" cy="35" r="2.3" fill="#b3b9c1"/><circle cx="223" cy="35" r="2.3" fill="#b3b9c1"/><circle cx="234" cy="35" r="2.3" fill="#b3b9c1"/><circle cx="245" cy="35" r="2.3" fill="#b3b9c1"/><circle cx="256" cy="35" r="2.3" fill="#b3b9c1"/><circle cx="267" cy="35" r="2.3" fill="#b3b9c1"/><circle cx="278" cy="35" r="2.3" fill="#b3b9c1"/><circle cx="289" cy="35" r="2.3" fill="#b3b9c1"/><circle cx="80" cy="46" r="2.3" fill="#b3b9c1"/><circle cx="91" cy="46" r="2.3" fill="#b3b9c1"/><circle cx="102" cy="46" r="2.3" fill="#b3b9c1"/><circle cx="113" cy="46" r="2.3" fill="#b3b9c1"/><circle cx="124" cy="46" r="2.3" fill="#b3b9c1"/><circle cx="135" cy="46" r="2.3" fill="#b3b9c1"/><circle cx="146" cy="46" r="2.3" fill="#b3b9c1"/><circle cx="157" cy="46" r="2.3" fill="#b3b9c1"/><circle cx="168" cy="46" r="2.3" fill="#b3b9c1"/><circle cx="179" cy="46" r="2.3" fill="#b3b9c1"/><circle cx="190" cy="46" r="2.3" fill="#b3b9c1"/><circle cx="201" cy="46" r="2.3" fill="#b3b9c1"/><circle cx="212" cy="46" r="2.3" fill="#b3b9c1"/><circle cx="223" cy="46" r="2.3" fill="#b3b9c1"/><circle cx="234" cy="46" r="2.3" fill="#b3b9c1"/><circle cx="245" cy="46" r="2.3" fill="#b3b9c1"/><circle cx="256" cy="46" r="2.3" fill="#b3b9c1"/><circle cx="267" cy="46" r="2.3" fill="#b3b9c1"/><circle cx="278" cy="46" r="2.3" fill="#b3b9c1"/><circle cx="289" cy="46" r="2.3" fill="#b3b9c1"/><circle cx="80" cy="57" r="2.3" fill="#b3b9c1"/><circle cx="91" cy="57" r="2.3" fill="#b3b9c1"/><circle cx="102" cy="57" r="2.3" fill="#b3b9c1"/><circle cx="113" cy="57" r="2.3" fill="#b3b9c1"/><circle cx="124" cy="57" r="2.3" fill="#b3b9c1"/><circle cx="135" cy="57" r="2.3" fill="#b3b9c1"/><circle cx="146" cy="57" r="2.3" fill="#b3b9c1"/><circle cx="157" cy="57" r="2.3" fill="#b3b9c1"/><circle cx="168" cy="57" r="2.3" fill="#b3b9c1"/><circle cx="179" cy="57" r="2.3" fill="#b3b9c1"/><circle cx="190" cy="57" r="2.3" fill="#b3b9c1"/><circle cx="201" cy="57" r="2.3" fill="#b3b9c1"/><circle cx="212" cy="57" r="2.3" fill="#b3b9c1"/><circle cx="223" cy="57" r="2.3" fill="#b3b9c1"/><circle cx="234" cy="57" r="2.3" fill="#b3b9c1"/><circle cx="245" cy="57" r="2.3" fill="#b3b9c1"/><circle cx="256" cy="57" r="2.3" fill="#b3b9c1"/><circle cx="267" cy="57" r="2.3" fill="#b3b9c1"/><circle cx="278" cy="57" r="2.3" fill="#b3b9c1"/><circle cx="289" cy="57" r="2.3" fill="#b3b9c1"/><path d="M190 62 C190 69 190 69 190 76" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><rect x="152" y="76" width="76" height="24" rx="12" fill="#f1f3f6" stroke="#dde1e6"/><text x="190" y="92" font-size="11" fill="#212121" text-anchor="middle">Scheduler</text><path d="M190 100 C190 123 40 123 40 146" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><path d="M40 250 C40 275 129 275 129 300" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><path d="M190 100 C190 123 87.3 123 87.3 146" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><path d="M87.3 250 C87.3 275 129 275 129 300" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><path d="M190 100 C190 123 134.6 123 134.6 146" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><path d="M134.6 250 C134.6 275 129 275 129 300" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><path d="M190 100 C190 123 181.9 123 181.9 146" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><path d="M181.9 250 C181.9 275 129 275 129 300" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><path d="M190 100 C190 123 229.2 123 229.2 146" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><path d="M229.2 250 C229.2 275 129 275 129 300" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><path d="M190 100 C190 123 276.5 123 276.5 146" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><path d="M276.5 250 C276.5 275 129 275 129 300" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><path d="M190 100 C190 123 323.8 123 323.8 146" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><path d="M323.8 250 C323.8 275 129 275 129 300" stroke="#c5d1ea" stroke-width="1.2" fill="none"/><rect x="18" y="146" width="44" height="104" rx="6" fill="#eef2fa" stroke="#c9d3e8"/><text x="23" y="158" font-size="8.5" fill="#686868" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">GPU 0</text><text x="23" y="169" font-size="8.5" fill="#2a5fc9" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">prefill</text><rect x="25.5" y="176" width="7" height="68" rx="3.5" fill="#dbe3f2"/><rect x="25.5" y="176" width="7" height="31.3" rx="3.5" fill="#2a5fc9"/><rect x="36.5" y="176" width="7" height="68" rx="3.5" fill="#dbe3f2"/><rect x="36.5" y="176" width="7" height="31.3" rx="3.5" fill="#2a5fc9"/><rect x="47.5" y="176" width="7" height="68" rx="3.5" fill="#dbe3f2"/><rect x="47.5" y="176" width="7" height="31.3" rx="3.5" fill="#2a5fc9"/><rect x="65.3" y="146" width="44" height="104" rx="6" fill="#eef2fa" stroke="#c9d3e8"/><text x="70.3" y="158" font-size="8.5" fill="#686868" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">GPU 1</text><text x="70.3" y="169" font-size="8.5" fill="#2a5fc9" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">prefill</text><rect x="72.8" y="176" width="7" height="68" rx="3.5" fill="#dbe3f2"/><rect x="72.8" y="176" width="7" height="55.8" rx="3.5" fill="#2a5fc9"/><rect x="83.8" y="176" width="7" height="68" rx="3.5" fill="#dbe3f2"/><rect x="94.8" y="176" width="7" height="68" rx="3.5" fill="#dbe3f2"/><rect x="112.6" y="146" width="44" height="104" rx="6" fill="#eef2fa" stroke="#c9d3e8"/><text x="117.6" y="158" font-size="8.5" fill="#686868" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">GPU 2</text><text x="117.6" y="169" font-size="8.5" fill="#2a5fc9" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">prefill</text><rect x="120.1" y="176" width="7" height="68" rx="3.5" fill="#dbe3f2"/><rect x="120.1" y="176" width="7" height="20.4" rx="3.5" fill="#2a5fc9"/><rect x="131.1" y="176" width="7" height="68" rx="3.5" fill="#dbe3f2"/><rect x="131.1" y="176" width="7" height="20.4" rx="3.5" fill="#2a5fc9"/><rect x="142.1" y="176" width="7" height="68" rx="3.5" fill="#dbe3f2"/><rect x="159.9" y="146" width="44" height="104" rx="6" fill="#eef2fa" stroke="#c9d3e8"/><text x="164.9" y="158" font-size="8.5" fill="#686868" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">GPU 3</text><text x="164.9" y="169" font-size="8.5" fill="#2a5fc9" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">prefill</text><rect x="167.4" y="176" width="7" height="68" rx="3.5" fill="#dbe3f2"/><rect x="167.4" y="176" width="7" height="48.3" rx="3.5" fill="#2a5fc9"/><rect x="178.4" y="176" width="7" height="68" rx="3.5" fill="#dbe3f2"/><rect x="178.4" y="176" width="7" height="48.3" rx="3.5" fill="#2a5fc9"/><rect x="189.4" y="176" width="7" height="68" rx="3.5" fill="#dbe3f2"/><rect x="189.4" y="176" width="7" height="48.3" rx="3.5" fill="#2a5fc9"/><rect x="207.2" y="146" width="44" height="104" rx="6" fill="#eef2fa" stroke="#c9d3e8"/><text x="212.2" y="158" font-size="8.5" fill="#686868" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">GPU 4</text><text x="212.2" y="169" font-size="8.5" fill="#2a5fc9" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">prefill</text><rect x="214.7" y="176" width="7" height="68" rx="3.5" fill="#dbe3f2"/><rect x="214.7" y="176" width="7" height="37.4" rx="3.5" fill="#2a5fc9"/><rect x="225.7" y="176" width="7" height="68" rx="3.5" fill="#dbe3f2"/><rect x="225.7" y="176" width="7" height="37.4" rx="3.5" fill="#2a5fc9"/><rect x="236.7" y="176" width="7" height="68" rx="3.5" fill="#dbe3f2"/><rect x="254.5" y="146" width="44" height="104" rx="6" fill="#eef2fa" stroke="#c9d3e8"/><text x="259.5" y="158" font-size="8.5" fill="#686868" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">GPU 5</text><text x="259.5" y="169" font-size="8.5" fill="#2a5fc9" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">prefill</text><rect x="262" y="176" width="7" height="68" rx="3.5" fill="#dbe3f2"/><rect x="262" y="176" width="7" height="62.6" rx="3.5" fill="#2a5fc9"/><rect x="273" y="176" width="7" height="68" rx="3.5" fill="#dbe3f2"/><rect x="273" y="176" width="7" height="62.6" rx="3.5" fill="#2a5fc9"/><rect x="284" y="176" width="7" height="68" rx="3.5" fill="#dbe3f2"/><rect x="284" y="176" width="7" height="62.6" rx="3.5" fill="#2a5fc9"/><rect x="301.8" y="146" width="44" height="104" rx="6" fill="#eef2fa" stroke="#c9d3e8"/><text x="306.8" y="158" font-size="8.5" fill="#686868" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">GPU 6</text><text x="306.8" y="169" font-size="8.5" fill="#2a5fc9" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">prefill</text><rect x="309.3" y="176" width="7" height="68" rx="3.5" fill="#dbe3f2"/><rect x="309.3" y="176" width="7" height="12.2" rx="3.5" fill="#2a5fc9"/><rect x="320.3" y="176" width="7" height="68" rx="3.5" fill="#dbe3f2"/><rect x="331.3" y="176" width="7" height="68" rx="3.5" fill="#dbe3f2"/><rect x="18" y="300" width="222" height="150" rx="7" fill="#eef2fa" stroke="#c9d3e8"/><text x="25" y="314" font-size="9.5" fill="#686868" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">GPU 7</text><text x="59" y="314" font-size="9.5" fill="#3d8a5f" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">· denoising</text><rect x="25" y="322" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="30.5" y="325" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="30.5" y="327.2" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="30.5" y="329.3" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="30.5" y="331.5" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="30.5" y="333.6" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="30.5" y="335.8" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="30.5" y="338" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="30.5" y="340.1" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="30.5" y="342.3" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="51.4" y="322" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="56.9" y="325" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="56.9" y="327.2" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="56.9" y="329.3" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="56.9" y="331.5" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="56.9" y="333.6" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="56.9" y="335.8" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="56.9" y="338" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="77.9" y="322" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="83.3" y="325" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="83.3" y="327.2" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="83.3" y="329.3" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="83.3" y="331.5" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="83.3" y="333.6" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="83.3" y="335.8" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="83.3" y="338" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="83.3" y="340.1" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="104.3" y="322" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="109.8" y="325" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="109.8" y="327.2" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="109.8" y="329.3" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="109.8" y="331.5" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="130.8" y="322" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="136.2" y="325" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="136.2" y="327.2" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="157.2" y="322" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="162.7" y="325" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="162.7" y="327.2" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="162.7" y="329.3" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="162.7" y="331.5" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="162.7" y="333.6" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="162.7" y="335.8" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="183.6" y="322" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="189.1" y="325" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="189.1" y="327.2" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="189.1" y="329.3" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="189.1" y="331.5" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="189.1" y="333.6" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="189.1" y="335.8" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="189.1" y="338" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="189.1" y="340.1" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="189.1" y="342.3" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="210.1" y="322" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="215.5" y="325" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="215.5" y="327.2" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="215.5" y="329.3" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="25" y="353.1" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="30.5" y="356.1" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="30.5" y="358.3" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="30.5" y="360.4" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="30.5" y="362.6" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="30.5" y="364.8" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="51.4" y="353.1" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="56.9" y="356.1" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="77.9" y="353.1" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="83.3" y="356.1" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="83.3" y="358.3" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="83.3" y="360.4" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="83.3" y="362.6" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="83.3" y="364.8" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="83.3" y="366.9" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="83.3" y="369.1" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="104.3" y="353.1" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="109.8" y="356.1" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="109.8" y="358.3" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="109.8" y="360.4" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="130.8" y="353.1" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="136.2" y="356.1" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="136.2" y="358.3" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="136.2" y="360.4" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="136.2" y="362.6" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="136.2" y="364.8" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="136.2" y="366.9" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="157.2" y="353.1" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="162.7" y="356.1" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="162.7" y="358.3" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="183.6" y="353.1" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="189.1" y="356.1" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="189.1" y="358.3" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="189.1" y="360.4" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="189.1" y="362.6" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="189.1" y="364.8" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="189.1" y="366.9" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="189.1" y="369.1" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="189.1" y="371.3" width="12" height="1.3" rx="0.3" fill="#3d8a5f"/><rect x="210.1" y="353.1" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="25" y="384.2" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="51.4" y="384.2" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="77.9" y="384.2" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="104.3" y="384.2" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="130.8" y="384.2" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="157.2" y="384.2" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="183.6" y="384.2" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="210.1" y="384.2" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="25" y="415.4" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="51.4" y="415.4" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="77.9" y="415.4" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="104.3" y="415.4" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="130.8" y="415.4" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="157.2" y="415.4" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="183.6" y="415.4" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><rect x="210.1" y="415.4" width="22.9" height="27.6" rx="4" fill="#dbe3f2"/><text x="250" y="322" font-size="10.5" fill="#686868" text-anchor="start">KV cache</text><text x="250" y="335" font-size="10.5" fill="#686868" text-anchor="start">over NVLink,</text><text x="250" y="348" font-size="10.5" fill="#686868" text-anchor="start">82 µs per robot</text><path d="M129.0 450 L129.0 462 Q129.0 468 123.0 468 L12 468 Q6 468 6 462 L6 44 Q6 38 12 38 L72 38" stroke="#3d8a5f" stroke-width="1.3" fill="none" stroke-dasharray="4 3" marker-end="url(#fig02-arrow-t)"/><text x="139" y="482" font-size="10.5" fill="#686868" text-anchor="middle">actions return to the robots</text></svg>
+
+
+
+
+
+
+          </div>
+          <figcaption>
+            <span class="figure-number">Fig. 02</span>
+            <span>The disaggregated node. Requests wait in one queue, and the next free prefill GPU takes up to three of them. Each robot's KV cache is then copied to the denoising GPU, which runs the denoising steps for every robot and returns the actions.</span>
+          </figcaption>
+        </figure>
+
+        <p>The obvious win for queueing latency comes from each of the 7 prefill GPUs firing out of step with each other, such that requests at the front of queue typically do not wait longer than a 7th of prefill latency before being admitted.</p>
+
+        <p>The other wins we break down further below.</p>
+
+        <h2 id="steps" tabindex="-1">Batching robots that are on different denoising steps</h2>
+
+        <p>Robots reach the denoising GPU at different moments. If a batch had to run its ten steps together, each arriving robot would wait for the running batch and all ten denoising steps to finish.</p>
+
+        <p>That is not necessary. A denoising step is the same network evaluated at a different time value, and the time value is an input with a separate entry for each robot. The denoising GPU therefore runs one step at a time over every robot present, up to 32, each at its own step. A robot joins at the next step boundary after its keys and values arrive and leaves after its tenth step. This is called stream batching. Language-model servers do the same at token boundaries, where it is known as continuous batching (Orca).</p>
+
+<pre><code># One denoising step on the denoising GPU (simplified)
+batch = [r for r in slots if r.kv_ready][:32]     # whoever is present, up to 32
+v = action_expert(batch, t=[r.step for r in batch], kv=[r.kv for r in batch])
+for r, v_r in zip(batch, v):
+    # Euler step; dt = -1/10: time runs from 1 (noise) to 0
+    r.actions += dt * v_r; r.step += 1
+    if r.step == 10: send(r.actions)              # done; the slot is free</code></pre>
+
+        <p>The batch size follows from the load. 256 robots making four requests a second need 10,240 robot-steps a second. A 16-robot step takes 1.44 ms, so the GPU runs about 690 steps a second, and 10,240 / 690 is about 15 robots per step. We measured 13 to 17.</p>
+
+        <figure class="wide-figure" id="fig-node">
+          <div class="figure-frame">
+            <div class="fig-controls node-controls">
+              <div class="node-tabs">
+                <span class="toggle" role="group" aria-label="View">
+                  <button type="button" data-view="flow" aria-pressed="true">Request flow</button>
+                  <button type="button" data-view="timeline" aria-pressed="false">GPU timeline</button>
+                </span>
+              </div>
+              <span class="node-label node-label-top" id="node-layout-label">Layout</span>
+              <div class="node-field">
+                <select name="node-mode" aria-labelledby="node-layout-label">
+                  <option value="node" selected>7 prefill + 1 denoising, one model</option>
+                  <option value="lora">Multi-LoRA: 7 + 1, 24 fine-tunes</option>
+                  <option value="split62">6 prefill + 2 denoising</option>
+                  <option value="colocated">Every GPU runs whole calls</option>
+                </select>
+                <label class="lora-toggle"><input type="checkbox" name="node-lora"> Toggle multi-LoRA mode</label>
+              </div>
+              <span class="node-label" id="node-robots-label">Robots</span>
+              <div class="node-field node-field-slider">
+                <input type="range" name="node-robots" min="32" max="296" step="1" value="256" aria-labelledby="node-robots-label"> <span class="node-robots-value">256</span>
+              </div>
+            </div>
+            <canvas aria-label="The node's eight GPUs. In the flow view, requests travel from robots to a prefill GPU, hop to the denoising GPU, and return. In the timeline view, prefill calls and denoising steps scroll past as blocks."></canvas>
+            <div class="fig-controls node-player">
+              <button type="button" class="node-pause">Pause</button>
+              <span class="node-label" id="node-speed-label">Speed</span>
+              <input type="range" name="node-speed" min="0" max="8" step="1" value="3" aria-labelledby="node-speed-label"> <span class="node-speed-value">25× slower</span>
+            </div>
+            <div class="node-live"></div>
+            <div class="node-stats"></div>
+          </div>
+          <figcaption>
+            <span class="figure-number">Fig. 03</span>
+            <span>A simulation of the node. In the flow view each request travels from its robot into one queue, coloured by how long it has waited, then goes to the next free prefill GPU with up to two others and takes a lane on the denoising GPU until its ten steps are done. In the timeline, each block's height is our estimate of how much of the GPU's peak compute that work uses, from its operation count and measured time; with fine-tunes, colours mark which fine-tune each robot runs. The animation and the latencies under it come from a simulation of the node, which lands within 3 ms of our measured runs.</span>
+          </figcaption>
+        </figure>
+
+        <p>Sharing the denoising GPU costs each robot latency. For the slowest 1% of requests the ten steps take 18 to 20 ms of the 50 ms budget, against 6.3 ms for a robot alone.</p>
+
+        <p>Disaggregation and step-level batching together take the node from 128 robots to 220. At that load the seven prefill GPUs are busy about 97% of the time, a level at which queues normally grow out of control.</p>
+
+        <h2 id="queue" tabindex="-1">Why the queue does not blow up at 98% utilisation</h2>
+
+        <p>A server that is almost always busy normally cannot meet a tail-latency budget. Requests arrive unevenly, and with almost no idle time each burst takes long to work off, so waits grow sharply as utilisation approaches 100%. In the standard model of one server with random arrivals and random service times, the average wait at 98% utilisation is 49 times the service time. A full prefill call takes about 18.5 ms, so that would be most of a second.</p>
+
+        <p>In its final configuration, described in the next section, the node runs its prefill GPUs 97 to 99% busy at 256 robots and still meets the budget. There are three reasons.</p>
+
+        <p>First, the prefill GPUs get more efficient as the queue grows. A free GPU takes up to three waiting robots in one call, and a call of three uses about a fifth less GPU time per robot than a call of one. So when requests pile up, calls fill, each robot costs less, and the queue drains faster. A GPU that is 98% busy is therefore not 98% of the way to its limit, and the queue still drains at 272 robots.</p>
+
+        <p>Second, the queue is shared. A waiting request goes to whichever of the seven GPUs frees up next, so it never sits behind one long call. A call of a given size also always takes the same time, so there are no slow outliers to wait behind.</p>
+
+        <p>Third, the robots in our test send evenly. Each sends every 250 ms at its own offset, so requests arrive spread out and not in bursts. This is a property of our test and not of every fleet. When we replaced it with random (Poisson) arrivals at the same average rate, the p99 rose from 49.5 ms to 64.6 ms, and the slowest 1% of requests waited 30 ms for a prefill GPU instead of 11 ms.</p>
+
+        <figure class="wide-figure" id="fig-budget">
+          <div class="figure-frame">
+            <svg role="img" aria-label="Where the slowest 1% of requests spend their time, for 240 to 272 robots and for four arrival patterns at 256 robots"></svg>
+            <p class="fig-readout">Hover a bar for its parts.</p>
+          </div>
+          <figcaption>
+            <span class="figure-number">Fig. 04</span>
+            <span>Where the slowest 1% of requests spend their time. A request queues for a prefill GPU, waits behind the call already running on it, then has its prefill call and its ten denoising steps. Top: random offsets, as robots are added. Bottom: the same 256 robots under four arrival patterns. Assigned offsets: the server spaces send times evenly. Site stalls: groups of 32 robots pause for 100 to 250 ms, then send together.</span>
+          </figcaption>
+        </figure>
+
+        <h2 id="cheaper" tabindex="-1">Making each robot cheaper with limited quantisation</h2>
+
+        <p>With the prefill GPUs full, the node gains robots when each prefill gets cheaper or the rest of the request gets shorter. At 1,024 requests a second, every 0.1 ms removed from a prefill is room for three or four more robots. Most prefill time is matrix multiplication that already runs about as fast as the best 16-bit library kernels on this GPU, so the remaining way to make it cheaper is a smaller number format.</p>
+
+        <p>The H100 has about 2x higher arithmetic bandwidth at FP8 than BF16, though FP8 is less accurate.</p>
+
+        <p>We tested numerics on 768 cases to decide whether a change is acceptable against openpi's JAX implementation, where our error must not be meaningfully worse than that of openpi's own PyTorch port.</p>
+
+        <p>Our use of FP8 passes when it is limited to the MLP matrix multiplications in layers 7 to 16 of Gemma's 18, with both operands in FP8 and the outputs in BF16. This makes the prefill about 9% cheaper per robot and takes the node from 220 robots to 240.</p>
+
+        <p>The last step, from 240 robots to 256, comes mostly from four kernel changes. One is in the prefill, where we make one pass fewer over the model's widest activation. The other three shorten each denoising step: an attention kernel written for 30 query tokens, a matrix-multiply algorithm chosen for each exact robot count, and one kernel fewer per layer. Each change takes 0.6 to 2.2 ms off the p99, and the four add up to 5.7 ms.</p>
+
+        <h2 id="invariance" tabindex="-1">Achieving batch invariance</h2>
+
+        <p>Batch invariance is a property of inference systems ensuring that the output for any given request is bitwise identical and independent of the batch size, request order, or concurrent traffic on the server.</p>
+
+        <p>Most batched servers lack it, because floating-point addition is not associative and a library chooses the order of its additions from the shape of the whole batch (see our glorious Horace He's <a href="https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference">post at Thinking Machines</a>). We want it so that a robot's request can be replayed alone with the same result.</p>
+
+        <p>We have two strict rules that get us there. First, matrix multiplications use only algorithms that do not split the sum over K, because split-K is where the order of additions comes to depend on batch size. Second, the kernels we wrote ourselves, attention included, split work only by a robot's own inputs and never by the batch. This is easier for us than in the general language-model case, because every robot's request has the same fixed shape.</p>
+
+        <p>There is one caveat. The matrix-multiply library is closed source, so the first rule rests on what we observed and not on a guarantee.<sup><a href="#fn2" id="ref2">2</a></sup> We therefore check every configuration bitwise before it serves, comparing a robot alone against the same robot batched with up to 31 others. At 256 robots the two rules cost nothing we could measure.</p>
+
+        <h2 id="multi-lora" tabindex="-1">Serving many LoRA fine-tunes in the same batch</h2>
+
+        <p>So far every robot has run the same weights. A node shared by several customers would likely need to run several fine-tunes (as is the nature of robot foundation models at the moment), and if each needed its own batches, the gains above would be lost.</p>
+
+        <p>One method is LoRA, which freezes a weight matrix W and learns a low-rank correction to it: y = xW + (xA)B, where A and B are thin matrices, it also makes our life as inference engineers much easier when serving multiple sets of weights. Engines that serve many adapters at once (S-LoRA, Punica, vLLM) keep the adapters out of W, because merging them in would give each fine-tune its own weights and its own batches. Every request in a batch shares the base multiplication xW, and two extra kernels apply the correction: a “shrink” v = xA, and an “expand” y += vB that reads y back and rewrites it, with each row using its own request's A and B (Fig. 05, first view).</p>
+
+        <p>However, much to our pain, these engines were built for language-model decoding, where a step has one row per request. A prefill has 848 rows per robot, so rewriting y is another full pass over the activation. A denoising step is a chain of small kernels that wait on one another, and two more per projection lengthen it. vLLM's implementation of Punica's kernels made our prefill 42% slower and a 16-robot denoising step three times slower, and its atomic adds do not fix the order of additions, so batch invariance is lost.</p>
+
+        <figure class="wide-figure" id="fig-kcat">
+          <div class="figure-frame">
+            <div class="fig-controls">
+              <span class="toggle" role="group" aria-label="How the adapters are applied">
+                <button type="button" data-kcat="usual" aria-pressed="true"><span class="lbl-long">Shrink and expand kernels</span><span class="lbl-short">Usual: 3 kernels</span></button>
+                <button type="button" data-kcat="ours" aria-pressed="false"><span class="lbl-long">Expand folded into the base matmul</span><span class="lbl-short">Ours: folded expand</span></button>
+              </span>
+            </div>
+            <svg role="img" aria-label="Three robots, each on a different fine-tune (colours as in Fig. 03), in one batch. First view: a shared base multiplication followed by a shrink and an expand kernel that use each robot's own adapter. Second view: each robot's input extended by adapter slots and multiplied once by the shared weight stacked over the adapters."></svg>
+            <p class="fig-readout"></p>
+          </div>
+          <figcaption>
+            <span class="figure-number">Fig. 05</span>
+            <span>Three robots, each on a different fine-tune (colours as in Fig. 03), in one batch. First view: the usual path, a shared base multiplication, then a shrink and an expand kernel that use each robot's own A and B. Second view: the shrink still runs, and the expand is folded into the base multiplication as extra columns, with zeros in the other robots' slots.</span>
+          </figcaption>
+        </figure>
+
+        <p>In the prefill, the expand does not need its own kernel. A matrix multiplication is already a sum over the columns of its input, so the expand folds into the base multiplication if the input is given more columns. We append each robot's v to that robot's rows, in a slot reserved for it, with zeros in every other robot's slot, and stack the B matrices of the robots in the call under W (Fig. 05, second view).</p>
+
+<pre><code># Three robots on three fine-tunes; T tokens per robot, adapter rank r.
+# x: [3T, K].  v: [3T, 3r]: robot i's x @ A_i in slot i, zeros elsewhere.
+x_cat = torch.cat([x, v], dim=1)               # [3T, K + 3r]
+w_cat = torch.cat([W, B_1, B_2, B_3], dim=0)   # [K + 3r, N]
+y = x_cat @ w_cat                              # robot i's rows: x @ W + v_i @ B_i</code></pre>
+
+        <p>The zeros keep the robots independent: robot 1's rows meet robot 2's B only as 0 × B, which adds exactly zero, so each robot gets the same bits as it would alone. We use this on the widest projection in each Gemma layer, which accounted for 83% of the expand's time, and the other projections keep separate kernels. It passed the accuracy test with a real adapter.</p>
+
+        <p>openpi's fine-tuning recipe puts an adapter on every projection in Gemma and in the action expert, and gives each fine-tune its own vision encoder. In the prefill these add about 17% of GPU time per robot, roughly half for the adapters and half for the encoders, against 50% with vLLM's kernels.</p>
+
+        <p>In the denoising steps an adapter costs latency instead of GPU time. The extra arithmetic is negligible, but the shrink and the expand remain as two more dependent kernels per projection in an already long chain. We rewrote them to run on a parallel branch of the graph beside the base multiplication and to add their partial sums in a fixed order, which keeps batch invariance. A 16-robot step takes 4.28 ms with vLLM's kernels and 2.13 ms with ours, against 1.44 ms without adapters, and every robot takes ten steps.</p>
+
+        <p>As a result, the limit moves from prefill capacity to the latency of the denoising steps. The p99 passes 50 ms while the prefill GPUs are only 82 to 85% busy. Robots on fine-tunes also lose FP8, which failed the accuracy test with the real adapter in every set of layers we tried. A BF16 prefill costs them 0 to 1 ms of p99, since the prefill is no longer the limit.</p>
+
+        <p>With 24 fine-tunes shared among the robots, we measured the limit at 157 robots: the p99 was 48.7 ms at 152 robots and 50.9 ms at 160. Without the adapter on the action expert the p99 is 9 to 10 ms lower, because that adapter runs in every denoising step, and sharing one vision encoder across fine-tunes saves 3 to 4 ms. We have not measured what either does to quality.</p>
+
+        <h2 id="limits" tabindex="-1">Limitations</h2>
+
+        <p>The 256-robot figure holds for robots that send periodically and independently, and many fleets do not. If all 256 somehow happen to send within the same 2 ms, the p99 is about 229 ms.</p>
+
+        <h2 id="next" tabindex="-1">What this means for the cost of serving a fleet</h2>
+
+        <p>At one robot per H100, a whole GPU serves a single robot, so its cost is not amortized across other robots. Too high to be economically sensible to a robot deployment company.</p>
+
+        <p>At node scale, the cost per robot falls in proportion to the number of robots sharing each GPU. A copy of the model on every GPU serves 16 robots per H100 within the inference budget, 128 on the node, and cuts the cost per robot about sixteenfold.</p>
+
+        <p>Our node runs twice that at 32 per H100, which halves the cost per robot when serving the same set of weights. With multi-LoRA, at 19.6 robots per H100, the cost per robot lands between the two. Both regimes become cost appropriate for mass adoption.</p>
+
+        <figure class="wide-figure" id="fig-capacity">
+          <div class="figure-frame">
+            <svg role="img" aria-label="Server p99 latency against robots on the node, for four configurations"></svg>
+            <p class="fig-readout">Hover a point for its measured p99.</p>
+          </div>
+          <figcaption>
+            <span class="figure-number">Fig. 06</span>
+            <span>Server p99 against the number of robots on one node. A dotted segment ends at the first measured robot count where the queue no longer drains. The shaded bar at 256 is the range across three machines. The all-BF16 line is from the slowest machine (51.0 ms at 220 robots; another measured 47.2 ms).</span>
+          </figcaption>
+        </figure>
+
+        <p>We measured only π0.5. Many robot foundation models share its structure, a large encoder followed by a short iterative decoder, and we expect the same division to apply.</p>
+
+        <aside class="end-note" aria-label="Contact">
+          <p><em>If you are working on serving robot policies and find it interesting, or think we could do better, write to us at <strong><a href="mailto:contact@dreamscalelabs.com">contact@dreamscalelabs.com</a></strong>.</em></p>
+        </aside>
+
+        <section class="footnotes" id="notes" aria-label="Notes">
+          <h2>Notes</h2>
+          <ol>
+            <li id="fn1">One π0.5 call for one robot on one H100, in BF16, with this checkpoint and the same inputs: ours 14.8 ms; torch.compile on a rewrite of the model for the compiler, 23.1 ms; TensorRT, 23.2 ms; openpi's PyTorch port, 32.0 ms; openpi JAX, 45.3 ms. openpi JAX ran at its configured 136 prompt tokens; at our 80 it would be roughly 1 ms faster (an estimate). <a href="#ref1">↩</a></li>
+            <li id="fn2">cuBLASLt, NVIDIA's matrix-multiply library, is closed source, so the behaviour of its non-split-K algorithms is an observation and not a guarantee. Every one that we ran produced bit-identical rows at every robot count from 1 to 32. <a href="#ref2">↩</a></li>
+          </ol>
+        </section>
+
+        <section class="references" aria-label="References">
+          <h2>References</h2>
+          <ol>
+            <li>Physical Intelligence et al. “π0.5: a Vision-Language-Action Model with Open-World Generalization.” 2025. arxiv.org/abs/2504.16054</li>
+            <li>Physical Intelligence. openpi. github.com/Physical-Intelligence/openpi</li>
+            <li>Hazy Research. “Look Ma, No Bubbles! Designing a Low-Latency Megakernel for Llama-1B.” 2025. hazyresearch.stanford.edu/blog/2025-05-27-no-bubbles</li>
+            <li>Zhong, Y. et al. “DistServe: Disaggregating Prefill and Decoding for Goodput-optimized Large Language Model Serving.” OSDI 2024.</li>
+            <li>Patel, P. et al. “Splitwise: Efficient Generative LLM Inference Using Phase Splitting.” ISCA 2024.</li>
+            <li>Yu, G.-I. et al. “Orca: A Distributed Serving System for Transformer-Based Generative Models.” OSDI 2022.</li>
+            <li>He, H. and Thinking Machines Lab. “Defeating Nondeterminism in LLM Inference.” 2025. thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference</li>
+            <li>Hu, E. et al. “LoRA: Low-Rank Adaptation of Large Language Models.” 2021. arxiv.org/abs/2106.09685</li>
+            <li>Sheng, Y. et al. “S-LoRA: Serving Thousands of Concurrent LoRA Adapters.” 2023. arxiv.org/abs/2311.03285</li>
+            <li>Chen, L. et al. “Punica: Multi-Tenant LoRA Serving.” MLSys 2024.</li>
+          </ol>
+        </section>
+      </article>
+      </div>
+    </main>
+
+    <footer class="blog-footer">
+      <span>Dreamscale Labs © 2026</span>
+      <a href="#top">Back to top ↑</a>
+    </footer>
+    <div class="reading-progress" role="progressbar" aria-label="Article reading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+    <script src="/blog/serving-256-robots/reading-progress.js?v=2ab85ab06a93" defer></script>
+    <script src="/blog/serving-256-robots/sim.js?v=f14733587b6b" defer></script>
+    <script src="/blog/serving-256-robots/sim-stats.js?v=93bf86a14da1" defer></script>
+    <script src="/blog/serving-256-robots/figures.js?v=a9c328c7b16f" defer></script>
+  </body>
+</html>

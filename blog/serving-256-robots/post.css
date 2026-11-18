@@ -1,0 +1,265 @@
+.hero-figure { margin: 3rem 0 0; }
+.hero-figure canvas {
+  display: block;
+  width: 100%;
+  height: clamp(300px, 46vw, 520px);
+  background: #fcfcfb;
+  border: 1px solid var(--line);
+}
+.hero-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  font-family: var(--title-font);
+  font-size: 13px;
+  color: var(--muted);
+}
+.hero-readout { color: var(--ink); }
+
+.toggle { display: inline-flex; border: 1px solid #d5d8db; border-radius: 999px; padding: 3px; }
+.toggle button {
+  font: inherit;
+  font-size: 12.5px;
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.toggle button[aria-pressed="true"] { background: #17191a; color: #fff; }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-family: var(--title-font);
+  font-size: 12px;
+  color: var(--muted);
+}
+.legend span::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 6px;
+  border-radius: 50%;
+  vertical-align: -1px;
+  background: var(--swatch);
+}
+
+.article figure svg { display: block; width: 100%; height: auto; font-family: var(--title-font); }
+.fig-readout {
+  min-height: 3.2em;
+  margin: 10px 0 0;
+  font-family: var(--title-font);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.fig-readout strong { color: var(--ink); font-weight: 600; }
+
+.fig-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 22px;
+  align-items: center;
+  margin-bottom: 12px;
+  font-family: var(--title-font);
+  font-size: 13px;
+  color: var(--muted);
+}
+.fig-controls label { display: inline-flex; gap: 8px; align-items: center; }
+.fig-controls select, .fig-controls button {
+  font: inherit;
+  padding: 5px 10px;
+  border: 1px solid #d5d8db;
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ink);
+}
+.fig-controls button { cursor: pointer; }
+.fig-controls input[type="range"] { width: 160px; accent-color: #17191a; }
+.node-speed-value { min-width: 6.2em; color: var(--ink); font-variant-numeric: tabular-nums; }
+.node-robots-value { min-width: 2.2em; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+#fig-node canvas { display: block; width: 100%; height: 460px; }
+.node-live {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  min-height: 1.4em;
+  margin-top: 8px;
+  font-family: var(--title-font);
+  font-size: 13px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.node-live b { color: var(--ink); font-weight: 600; }
+.fig-controls .toggle { padding: 2px; }
+.fig-controls .toggle button { padding: 4px 12px; }
+
+
+.article pre {
+  margin: 1.5rem 0;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  background: #f7f7f7;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.article pre code { font: inherit; }
+.article sup { font-family: var(--title-font); font-size: .7em; line-height: 0; }
+.article sup a { padding: 0 .1em; color: var(--muted); text-decoration: none; }
+.article sup a:hover { color: var(--ink); }
+.footnotes { margin-top: 3.5rem; }
+.footnotes h2 { font-size: 1.4rem; }
+.footnotes ol { margin: 0; padding-left: 1.4rem; font-family: var(--text-font); font-size: 1rem; line-height: 1.5; color: var(--muted); }
+.footnotes li { margin-bottom: .7rem; }
+.footnotes li:target { color: var(--ink); }
+.footnotes li a { color: inherit; }
+
+.node-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  margin-top: 10px;
+  font-family: var(--title-font);
+  font-size: 13px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.node-stats b { color: var(--ink); font-weight: 600; }
+
+.setup {
+  margin: 2.5rem 0;
+  padding: 1.25rem 1.5rem;
+  border-left: 3px solid #17191a;
+  background: #f7f7f7;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+.setup h3 { margin: 0 0 .6rem; font-size: 1.15rem; }
+.setup dl { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: .35rem 1rem; margin: 0; }
+.setup dt { color: var(--muted); font-family: var(--title-font); font-size: .8rem; padding-top: .2rem; }
+.setup dd { margin: 0; }
+
+.article details.tried {
+  margin: 2rem 0;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--line);
+}
+.article details.tried summary { cursor: pointer; font-family: var(--title-font); font-size: 1rem; }
+.article details.tried ul { margin: 1rem 0 0; padding-left: 1.2rem; }
+
+.article details.table-view { margin-top: .6rem; font-family: var(--title-font); font-size: 12px; color: var(--muted); }
+.article details.table-view summary { cursor: pointer; }
+.article details.table-view table { min-width: 0; font-size: .95rem; margin-top: .5rem; }
+
+.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+@media (max-width: 700px) {
+  /* Wide diagrams scroll sideways on phones instead of shrinking their text. */
+  #fig-kcat .figure-frame, #fig-tenants .figure-frame { overflow-x: auto; }
+  #fig-kcat svg, #fig-tenants svg { min-width: 560px; }
+  .setup dl { grid-template-columns: 1fr; }
+  .setup dt { padding-top: .6rem; }
+}
+
+/* Results table in the introduction. */
+.article .table-wrap { margin: 2.25rem 0; overflow-x: auto; }
+.article table.results { width: 100%; min-width: 520px; border-collapse: collapse; font-family: var(--title-font); font-size: .95rem; line-height: 1.35; }
+.article table.results caption { caption-side: top; text-align: left; padding-bottom: .6rem; color: var(--muted); font-size: .85rem; }
+.article table.results th, .article table.results td { padding: .5rem .75rem .5rem 0; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+.article table.results th { color: var(--muted); font-weight: 500; font-size: .8rem; border-bottom-color: #17191a; }
+.article table.results td:nth-child(2), .article table.results td:nth-child(3) { white-space: nowrap; font-variant-numeric: tabular-nums; }
+#fig-split svg { display: block; width: 100%; height: auto; font-family: var(--title-font); }
+
+.byline { margin: 1.6rem 0 0; font-family: var(--title-font); font-size: 1rem; color: var(--ink); }
+.byline + .reading-meta { margin-top: .35rem; }
+
+/* Python highlighting (GitHub-light palette) */
+.article pre .py-com { color: #6a737d; font-style: italic; }
+.article pre .py-kw { color: #d73a49; }
+.article pre .py-str { color: #032f62; }
+.article pre .py-num { color: #005cc5; }
+.article pre .py-fn { color: #6f42c1; }
+
+/* Toggles inside figure controls: buttons sit inside the pill, never with their own box, never wrapping. */
+.fig-controls .toggle { padding: 3px; max-width: 100%; flex-wrap: nowrap; }
+.fig-controls .toggle button,
+.fig-controls .toggle button:hover {
+  border: 0; border-radius: 999px; background: transparent; color: var(--muted);
+  padding: 5px 12px; white-space: nowrap; line-height: 1.2;
+}
+.fig-controls .toggle button[aria-pressed="true"] { background: #17191a; color: #fff; }
+.fig-controls label { white-space: nowrap; }
+@media (max-width: 700px) {
+  .fig-controls .toggle button { padding: 5px 9px; font-size: 12px; }
+}
+
+.lbl-short { display: none; }
+@media (max-width: 520px) { .lbl-long { display: none; } .lbl-short { display: inline; } }
+
+/* Fig. 03: the multi-LoRA switch, drawn as a pill so it reads as something to click. */
+.fig-controls label.lora-toggle {
+  gap: 7px; padding: 5px 12px 5px 9px; border: 1px solid #17191a; border-radius: 999px;
+  color: var(--ink); font-weight: 500; cursor: pointer; user-select: none;
+}
+.fig-controls label.lora-toggle:hover { background: #f3f3f3; }
+.fig-controls label.lora-toggle input { margin: 0; width: 15px; height: 15px; accent-color: #17191a; cursor: pointer; }
+.fig-controls label.lora-toggle:has(input:checked) { background: #17191a; color: #fff; }
+.fig-controls label.lora-toggle:has(input:checked) input { accent-color: #fff; }
+
+/* Fig. 03 controls, grouped by purpose: view tabs; the scenario (layout + multi-LoRA switch, robots) with labels in
+   one aligned column; playback (pause, speed) in a player bar under the canvas. */
+#fig-node .node-controls { display: grid; grid-template-columns: 4.4rem minmax(0, 1fr); gap: 10px 10px; align-items: center; margin-bottom: 14px; }
+#fig-node .node-tabs { grid-column: 1 / -1; margin-bottom: 4px; }
+#fig-node .node-label { color: var(--muted); }
+#fig-node .node-field { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; min-width: 0; }
+#fig-node .node-field select { max-width: 100%; }
+#fig-node .node-field input[type="range"] { flex: 0 1 280px; width: auto; min-width: 120px; }
+#fig-node .node-player { margin: 10px 0 2px; gap: 10px 12px; flex-wrap: nowrap; }
+#fig-node .node-player input[type="range"] { flex: 0 1 200px; width: auto; min-width: 90px; }
+#fig-node .node-player .node-pause { min-width: 4.6em; }
+#fig-node .node-field-slider { flex-wrap: nowrap; }
+#fig-node .node-field-slider input[type="range"] { flex: 1 1 auto; max-width: 280px; }
+@media (max-width: 600px) {
+  /* The layout menu and the multi-LoRA switch stack; the label stays level with the menu. */
+  #fig-node .node-label-top { align-self: start; padding-top: 7px; }
+  #fig-node .node-controls { grid-template-columns: 3.9rem minmax(0, 1fr); }
+}
+
+/* Fig. 02: a portrait version of the diagram on narrow screens (robots on top, then the GPUs below). */
+#fig-split svg.split-tall { display: none; }
+@media (max-width: 600px) {
+  #fig-split svg.split-wide { display: none; }
+  #fig-split svg.split-tall { display: block; max-width: 420px; margin: 0 auto; }
+}
+/* Fig. 03 on phones: a tall canvas, which figures.js draws top to bottom (robots, queue, prefill GPUs, denoising). */
+@media (max-width: 600px) {
+  #fig-node canvas { height: 780px; }
+  #fig-node.whole-calls canvas { height: 600px; }
+}
+
+/* Fig. 03 readout: a quiet note that the latencies are simulated. */
+#fig-node .node-stats .stat-note { color: var(--muted); font-size: 12px; }
+
+/* Header, as the live posts set it per post (e.g. blog/hud/hud.css): the dek runs the full width under the title. */
+.article-dek { max-width: none; }
+
+/* Fig. 03, the node simulation (like the hero), runs from the body column's left edge to the site's right edge once the
+   page is at full width (1120 px and up), so it lands on two edges the page already has and always has one shape. Its
+   caption stays in the text column. */
+@media (min-width: 1120px) {
+  .article-layout { container-type: inline-size; }
+  #fig-node .figure-frame { margin-right: calc((680px - 100cqw) / 2); }
+  /* The robots slider uses the wider row (it moves in single robots, so a longer track is easier to set). */
+  #fig-node .node-field-slider input[type="range"] { max-width: none; }
+}
