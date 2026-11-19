@@ -1,5 +1,4 @@
-/* /praxis: Praxis-1 on Dreamscale (Chris's P2, 2026-11-11). Black, the launch video full screen.
-   The free week shows in the hero (.free) and the closing facts; take both off on day 7. */
+/* /praxis: Praxis-1 on Dreamscale (Chris's P2, 2026-11-11). Black, the launch video full screen. */
 @font-face { font-family: DSL; src: url("/assets/fonts/Mluvka-Regular-web.woff2") format("woff2"); font-display: block; }
 @font-face { font-family: Unbounded; src: url("/assets/fonts/Unbounded-Latin-Variable.woff2") format("woff2"); font-weight: 200 900; font-display: block; }
 
@@ -22,8 +21,6 @@ a:focus-visible, button:focus-visible { outline: 3px solid #8fb0ff; outline-offs
 .runway { height: 26px; width: auto; }
 h1 { margin: 0; font-family: Unbounded, DSL, sans-serif; font-size: clamp(76px, 12vw, 168px); font-weight: 500; letter-spacing: -.07em; line-height: .9; }
 .sub { margin: 0; font-size: 22px; color: #c9ccd0; }
-.free { display: inline-flex; align-items: center; gap: 10px; padding: 12px 18px; border-radius: 999px; background: rgba(255,255,255,.12); backdrop-filter: blur(8px); font-size: 16px; color: #fff; }
-.free::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #7fe0a0; }
 .actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: center; padding-top: 4px; }
 .btn { display: inline-flex; align-items: center; gap: 12px; padding: 18px 30px; border-radius: 6px; font-size: 17px; }
 .btn-primary { background: #fff; color: #000; }
