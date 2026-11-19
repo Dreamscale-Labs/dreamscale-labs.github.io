@@ -114,6 +114,9 @@
 .announce-icon { width: 13px; height: 13px; transition: transform .2s; }
 .announce-link:hover .announce-icon { transform: translateX(2px); }
 .announce-link:focus-visible { outline-color: #fff; outline-offset: 3px; }
+/* A whole-sentence link wraps on narrow screens. */
+.announce-headline { display: inline; margin-left: 0; white-space: normal; }
+.announce-headline .announce-icon { vertical-align: -2px; margin-left: 2px; }
 @media (max-width: 1100px) { .announce p { padding: 7px 36px; } }
 @media (max-width: 760px) { .announce p { padding: 7px 24px; font-size: 13px; } .announce strong { font-size: 12px; } }
 @media (prefers-reduced-motion: reduce) { .announce-link, .announce-icon { transition: none; } }
