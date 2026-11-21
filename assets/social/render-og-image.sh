@@ -2,6 +2,7 @@
 # Renders assets/social/<name>.html to <name>.png (1200x630) with headless Chrome.
 #   assets/social/render-og-image.sh            # og-image (home and blog)
 #   assets/social/render-og-image.sh praxis-og  # /praxis
+#   assets/social/render-og-image.sh isaac-og   # /isaac
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 name="${1:-og-image}"
