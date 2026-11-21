@@ -87,6 +87,7 @@ test("every public page declares the complete favicon metadata set", () => {
     ["blog/index.html", blogIndex],
     [articlePath, articleHtml],
     ["praxis/index.html", readFileSync("praxis/index.html", "utf8")],
+    ["isaac/index.html", readFileSync("isaac/index.html", "utf8")],
   ]);
   const requiredTags = [
     '<link rel="icon" href="/favicon.ico" sizes="any">',
@@ -152,6 +153,7 @@ test("every public page loads PostHog through the proxy with the app's shared co
     "terms/index.html",
     "privacy/index.html",
     "praxis/index.html",
+    "isaac/index.html",
   ];
   for (const path of pages) {
     assert.match(
@@ -200,6 +202,34 @@ test("every public page has a large-image link preview", () => {
     height: 630,
     colorType: 2,
   });
+});
+
+test("/isaac has its own link preview, its price, sign-up links and local assets that exist", () => {
+  const isaac = readFileSync("isaac/index.html", "utf8");
+  for (const tag of [
+    '<meta property="og:image" content="https://www.dreamscalelabs.com/assets/social/isaac-og.png">',
+    '<meta property="og:image:width" content="1200">',
+    '<meta property="og:image:height" content="630">',
+    '<meta property="og:url" content="https://dreamscalelabs.com/isaac/">',
+    '<link rel="canonical" href="https://dreamscalelabs.com/isaac/">',
+    '<meta name="twitter:card" content="summary_large_image">',
+    '<meta name="twitter:site" content="@dreamscalelabs">',
+  ]) {
+    assert.ok(isaac.includes(tag), `isaac/index.html must contain ${tag}`);
+  }
+  assert.deepEqual(readPngMetadata("assets/social/isaac-og.png"), { width: 1200, height: 630, colorType: 2 });
+  assert.match(isaac, /<strong>\$5<\/strong><span>per robot-hour<\/span>/);
+  // Its sign-up buttons share the homepage announce bar's launch campaign.
+  assert.equal((isaac.match(/href="https:\/\/app\.dreamscalelabs\.com\/signin\?callbackURL=\/dashboard&amp;utm_source=dreamscalelabs&amp;utm_medium=isaac-page&amp;utm_campaign=isaac-0\.5-launch"/g) || []).length, 2);
+  // The launch copy rules: no speed claims, nothing that reads as a partnership.
+  assert.doesNotMatch(isaac, /\b(fast|faster|fastest|real[- ]time|unlimited|free forever)\b|×|with Perceptron/i);
+  for (const model of ["isaac-0.5-yam", "isaac-0.5-so101", "isaac-0.5-libero"]) {
+    assert.ok(isaac.includes(model), `isaac/index.html must name ${model}`);
+  }
+  for (const [, ref] of isaac.matchAll(/(?:src|href|poster)="(\/[^"?#]*)(?:[?#][^"]*)?"/g)) {
+    const target = ref.endsWith("/") ? `${ref.slice(1)}index.html` : ref.slice(1);
+    assert.ok(existsSync(target), `isaac/index.html: missing ${ref}`);
+  }
 });
 
 test("/praxis has its own link preview, its price, sign-up links and local assets that exist", () => {
