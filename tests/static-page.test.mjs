@@ -219,7 +219,7 @@ test("/isaac has its own link preview, its price, sign-up links and local assets
   }
   assert.deepEqual(readPngMetadata("assets/social/isaac-og.png"), { width: 1200, height: 630, colorType: 2 });
   assert.match(isaac, /<strong>\$5<\/strong><span>per robot-hour<\/span>/);
-  // Its sign-up buttons share the homepage announce bar's launch campaign.
+  // Its sign-up buttons are tagged for the Isaac 0.5 launch campaign.
   assert.equal((isaac.match(/href="https:\/\/app\.dreamscalelabs\.com\/signin\?callbackURL=\/dashboard&amp;utm_source=dreamscalelabs&amp;utm_medium=isaac-page&amp;utm_campaign=isaac-0\.5-launch"/g) || []).length, 2);
   // The launch copy rules: no speed claims, nothing that reads as a partnership.
   assert.doesNotMatch(isaac, /\b(fast|faster|fastest|real[- ]time|unlimited|free forever)\b|×|with Perceptron/i);
@@ -258,8 +258,8 @@ test("/praxis has its own link preview, its price, sign-up links and local asset
     const target = ref.endsWith("/") ? `${ref.slice(1)}index.html` : ref.slice(1);
     assert.ok(existsSync(target), `praxis/index.html: missing ${ref}`);
   }
-  // The homepage's announce bar now announces Isaac 0.5 (no promo price), and no free-week offer remains.
-  assert.match(html, /<a class="announce-link announce-headline" href="https:\/\/app\.dreamscalelabs\.com\/signin\?callbackURL=\/dashboard&amp;utm_source=dreamscalelabs&amp;utm_medium=announce-bar&amp;utm_campaign=isaac-0\.5-launch">Perceptron Isaac 0\.5 is now live for YAM, SO-101 and LIBERO /);
+  // The homepage's announce bar announces Isaac 0.5 and links its page (no promo price), and no free-week offer remains.
+  assert.match(html, /<a class="announce-link announce-headline" href="\/isaac\/">Perceptron Isaac 0\.5 is now live for YAM, SO-101 and LIBERO /);
   assert.doesNotMatch(html, /Free through/);
 });
 
